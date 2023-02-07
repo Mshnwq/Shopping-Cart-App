@@ -26,48 +26,15 @@ class ProductDirectoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cart = ref.watch(cartProvider);
+    // final cart = ref.watch(cartProvider);
     // final searchText = ref.watch(searchTextProvider);
     return Scaffold(
-      // drawer: const MenuBar(),
-      // appBar: PreferredSize(
-      //   preferredSize: const Size.fromHeight(60), //height of appbar
-      //   child: AppBar(
-      //     centerTitle: true,
-      //     backgroundColor: Colors.green,
-      //     title: Text(
-      //       // 'Cart State ${cart.getCounter().toString()}',
-      //       'Cart State ${cart.getCounter().toString()}',
-      //       // style: appTheme.setButtonTextStyle(18, 1),
-      //     ),
-      // actions: [
-      //   Badge(
-      //     badgeContent: Consumer<CartProvider>(
-      //       builder: (context, value, child) {
-      //         return Text(
-      //           value.getCounter().toString(),
-      //           // "d",
-      //           style: const TextStyle(
-      //               color: Colors.white, fontWeight: FontWeight.bold),
-      //         );
-      //       },
-      //     ),
-      //     position: const BadgePosition(start: 30, bottom: 30),
-      //     child: Container(
-      //       margin: const EdgeInsets.only(top: 5, right: 5),
-      //       alignment: Alignment.topRight,
-      //       child: const CartMenu(),
-      //     ),
-      //   ),
-      // ],
-      // ),
-      // ),
       floatingActionButton: FloatingActionButton(
         //Floating action button on Scaffold
         onPressed: () => GoRouter.of(context).pushNamed(barcodeRoute),
-        child: Icon(Icons.queue),
         // child: Icon(Icons.add),
-        backgroundColor: Color.fromARGB(255, 10, 119, 14), //icon inside button
+        backgroundColor: const Color.fromARGB(255, 10, 119, 14),
+        child: const Icon(Icons.queue), //icon inside button
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       //floating action button position to center
@@ -98,6 +65,7 @@ final searchTextProvider = StateNotifierProvider<searchText, String>(
   },
 );
 
+// ignore: camel_case_types
 class searchText extends StateNotifier<String> {
   searchText() : super('');
 

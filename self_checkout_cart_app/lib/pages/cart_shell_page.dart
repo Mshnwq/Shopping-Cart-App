@@ -7,15 +7,9 @@ import '../widgets/all_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CartShellPage extends ConsumerWidget {
-  final Widget child;
   const CartShellPage({required this.child, Key? key}) : super(key: key);
-  // ref.read(cartProvider).getData();
+  final Widget child;
 
-  // @override
-  // State<CartShellPage> createState() => _CartShellPageState();
-// }
-
-// class _CartShellPageState extends State<CartShellPage> {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);

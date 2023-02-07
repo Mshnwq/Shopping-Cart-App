@@ -150,7 +150,7 @@ class CartPage extends ConsumerWidget {
                                     RichText(
                                       maxLines: 1,
                                       text: TextSpan(
-                                          text: 'Price: ' r"$",
+                                          text: 'Price: ' r"SAR",
                                           style: TextStyle(
                                               color: Colors.blueGrey.shade800,
                                               fontSize: 16.0),
@@ -193,8 +193,8 @@ class CartPage extends ConsumerWidget {
             children: [
               ReusableWidget(
                   title: 'Sub-Total',
-                  value:
-                      r'$' + (cart.getTotalPrice()?.toStringAsFixed(2) ?? '0')),
+                  value: r'SAR' +
+                      (cart.getTotalPrice()?.toStringAsFixed(2) ?? '0')),
             ],
           ),
         ],

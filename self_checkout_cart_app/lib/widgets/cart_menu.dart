@@ -8,7 +8,8 @@ import '../services/auth.dart';
 enum _MenuValues { disconnect, checkout, print }
 
 class CartMenuWidget extends ConsumerStatefulWidget {
-  const CartMenuWidget({Key? key}) : super(key: key);
+  const CartMenuWidget({Key? key, this.isCheckout = false}) : super(key: key);
+  final bool isCheckout;
 
   @override
   ConsumerState<CartMenuWidget> createState() => _CartMenuWidgetState();
@@ -19,53 +20,90 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       icon: const Icon(Icons.shopping_cart),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: _MenuValues.checkout,
-          child: Row(
-            children: const [
-              Icon(
-                Icons.shopping_cart_checkout,
-                color: Colors.green,
+      itemBuilder: (context) {
+        if (!widget.isCheckout) {
+          return [
+            PopupMenuItem(
+              value: _MenuValues.checkout,
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.shopping_cart_checkout,
+                    color: Colors.green,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text("Checkout")
+                ],
               ),
-              SizedBox(
-                width: 10,
+            ),
+            PopupMenuItem(
+              value: _MenuValues.print,
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.print,
+                    color: Colors.green,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text("Print")
+                ],
               ),
-              Text("Checkout")
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: _MenuValues.print,
-          child: Row(
-            children: const [
-              Icon(
-                Icons.print,
-                color: Colors.green,
+            ),
+            PopupMenuItem(
+              value: _MenuValues.disconnect,
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.exit_to_app,
+                    color: Colors.red,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text("Disconnect")
+                ],
               ),
-              SizedBox(
-                width: 10,
+            ),
+          ];
+        } else {
+          return [
+            PopupMenuItem(
+              value: _MenuValues.print,
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.print,
+                    color: Colors.green,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text("Print")
+                ],
               ),
-              Text("Print")
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: _MenuValues.disconnect,
-          child: Row(
-            children: const [
-              Icon(
-                Icons.exit_to_app,
-                color: Colors.red,
+            ),
+            PopupMenuItem(
+              value: _MenuValues.disconnect,
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.exit_to_app,
+                    color: Colors.red,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text("Disconnect")
+                ],
               ),
-              SizedBox(
-                width: 10,
-              ),
-              Text("Disconnect")
-            ],
-          ),
-        ),
-      ],
+            ),
+          ];
+        }
+      },
       onSelected: (value) async {
         switch (value) {
           case _MenuValues.checkout:

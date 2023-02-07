@@ -219,51 +219,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          GoRoute(
-            path: "/checkout",
-            name: checkoutRoute,
-            pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: CheckoutPage(
-                  key: state.pageKey,
-                ),
-              );
-            },
-          ),
-          //   },),GoRoute(
-          //   path: '/cart',
-          //   name: cart,
-          //   pageBuilder: (context, state) {
-          //     return NoTransitionPage(
-          //       child: CartScreen(
-          //         key: state.pageKey,
-          //       )
-          //     );
-          //   },
-          // ),
-          // GoRoute(
-          //   name: "cart",
-          //   path: cartRoute,
-          //   builder: (context, state) => const CartPage(),
-          //   routes: [
-          //     GoRoute(
-          //       name: "BarcodeScanner",
-          //       path: barcodeRoute,
-          //       builder: (context, state) => const BarcodeScannerPage(),
-          //     ),
-          //     GoRoute(
-          //       name: "ProdDir",
-          //       path: prodDirRoute,
-          //       builder: (context, state) => const ProductDirectoryPage(),
-          //     ),
-          //     GoRoute(
-          //       name: "checkout",
-          //       path: checkoutRoute,
-          //       builder: (context, state) => const CheckoutPage(),
-          //     ),
-          //   ],
-          // ),
         ],
+      ),
+      GoRoute(
+        path: "/checkout",
+        name: checkoutRoute,
+        builder: (context, state) => CheckoutPage(),
       ),
     ],
     errorBuilder: (context, state) => RouteErrorScreen(
