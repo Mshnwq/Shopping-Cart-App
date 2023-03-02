@@ -95,16 +95,6 @@ class _LoginPageState extends State<LoginPage> {
               final String email = _email.text;
               final String passwd = _passwd.text;
               try {
-                // final userCred =
-                //     await FirebaseAuth.instance.signInWithEmailAndPassword(
-                //   email: email,
-                //   password: passwd,
-                // );
-                // devtools.log(userCred.toString());
-                // Navigator.of(context).pushNamedAndRemoveUntil(
-                //   connectRoute,
-                //   (route) => false,
-                // );
                 bool isLoggedIn = await Auth().login(context, email, passwd);
                 // Auth().establishWebSocket(env.sock);
                 if (!isLoggedIn) {
@@ -114,26 +104,24 @@ class _LoginPageState extends State<LoginPage> {
                 context.goNamed(connectRoute);
                 // } on Exception catch (e) {
               } catch (e) {
-                // TODO User not found, wrong Password
-                // switch (e.code) {
-                switch (e) {
-                  case 'User-not-found':
-                    devtools.log('User-not-found');
-                    showAlertMassage(context, "User not found");
-                    break;
-                  case 'Email-not-found':
-                    devtools.log('Email-not-found');
-                    showAlertMassage(context, "Email not found");
-                    break;
-                  case 'Wrong-cred':
-                    devtools.log('Wrong-cred');
-                    showAlertMassage(context, "Wrong Credentials");
-                    break;
-                  default:
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "$e");
-                    break;
-                }
+                // switch (e) {
+                //   case 'User-not-found':
+                //     devtools.log('User-not-found');
+                //     showAlertMassage(context, "User not found");
+                //     break;
+                //   case 'Email-not-found':
+                //     devtools.log('Email-not-found');
+                //     showAlertMassage(context, "Email not found");
+                //     break;
+                //   case 'Wrong-cred':
+                //     devtools.log('Wrong-cred');
+                //     showAlertMassage(context, "Wrong Credentials");
+                //     break;
+                //   default:
+                devtools.log('Error: $e');
+                showAlertMassage(context, "$e");
+                //     break;
+                // }
               }
             },
             // style: appTheme.getButtonStyle,

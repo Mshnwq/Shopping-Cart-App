@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
-
+import '../services/auth.dart';
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import '../theme/themes.dart';
+import '../services/env.dart' as env;
 import '../constants/routes.dart';
 
 class ConnectPage extends StatefulWidget {
@@ -52,9 +52,11 @@ class _ConnectPageeState extends State<ConnectPage> {
             children: [
               ElevatedButton(
                 // onPressed: () => GoRouter.of(context).pushNamed(qrScanRoute),
-                onPressed: () => context.goNamed(cartRoute),
-                // onPressed: () => context.go(qrScanRoute),
-                // style: appTheme.getButtonStyle,
+                onPressed: () {
+                  Auth().establishWebSocket();
+                  context.goNamed(cartRoute);
+                  // context.goNamed(qrScanRoute);
+                },
                 child: const Text('Scan QR code'),
               ),
             ],

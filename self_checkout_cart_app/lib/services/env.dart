@@ -1,11 +1,5 @@
 const String accessToken = "access_token";
 const String refreshToken = "refresh_token";
 const String tokenType = "token_type";
-// const String masterKey = "masterKey";
-// const String baseUrl = "192.168.8.120:8989";
-const String baseUrl = "38.54.61.211:8989";
-// const String url = "127.0.0.1:8000";
-const String url = "api-airport-dev.scfs.tech:5555";
-const String sock = "ws://api-airport-dev.scfs.tech:5555/ws/114";
-// const String baseUrl = "192.168.8.111:8989";
-// const String baseUrl = "192.168.79.20:8989";
+const String url = "192.168.0.16:1111";
+const String sock = "ws://localhost:1111";

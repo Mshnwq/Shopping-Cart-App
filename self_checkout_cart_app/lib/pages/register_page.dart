@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 // import '../theme/themes.dart';
 import '../pages/all_pages.dart';
 import '../models/custom_exceptions.dart';
+import '../services/auth.dart';
 import '../widgets/all_widgets.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:firebase_core/firebase_core.dart';
@@ -128,47 +129,43 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           ElevatedButton(
             onPressed: () async {
+              final username = _username.text;
               final email = _email.text;
               final passwd = _passwd.text;
               final passwdConf = _passwdConf.text;
               try {
                 if (passwdConf == passwd) {
-                  // final userCred = await FirebaseAuth.instance
-                  // .createUserWithEmailAndPassword(
-                  // email: email,
-                  // password: passwd,
-                  // );
-                  // devtools.log(userCred.toString());
-                  context.goNamed(connectRoute);
+                  bool isSuccess = await Auth().register(
+                      context, username, email, passwd); // TODO email message
+                  if (isSuccess) {
+                    context.goNamed(connectRoute);
+                  }
                 } else {
                   throw const PassWordMismatchException();
                 }
               } on PassWordMismatchException {
                 showAlertMassage(context, "Passwords don't match");
               } catch (e) {
-                // TODO Email in use found
-                // switch (e.code) {
-                switch (e) {
-                  case 'User-found':
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "User name in use");
-                    break;
-                  case 'Email-found':
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "Email in use");
-                    break;
-                  case 'Invalid-Email':
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "Invalid Email");
-                    break;
-                  default:
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "$e");
-                    break;
-                }
+                // switch (e) {
+                // case 'User-found':
+                // devtools.log('Error: $e');
+                // showAlertMassage(context, "User name in use");
+                // break;
+                // case 'Email-found':
+                // devtools.log('Error: $e');
+                // showAlertMassage(context, "Email in use");
+                // break;
+                // case 'Invalid-Email':
+                // devtools.log('Error: $e');
+                // showAlertMassage(context, "Invalid Email");
+                // break;
+                // default:
+                devtools.log('Error: $e');
+                showAlertMassage(context, "$e");
+                // break;
+                // }
               }
             },
-            // style: appTheme.getButtonStyle,
             child: Text(
               'Register',
               // style: appTheme.getButtonTextStyle,
