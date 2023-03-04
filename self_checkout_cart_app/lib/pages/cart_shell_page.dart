@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import '../services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
@@ -22,7 +23,7 @@ class CartShellPage extends ConsumerWidget {
           "Confirm",
         );
         if (await shouldLogout) {
-          // Auth().closeSocket(); //TODO DDD
+          Auth().closeSocket(); //TODO DDD
           context.goNamed(connectRoute);
         }
         return false;
@@ -34,13 +35,11 @@ class CartShellPage extends ConsumerWidget {
             centerTitle: true,
             backgroundColor: Theme.of(context).backgroundColor,
             title: Text('Cart ${cart.getCartState()} Mode',
-                style: TextStyle(fontSize: 20)),
-            // style: Theme.of.(context),
+                style: const TextStyle(fontSize: 20)),
             actions: [
               Badge(
                 badgeContent: Text(
                   cart.getCounter().toString(),
-                  // "d",
                   style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),

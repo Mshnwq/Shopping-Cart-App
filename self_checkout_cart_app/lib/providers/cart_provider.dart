@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:self_checkout_cart_app/services/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart_model.dart';
 import '../models/item_model.dart';
@@ -121,6 +122,11 @@ class Cart with ChangeNotifier {
         notifyListeners();
         break;
     }
+    broadcastState();
+  }
+
+  void broadcastState() {
+    Auth().pushSocket(_state.stateString);
   }
 
   bool isEmpty() {

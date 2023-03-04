@@ -20,6 +20,7 @@ Future<http.Response> postReq(String route,
   devtools.log(env.url);
   devtools.log(route);
   // devtools.log(header.toString());
+
   final uri = Uri.http(env.url, route);
   devtools.log(uri.toString());
   return http.post(uri, body: jsonEncode(body), headers: <String, String>{
@@ -60,15 +61,20 @@ Future<http.Response> sendEmptyPost(String route,
   return response;
 }
 
-Future<http.Response?> postAuthReq(String route,
+Future<http.Response> postAuthReq(String route,
     {Map<String, dynamic>? body, Map<String, dynamic>? header}) async {
   Map<String, dynamic> authHeader = {
     "Authorization": await Auth().getAccessToken(),
     ...?header
   };
+  devtools.log(env.url);
+  devtools.log(route);
+  devtools.log(header.toString());
+  // devtools.log(uri.toString());
   http.Response res = await postReq(route, body: body, header: authHeader);
-  http.Response? checkedRes = await Auth().checkToken(res);
-  return checkedRes;
+  // http.Response checkedRes = await Auth().checkToken(res);
+  // return checkedRes;
+  return res;
 }
 
 Future<http.Response?> getAuthReq(String route,

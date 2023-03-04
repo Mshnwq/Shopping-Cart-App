@@ -10,32 +10,32 @@ import '../constants/routes.dart';
 // GlobalKey(debugLabel: 'shell');
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // bool isDuplicate = false;
+  bool isDuplicate = false;
   final notifier = ref.read(goRouterNotifierProvider);
 
   return GoRouter(
     // navigatorKey: _rootNavigator,
     initialLocation: '/',
     // refreshListenable: notifier,
-    redirect: (context, state) {
-      // final isGoingToLogin = state.subloc == '/login';
-      final isLoggedIn = notifier.isLoggedIn;
+    // redirect: (context, state) {
+    //   final isGoingToLogin = state.subloc == '/login';
+    //   final isLoggedIn = notifier.isLoggedIn;
 
-      // if (!isLoggedIn && !isGoingToLogin && !isDuplicate) {
-      // isDuplicate = true;
-      // return '/';
-      // }
-      if (isLoggedIn) {
-        // isDuplicate = true;
-        return '/connect';
-        // }
-        // if (isDuplicate) {
-        // isDuplicate = false;
-      } else {
-        return '/';
-      }
-      // return null;
-    },
+    //   if (!isLoggedIn && !isGoingToLogin && !isDuplicate) {
+    //     isDuplicate = true;
+    //     return '/';
+    //   }
+    //   if (isLoggedIn) {
+    //     isDuplicate = true;
+    //     return '/connect';
+    //   }
+    //   if (isDuplicate) {
+    //     isDuplicate = false;
+    //   } else {
+    //     return '/';
+    //   }
+    //   return null;
+    // },
     routes: [
       GoRoute(
         path: '/',

@@ -18,7 +18,7 @@ class Auth with ChangeNotifier {
   late final WebSocketChannel channel;
 
   final _secureStorage = const FlutterSecureStorage();
-  final String _loginRoute = '/api/v1/mobile/login';
+  final String _loginRoute = '/api/v1/mobile/token';
   final String _registerRoute = '/api/v1/mobile/register';
   final String _getRefreshToken = "/api/v1/mobile/refresh_token";
   final String ping = '/ping';
@@ -41,21 +41,27 @@ class Auth with ChangeNotifier {
     channel.sink.add("Hello, WebSocket!");
   }
 
+  void pushSocket(String str) {
+    devtools.log("Pushing: $str");
+    channel.sink.add(str);
+  }
+
   void closeSocket() {
     try {
       channel.sink.close();
     } catch (e) {
+      devtools.log("close error: $e");
       return;
     }
   }
 
   Future<bool> login(BuildContext context, String email, String pass) async {
-    var body = <String, String>{
+    var httpBody = <String, String>{
       'username': email,
       'password': pass,
     };
     try {
-      http.Response res = await loginReq(_loginRoute, body: body);
+      http.Response res = await loginReq(_loginRoute, body: httpBody);
       devtools.log("${res.statusCode}");
       devtools.log("${res.body}");
       if (res.statusCode == 200) {
@@ -63,7 +69,7 @@ class Auth with ChangeNotifier {
         // showAlertMassage(context, res.statusCode.toString());
         String? authType = body[env.tokenType];
         _setAccessToken("$authType ${body[env.accessToken]}");
-        _setRefreshToken("$authType ${body[env.refreshToken]}");
+        // _setRefreshToken("$authType ${body[env.refreshToken]}"); // TODO 401
         // _isLoggedIn = true;
         notifyListeners();
         return true;
@@ -99,7 +105,7 @@ class Auth with ChangeNotifier {
         // showAlertMassage(context, res.statusCode.toString());
         String? authType = body[env.tokenType];
         _setAccessToken("$authType ${body[env.accessToken]}");
-        _setRefreshToken("$authType ${body[env.refreshToken]}");
+        // _setRefreshToken("$authType ${body[env.refreshToken]}");
         // _isLoggedIn = true;
         notifyListeners();
         return true;
@@ -115,7 +121,10 @@ class Auth with ChangeNotifier {
   }
 
   Future<String?> getAccessToken() {
-    return _secureStorage.read(key: env.accessToken);
+    Future<String?> token = _secureStorage.read(key: env.accessToken);
+    devtools.log("read $token");
+    // return _secureStorage.read(key: env.accessToken);
+    return token;
   }
 
   Future<String?> getRefreshToken() {
@@ -123,6 +132,7 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> _setAccessToken(String token) {
+    devtools.log("setting $token");
     return _secureStorage.write(key: env.accessToken, value: token);
   }
 

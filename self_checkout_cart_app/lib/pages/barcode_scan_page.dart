@@ -1,10 +1,14 @@
+import 'dart:convert';
+// import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
+import 'package:self_checkout_cart_app/services/api.dart';
 import '../widgets/all_widgets.dart';
-import '../db/db_helper.dart';
-import '../models/cart_model.dart';
+// import '../db/db_helper.dart';
+// import '../models/cart_model.dart';
 import '../models/item_model.dart';
 import '../providers/cart_provider.dart';
 // import '../theme/themes.dart';
@@ -116,7 +120,6 @@ class BarcodeScannerPage extends ConsumerWidget {
     return WillPopScope(
       onWillPop: () async {
         cart.setCartState("active");
-        // return false;
         return true;
       },
       child: Scaffold(
@@ -148,15 +151,28 @@ class BarcodeScannerPage extends ConsumerWidget {
                     final addToCart = await showCustomBoolDialog(
                       context,
                       "Place item on scale",
-                      barCode,
+                      barCode.toString(),
                       "Add it",
                     );
                     if (addToCart) {
-                      //try: TODO endpoint try catch
-                      // item = {}
+                      var httpBody = <String, String>{
+                        'qrcode': barCode.toString(),
+                      };
                       // if success, add item to cart and exit refresh page
-                      // Cart.addItem();
-                      saveData(cart.counter);
+                      try {
+                        http.Response res = await postReq(
+                            '/api/v1/cart/connect',
+                            body: httpBody);
+                        devtools.log("code: ${res.statusCode}");
+                        if (res.statusCode == 200) {
+                          devtools.log("code: ${res.body}");
+                          final body =
+                              jsonDecode(res.body) as Map<String, dynamic>;
+                          cart.addItem(body['item']);
+                        }
+                      } catch (e) {
+                        devtools.log("$e");
+                      }
                       cart.setCartState("active");
                       context.goNamed(cartRoute);
                     } else {
