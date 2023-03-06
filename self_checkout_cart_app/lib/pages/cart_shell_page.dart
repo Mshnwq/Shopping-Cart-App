@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/all_widgets.dart';
+import '../services/socket.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CartShellPage extends ConsumerWidget {
@@ -16,14 +17,14 @@ class CartShellPage extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
     return WillPopScope(
       onWillPop: () async {
-        final shouldLogout = showCustomBoolDialog(
+        final shouldDisconnect = showCustomBoolDialog(
           context,
           "Disconnect Cart",
           "Are you Sure you want to disconnect this cart?",
           "Confirm",
         );
-        if (await shouldLogout) {
-          Auth().closeSocket(); //TODO DDD
+        if (await shouldDisconnect) {
+          // cart.clearSocket(); //TODO DDD
           context.goNamed(connectRoute);
         }
         return false;
@@ -34,7 +35,8 @@ class CartShellPage extends ConsumerWidget {
           child: AppBar(
             centerTitle: true,
             backgroundColor: Theme.of(context).backgroundColor,
-            title: Text('Cart ${cart.getCartState()} Mode',
+            // title: Text('Cart ${cart.getCartState()} Mode',
+            title: Text('Cart id# ${cart.id}',
                 style: const TextStyle(fontSize: 20)),
             actions: [
               Badge(

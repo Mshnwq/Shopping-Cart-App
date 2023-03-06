@@ -1,33 +1,33 @@
+import 'dart:convert';
+
 import 'package:go_router/go_router.dart';
-import '../services/auth.dart';
+import '../providers/cart_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import '../services/auth.dart';
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
 import '../services/env.dart' as env;
+import '../services/auth.dart';
+import '../services/socket.dart';
 import '../constants/routes.dart';
+import 'dart:developer' as devtools;
+import '../services/api.dart';
+import 'package:http/http.dart' as http;
 
-class ConnectPage extends StatefulWidget {
-  const ConnectPage({super.key});
+class ConnectPage extends ConsumerWidget {
+  ConnectPage({Key? key}) : super(key: key);
 
   @override
-  State<ConnectPage> createState() => _ConnectPageeState();
-}
-
-class _ConnectPageeState extends State<ConnectPage> {
-  @override
-  Widget build(BuildContext context) {
-    // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartProvider);
+    final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
         final shouldLogout = await showLogOutDialog(context);
         if (shouldLogout) {
-          // Auth().signOut();
+          auth.logout();
           context.goNamed(logoRoute);
-          // await FirebaseAuth.instance.signOut();
-          // Navigator.of(context).pushNamedAndRemoveUntil(
-          // loginRoute,
-          // (_) => false,
-          // );
         }
         return false;
       },
@@ -50,14 +50,38 @@ class _ConnectPageeState extends State<ConnectPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton(
-                // onPressed: () => GoRouter.of(context).pushNamed(qrScanRoute),
-                onPressed: () {
-                  Auth().establishWebSocket();
-                  context.goNamed(cartRoute);
-                  // context.goNamed(qrScanRoute);
+              InkWell(
+                onLongPress: () async {
+                  // TODO remove shortcut
+                  var httpBody = <String, String>{
+                    'qrcode': 'Welcome',
+                  };
+                  // if success, add item to cart and exit refresh page
+                  try {
+                    http.Response res = await auth
+                        .postAuthReq('/api/v1/cart/connect', body: httpBody);
+                    devtools.log("code: ${res.statusCode}");
+                    // if success, create cart
+                    if (res.statusCode == 200) {
+                      devtools.log("code: ${res.body}");
+                      final body = jsonDecode(res.body) as Map<String, dynamic>;
+                      cart.setID(body['id'].toString());
+                      cart.setSocket();
+                      context.goNamed(cartRoute);
+                    } else {
+                      devtools.log("code: before");
+                      cart.setSocket();
+                      devtools.log("code: after");
+                      context.goNamed(cartRoute);
+                    }
+                  } catch (e) {
+                    devtools.log("$e");
+                  }
                 },
-                child: const Text('Scan QR code'),
+                child: ElevatedButton(
+                  onPressed: () => context.goNamed(qrScanRoute),
+                  child: const Text('Scan QR code'),
+                ),
               ),
             ],
           ),

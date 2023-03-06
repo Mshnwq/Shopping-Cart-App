@@ -31,7 +31,7 @@ class CheckoutPage extends ConsumerWidget {
   // final GlobalKey _globalKey = GlobalKey();
   // Uint8List _imageFile;
 
-  //Create an instance of ScreenshotController
+  // Create an instance of ScreenshotController
   ScreenshotController screenshotController = ScreenshotController();
 
   @override

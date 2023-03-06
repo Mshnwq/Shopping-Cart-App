@@ -135,8 +135,9 @@ class _RegisterPageState extends State<RegisterPage> {
               final passwdConf = _passwdConf.text;
               try {
                 if (passwdConf == passwd) {
-                  bool isSuccess = await Auth().register(
-                      context, username, email, passwd); // TODO email message
+                  // bool isSuccess = await Auth().register(
+                  // context, username, email, passwd);
+                  bool isSuccess = true; // TODO email message
                   if (isSuccess) {
                     context.goNamed(connectRoute);
                   }

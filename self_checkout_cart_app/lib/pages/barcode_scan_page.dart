@@ -1,13 +1,12 @@
 import 'dart:convert';
-// import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:provider/provider.dart';
-import 'package:self_checkout_cart_app/services/api.dart';
 import '../widgets/all_widgets.dart';
 // import '../db/db_helper.dart';
+import '../services/api.dart';
+import 'package:http/http.dart' as http;
 // import '../models/cart_model.dart';
 import '../models/item_model.dart';
 import '../providers/cart_provider.dart';
@@ -15,7 +14,7 @@ import '../providers/cart_provider.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
 
-// QR code scanner imports
+// Barcode scanner imports
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/qrcode_scanner.dart';
 // import 'package:image_picker/image_picker.dart';
@@ -69,6 +68,7 @@ class BarcodeScannerPage extends ConsumerWidget {
     // final cart = Provider.of<CartProvider>(context);
     // ref.read(cartListProvider).getData();
     final cart = ref.watch(cartProvider);
+    // final api = ref.watch(apiProvider);
     // void saveData(int index) {
     //   dbHelper
     //       .insert(
@@ -138,50 +138,52 @@ class BarcodeScannerPage extends ConsumerWidget {
           alignment: Alignment.center,
           children: [
             MobileScanner(
-                allowDuplicates: true,
-                controller: scannerController.cameraController,
-                onDetect: (image, args) async {
-                  if (!_canScan) return;
-                  _canScan = false;
-                  String? barCode = image.rawValue;
-                  devtools.log(barCode.toString());
-                  if (barCode == "" || barCode == null) {
-                    return;
+              allowDuplicates: true,
+              controller: scannerController.cameraController,
+              onDetect: (image, args) async {
+                if (!_canScan) return;
+                _canScan = false;
+                String? barCode = image.rawValue;
+                devtools.log(barCode.toString());
+                if (barCode == "" || barCode == null) {
+                  return;
+                } else {
+                  final addToCart = await showCustomBoolDialog(
+                    context,
+                    "Place item on scale",
+                    barCode.toString(),
+                    "Add it",
+                  );
+                  if (addToCart) {
+                    var httpBody = <String, String>{
+                      'barcode': barCode.toString(),
+                    };
+                    // try {
+                    //   http.Response res = await api.postReq(
+                    //     '/api/v1/cart/barcode',
+                    //     body: httpBody,
+                    //   );
+                    //   devtools.log("code: ${res.statusCode}");
+                    //   // if success, add item to cart and exit refresh page
+                    //   if (res.statusCode == 200) {
+                    //     devtools.log("code: ${res.body}");
+                    //     final body =
+                    //         jsonDecode(res.body) as Map<String, dynamic>;
+                    //     cart.addItem(body['item']);
+                    //   }
+                    // } catch (e) {
+                    //   devtools.log("$e");
+                    // }
+                    cart.setCartState("active");
+                    context.goNamed(cartRoute);
                   } else {
-                    final addToCart = await showCustomBoolDialog(
-                      context,
-                      "Place item on scale",
-                      barCode.toString(),
-                      "Add it",
-                    );
-                    if (addToCart) {
-                      var httpBody = <String, String>{
-                        'qrcode': barCode.toString(),
-                      };
-                      // if success, add item to cart and exit refresh page
-                      try {
-                        http.Response res = await postReq(
-                            '/api/v1/cart/connect',
-                            body: httpBody);
-                        devtools.log("code: ${res.statusCode}");
-                        if (res.statusCode == 200) {
-                          devtools.log("code: ${res.body}");
-                          final body =
-                              jsonDecode(res.body) as Map<String, dynamic>;
-                          cart.addItem(body['item']);
-                        }
-                      } catch (e) {
-                        devtools.log("$e");
-                      }
-                      cart.setCartState("active");
-                      context.goNamed(cartRoute);
-                    } else {
-                      _canScan = true;
-                      cart.setCartState("active");
-                      GoRouter.of(context).pop();
-                    }
+                    _canScan = true;
+                    cart.setCartState("active");
+                    GoRouter.of(context).pop();
                   }
-                }),
+                }
+              },
+            ),
             Positioned(
               top: 100,
               child: Container(

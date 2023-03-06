@@ -10,31 +10,20 @@ import '../constants/routes.dart';
 // GlobalKey(debugLabel: 'shell');
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  bool isDuplicate = false;
   final notifier = ref.read(goRouterNotifierProvider);
 
   return GoRouter(
     // navigatorKey: _rootNavigator,
     initialLocation: '/',
-    // refreshListenable: notifier,
+    refreshListenable: notifier,
     // redirect: (context, state) {
-    //   final isGoingToLogin = state.subloc == '/login';
     //   final isLoggedIn = notifier.isLoggedIn;
 
-    //   if (!isLoggedIn && !isGoingToLogin && !isDuplicate) {
-    //     isDuplicate = true;
-    //     return '/';
-    //   }
     //   if (isLoggedIn) {
-    //     isDuplicate = true;
     //     return '/connect';
-    //   }
-    //   if (isDuplicate) {
-    //     isDuplicate = false;
     //   } else {
     //     return '/';
     //   }
-    //   return null;
     // },
     routes: [
       GoRoute(
@@ -55,12 +44,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: "/connect",
         name: connectRoute,
-        builder: (context, state) => const ConnectPage(),
+        builder: (context, state) => ConnectPage(),
         routes: [
           GoRoute(
             path: "QRscan",
             name: qrScanRoute,
-            builder: (context, state) => const QRScannerPage(),
+            builder: (context, state) => QRScannerPage(),
           ),
         ],
       ),
