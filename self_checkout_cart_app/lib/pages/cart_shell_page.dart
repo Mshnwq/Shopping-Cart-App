@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart';
 import '../services/auth.dart';
 import 'package:flutter/material.dart';
@@ -5,8 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/all_widgets.dart';
-import '../services/socket.dart';
+// import '../services/socket.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:developer' as devtools;
+import 'package:http/http.dart' as http;
 
 class CartShellPage extends ConsumerWidget {
   const CartShellPage({required this.child, Key? key}) : super(key: key);
@@ -15,6 +19,7 @@ class CartShellPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
+    final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
         final shouldDisconnect = showCustomBoolDialog(
@@ -24,8 +29,24 @@ class CartShellPage extends ConsumerWidget {
           "Confirm",
         );
         if (await shouldDisconnect) {
+          try {
+            http.Response res = await auth.postAuthReq(
+              '/api/v1/cart/disconnect',
+              // body: httpBody,
+            );
+            devtools.log("code: ${res.statusCode}");
+            if (res.statusCode == 200) {
+              devtools.log("code: ${res.body}");
+              // final body = jsonDecode(res.body) as Map<String, dynamic>;
+              // cart.setID(body['id'].toString());
+              // cart.setSocket();
+              // context.goNamed(cartRoute);
+              context.goNamed(connectRoute);
+            }
+          } catch (e) {
+            devtools.log("$e");
+          }
           // cart.clearSocket(); //TODO DDD
-          context.goNamed(connectRoute);
         }
         return false;
       },

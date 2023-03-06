@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 // import 'package:provider/provider.dart';
 import '../widgets/all_widgets.dart';
 // import '../db/db_helper.dart';
-import '../services/api.dart';
+// import '../services/api.dart';
+import '../services/auth.dart';
 import 'package:http/http.dart' as http;
 // import '../models/cart_model.dart';
 import '../models/item_model.dart';
@@ -68,7 +69,7 @@ class BarcodeScannerPage extends ConsumerWidget {
     // final cart = Provider.of<CartProvider>(context);
     // ref.read(cartListProvider).getData();
     final cart = ref.watch(cartProvider);
-    // final api = ref.watch(apiProvider);
+    final auth = ref.watch(authProvider);
     // void saveData(int index) {
     //   dbHelper
     //       .insert(
@@ -158,22 +159,24 @@ class BarcodeScannerPage extends ConsumerWidget {
                     var httpBody = <String, String>{
                       'barcode': barCode.toString(),
                     };
-                    // try {
-                    //   http.Response res = await api.postReq(
-                    //     '/api/v1/cart/barcode',
-                    //     body: httpBody,
-                    //   );
-                    //   devtools.log("code: ${res.statusCode}");
-                    //   // if success, add item to cart and exit refresh page
-                    //   if (res.statusCode == 200) {
-                    //     devtools.log("code: ${res.body}");
-                    //     final body =
-                    //         jsonDecode(res.body) as Map<String, dynamic>;
-                    //     cart.addItem(body['item']);
-                    //   }
-                    // } catch (e) {
-                    //   devtools.log("$e");
-                    // }
+                    try {
+                      devtools.log("barcode: $barCode.toString()}");
+                      http.Response res = await auth.postAuthReq(
+                        '/api/v1/item/add',
+                        body: httpBody,
+                      );
+                      devtools.log("code: ${res.statusCode}");
+                      // if success, add item to cart and exit refresh page
+                      if (res.statusCode == 200) {
+                        devtools.log("code: ${res.body}");
+                        final body =
+                            jsonDecode(res.body) as Map<String, dynamic>;
+                        // cart.addItem(body['item']);
+                        cart.addItem(products[cart.getCounter()]);
+                      }
+                    } catch (e) {
+                      devtools.log("$e");
+                    }
                     cart.setCartState("active");
                     context.goNamed(cartRoute);
                   } else {
