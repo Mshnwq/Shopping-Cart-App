@@ -47,8 +47,8 @@ class Auth with ChangeNotifier {
     try {
       // devtools.log("body ${httpBody.toString()}");
       http.Response res = await loginReq(_loginRoute, body: httpBody);
-      // devtools.log("${res.statusCode}");
-      // devtools.log("${res.body}");
+      devtools.log("${res.statusCode}");
+      devtools.log("${res.body}");
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         // showAlertMassage(context, res.statusCode.toString());

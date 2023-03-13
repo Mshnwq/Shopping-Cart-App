@@ -65,12 +65,13 @@ class ConnectPage extends ConsumerWidget {
                     if (res.statusCode == 200) {
                       devtools.log("code: ${res.body}");
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
+                      // cart.setID(body['id'].toString());
                       cart.setID(body['id'].toString());
-                      cart.setSocket();
+                      cart.setSocket(body['token'].toString());
                       context.goNamed(cartRoute);
                     } else {
                       devtools.log("code: before");
-                      cart.setSocket();
+                      // cart.setSocket(body['token'].toString());
                       devtools.log("code: after");
                       context.goNamed(cartRoute);
                     }

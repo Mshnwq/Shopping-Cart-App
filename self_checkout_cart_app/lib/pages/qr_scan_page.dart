@@ -88,7 +88,7 @@ class QRScannerPage extends ConsumerWidget {
                       devtools.log("code: ${res.body}");
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
                       cart.setID(body['id'].toString());
-                      cart.setSocket();
+                      cart.setSocket(body['token'].toString());
                       context.goNamed(cartRoute);
                     }
                   } catch (e) {

@@ -7,6 +7,7 @@ import '../models/item_model.dart';
 import '../services/socket.dart';
 import '../services/mqtt.dart';
 import 'dart:developer' as devtools;
+import '../services/env.dart' as env;
 
 final cartProvider = ChangeNotifierProvider.autoDispose((ref) => Cart());
 
@@ -52,9 +53,11 @@ class Cart with ChangeNotifier {
 
   // initialize cart MQTT subsciption
   final MQTTClient _cartSocket =
-      MQTTClient(brokerUrl: 'c', clientId: 'd', topic: 'd');
+      MQTTClient(brokerUrl: env.brokerURL, clientId: env.clientId);
+  // MQTTClient(brokerUrl: 'test.mosquitto.org', clientId: '');
   MQTTClient get cartSocket => _cartSocket;
-  void setSocket() => _cartSocket.subscribe();
+  void setSocket(String topic) => _cartSocket.subscribe(topic);
+  // void setSocket(String topic) => _cartSocket.connect();
 
   final List<Item> _items = [];
   List<Item> get items => _items;
@@ -71,10 +74,6 @@ class Cart with ChangeNotifier {
   String _id = 'doe';
   String get id => _id;
   void setID(String id) => _id = id;
-
-  // void initializeCart() {
-
-  // }
 
   void addItem(Item item) {
     _items.add(item);
@@ -160,6 +159,7 @@ class Cart with ChangeNotifier {
 
   @override
   void dispose() {
+    devtools.log('Disconnected');
     _cartSocket.disconnect();
     super.dispose();
   }
