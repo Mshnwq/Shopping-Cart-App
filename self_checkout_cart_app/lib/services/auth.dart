@@ -12,7 +12,8 @@ import '/services/secure.dart';
 import '../widgets/all_widgets.dart';
 import 'env.dart' as env;
 
-final authProvider = ChangeNotifierProvider((ref) => Auth());
+final authProvider = ChangeNotifierProvider.autoDispose((ref) => Auth());
+// final authProvider = ChangeNotifierProvider((ref) => Auth());
 
 class Auth with ChangeNotifier {
   // FirebaseAuth auth = FirebaseAuth.instance;

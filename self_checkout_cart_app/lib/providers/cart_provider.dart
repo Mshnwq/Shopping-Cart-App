@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart_model.dart';
 import '../models/item_model.dart';
 import '../services/socket.dart';
+import '../services/mqtt.dart';
 import 'dart:developer' as devtools;
 
 final cartProvider = ChangeNotifierProvider.autoDispose((ref) => Cart());
@@ -45,9 +46,15 @@ extension CartStateExtension on CartState {
 
 class Cart with ChangeNotifier {
   // initialize cart websocket
-  final SocketClient _cartSocket = SocketClient();
-  SocketClient get cartSocket => _cartSocket;
-  void setSocket() => _cartSocket.establishWebSocket();
+  // final SocketClient _cartSocket = SocketClient();
+  // SocketClient get cartSocket => _cartSocket;
+  // void setSocket() => _cartSocket.establishWebSocket();
+
+  // initialize cart MQTT subsciption
+  final MQTTClient _cartSocket =
+      MQTTClient(brokerUrl: 'c', clientId: 'd', topic: 'd');
+  MQTTClient get cartSocket => _cartSocket;
+  void setSocket() => _cartSocket.subscribe();
 
   final List<Item> _items = [];
   List<Item> get items => _items;
@@ -141,12 +148,19 @@ class Cart with ChangeNotifier {
   }
 
   void broadcastState() {
-    _cartSocket.pushSocket(_state.stateString);
+    _cartSocket.publish(_state.stateString);
+    // _cartSocket.pushSocket(_state.stateString);
   }
 
   // void clearCar
 
   bool isEmpty() {
     return _counter == 0;
+  }
+
+  @override
+  void dispose() {
+    _cartSocket.disconnect();
+    super.dispose();
   }
 }
