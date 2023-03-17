@@ -26,6 +26,8 @@ class Auth with ChangeNotifier {
   final String _registerRoute = '/api/v1/mobile/register';
   final String _refreshRoute = "/api/v1/mobile/refresh";
   final String ping = '/ping';
+  late String user_id;
+  late String username;
 
   // static final Auth _auth = Auth._internal();
 
@@ -52,6 +54,8 @@ class Auth with ChangeNotifier {
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         // showAlertMassage(context, res.statusCode.toString());
+        username = body['user']['username'];
+        user_id = body['user']['id'].toString();
         String? authType = body[env.tokenType];
         _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
         _secureStorage

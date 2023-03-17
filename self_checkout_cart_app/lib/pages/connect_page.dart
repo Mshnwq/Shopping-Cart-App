@@ -67,7 +67,7 @@ class ConnectPage extends ConsumerWidget {
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
                       // cart.setID(body['id'].toString());
                       cart.setID(body['id'].toString());
-                      cart.setSocket(body['token'].toString());
+                      cart.setSocket(auth.user_id, body['token'].toString());
                       context.goNamed(cartRoute);
                     } else {
                       devtools.log("code: before");

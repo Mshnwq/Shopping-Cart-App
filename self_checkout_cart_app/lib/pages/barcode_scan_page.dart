@@ -156,24 +156,26 @@ class BarcodeScannerPage extends ConsumerWidget {
                     "Add it",
                   );
                   if (addToCart) {
-                    var httpBody = <String, String>{
-                      'barcode': barCode.toString(),
-                    };
+                    // var httpBody = <String, String>{
+                    // 'barcode': barCode.toString(),
+                    // };
                     try {
                       devtools.log("barcode: $barCode.toString()}");
-                      http.Response res = await auth.postAuthReq(
-                        '/api/v1/item/add',
-                        body: httpBody,
-                      );
-                      devtools.log("code: ${res.statusCode}");
+                      cart.publishBarcode(barCode.toString());
+
+                      // http.Response res = await auth.postAuthReq(
+                      // '/api/v1/item/add',
+                      // body: httpBody,
+                      // );
+                      // devtools.log("code: ${res.statusCode}");
                       // if success, add item to cart and exit refresh page
-                      if (res.statusCode == 200) {
-                        devtools.log("code: ${res.body}");
-                        final body =
-                            jsonDecode(res.body) as Map<String, dynamic>;
-                        // cart.addItem(body['item']);
-                        cart.addItem(products[cart.getCounter()]);
-                      }
+                      // if (res.statusCode == 200) {
+                      // devtools.log("code: ${res.body}");
+                      // final body =
+                      // jsonDecode(res.body) as Map<String, dynamic>;
+                      // devtools.log(body['product']);
+                      // cart.addItem(products[cart.getCounter()]);
+                      // }
                     } catch (e) {
                       devtools.log("$e");
                     }

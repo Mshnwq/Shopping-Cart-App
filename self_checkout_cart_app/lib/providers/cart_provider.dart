@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:self_checkout_cart_app/services/auth.dart';
@@ -8,8 +10,14 @@ import '../services/socket.dart';
 import '../services/mqtt.dart';
 import 'dart:developer' as devtools;
 import '../services/env.dart' as env;
+import '../services/auth.dart';
 
 final cartProvider = ChangeNotifierProvider.autoDispose((ref) => Cart());
+
+// final secondProvider = Provider((ref) {
+//   final clientId = ref.watch(authProvider); // get the value of firstProvider
+//   return clientId;
+// });
 
 enum CartState {
   locked,
@@ -52,11 +60,18 @@ class Cart with ChangeNotifier {
   // void setSocket() => _cartSocket.establishWebSocket();
 
   // initialize cart MQTT subsciption
-  final MQTTClient _cartSocket =
-      MQTTClient(brokerUrl: env.brokerURL, clientId: env.clientId);
+  late MQTTClient _cartSocket;
+  // MQTTClient(brokerUrl: env.brokerURL, clientId: .user_id);
   // MQTTClient(brokerUrl: 'test.mosquitto.org', clientId: '');
-  MQTTClient get cartSocket => _cartSocket;
-  void setSocket(String topic) => _cartSocket.subscribe(topic);
+  // MQTTClient get cartSocket => _cartSocket;
+  void setSocket(String clientID, String topic) {
+    // ignore: no_leading_underscores_for_local_identifiers
+    _cartSocket = MQTTClient(
+        brokerUrl: env.brokerURL,
+        clientId: 'user-$clientID',
+        topic: '/cart/$topic');
+    // _cartSocket.subscribe();
+  }
   // void setSocket(String topic) => _cartSocket.connect();
 
   final List<Item> _items = [];
@@ -147,8 +162,19 @@ class Cart with ChangeNotifier {
   }
 
   void broadcastState() {
+    devtools.log('BROADCASTING STATE ${_state.stateString}');
     _cartSocket.publish(_state.stateString);
     // _cartSocket.pushSocket(_state.stateString);
+  }
+
+  void publishBarcode(String barcode) {
+    var publishBody = <String, dynamic>{
+      'mqtt_type': 'request_add_item',
+      'sender': _cartSocket.clientId,
+      'item_barcode': '123123',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+    _cartSocket.publish(json.encode(publishBody));
   }
 
   // void clearCar
