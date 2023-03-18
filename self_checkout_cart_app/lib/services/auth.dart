@@ -233,23 +233,23 @@ class Auth with ChangeNotifier {
 
   Future<http.Response> postAuthReq(String route,
       {Map<String, dynamic>? body, Map<String, dynamic>? header}) async {
-    devtools.log("Hello5,!");
+    // devtools.log("Hello5,!");
     String? token = await _secureStorage.getAccessToken();
-    devtools.log("ReeeeeeeEADDDD! $token");
+    // devtools.log("ReeeeeeeEADDDD! $token");
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
     // Map<String, String> authHeader = {
     //   HttpHeaders.authorizationHeader: token ?? "",
     //   ...?header
     // };
-    devtools.log("Hello11,!");
-    devtools.log(authHeader.toString());
+    // devtools.log("Hello11,!");
+    // devtools.log(authHeader.toString());
     try {
       http.Response res = await postReq(route, body: body, header: authHeader);
       // devtools.log("Hell ${res.body}");
       // devtools.log("Hell ${res.statusCode}");
       // devtools.log("Hello1,!");
       http.Response checkedRes = await checkToken(res);
-      devtools.log("Hello3,!");
+      // devtools.log("Hello3,!");
       return checkedRes;
     } catch (e) {
       throw Exception(e);

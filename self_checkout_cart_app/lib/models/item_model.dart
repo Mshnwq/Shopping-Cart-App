@@ -11,7 +11,7 @@ class Item {
       required this.unit,
       required this.price,
       required this.image});
-//TODO
+
   Map toJson() {
     return {
       'name': name,

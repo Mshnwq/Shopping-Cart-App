@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:badges/badges.dart';
 import '../services/auth.dart';
+import '../services/mqtt.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
@@ -20,6 +21,11 @@ class CartShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
+    final mqtt = ref.watch(mqttProvider);
+
+    // publush any Listened changes in the cartProvider
+    mqtt.publish(cart.state.stateString);
+
     return WillPopScope(
       onWillPop: () async {
         final shouldDisconnect = showCustomBoolDialog(
@@ -32,21 +38,15 @@ class CartShellPage extends ConsumerWidget {
           try {
             http.Response res = await auth.postAuthReq(
               '/api/v1/cart/disconnect',
-              // body: httpBody,
             );
             devtools.log("code: ${res.statusCode}");
             if (res.statusCode == 200) {
               devtools.log("code: ${res.body}");
-              // final body = jsonDecode(res.body) as Map<String, dynamic>;
-              // cart.setID(body['id'].toString());
-              // cart.setSocket();
-              // context.goNamed(cartRoute);
               context.goNamed(connectRoute);
             }
           } catch (e) {
             devtools.log("$e");
           }
-          // cart.clearSocket(); //TODO DDD
         }
         return false;
       },

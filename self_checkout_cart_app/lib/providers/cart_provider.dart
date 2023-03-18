@@ -55,24 +55,19 @@ extension CartStateExtension on CartState {
 
 class Cart with ChangeNotifier {
   // initialize cart websocket
-  // final SocketClient _cartSocket = SocketClient();
-  // SocketClient get cartSocket => _cartSocket;
-  // void setSocket() => _cartSocket.establishWebSocket();
+  // final SocketClient _cartMQTT = SocketClient();
+  // SocketClient get cartSocket => _cartMQTT;
+  // void setSocket() => _cartMQTT.establishWebSocket();
 
   // initialize cart MQTT subsciption
-  late MQTTClient _cartSocket;
-  // MQTTClient(brokerUrl: env.brokerURL, clientId: .user_id);
-  // MQTTClient(brokerUrl: 'test.mosquitto.org', clientId: '');
-  // MQTTClient get cartSocket => _cartSocket;
-  void setSocket(String clientID, String topic) {
-    // ignore: no_leading_underscores_for_local_identifiers
-    _cartSocket = MQTTClient(
-        brokerUrl: env.brokerURL,
-        clientId: 'user-$clientID',
-        topic: '/cart/$topic');
-    // _cartSocket.subscribe();
-  }
-  // void setSocket(String topic) => _cartSocket.connect();
+  // late MQTTClient _cartMQTT;
+  // void setSocket(String clientID, String topic) {
+  //   _cartMQTT = MQTTClient(
+  //       brokerUrl: env.brokerURL,
+  //       clientId: 'user-$clientID',
+  //       topic: '/cart/$topic');
+  // }
+  // final mqttService = context.read(mqttProvider);
 
   final List<Item> _items = [];
   List<Item> get items => _items;
@@ -99,7 +94,6 @@ class Cart with ChangeNotifier {
 
   void removeItem(Item item) {
     _items.remove(_items.firstWhere((element) => element.name == item.name));
-    // _items.remove(item);
     _counter--;
     _totalPrice -= item.price;
     notifyListeners();
@@ -126,8 +120,6 @@ class Cart with ChangeNotifier {
   }
 
   void setCartState(String state) {
-    // TODO to the soocket
-    // if success // TODO
     switch (state) {
       case 'locked':
         _state = CartState.locked;
@@ -158,23 +150,25 @@ class Cart with ChangeNotifier {
         notifyListeners();
         break;
     }
-    broadcastState();
+    // broadcastState();
   }
 
   void broadcastState() {
-    devtools.log('BROADCASTING STATE ${_state.stateString}');
-    _cartSocket.publish(_state.stateString);
-    // _cartSocket.pushSocket(_state.stateString);
+    // Publish the new state to the MQTT broker
+    // final mqttService = context.read(mqttProvider);
+    // mqtt.publishMessage(_state.stateString);
+    // devtools.log('BROADCASTING STATE ${_state.stateString}');
+    // _cartMQTT.publish(_state.stateString);
   }
 
   void publishBarcode(String barcode) {
-    var publishBody = <String, dynamic>{
-      'mqtt_type': 'request_add_item',
-      'sender': _cartSocket.clientId,
-      'item_barcode': '123123',
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    };
-    _cartSocket.publish(json.encode(publishBody));
+    // var publishBody = <String, dynamic>{
+    //   'mqtt_type': 'request_add_item',
+    //   'sender': _cartMQTT.clientId,
+    //   'item_barcode': '123123',
+    //   'timestamp': DateTime.now().millisecondsSinceEpoch,
+    // };
+    // _cartMQTT.publish(json.encode(publishBody));
   }
 
   // void clearCar
@@ -185,8 +179,8 @@ class Cart with ChangeNotifier {
 
   @override
   void dispose() {
-    devtools.log('Disconnected');
-    _cartSocket.disconnect();
+    devtools.log('Disconnected Cart');
+    // _cartMQTT.disconnect();
     super.dispose();
   }
 }

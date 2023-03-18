@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../services/auth.dart';
+import '../services/mqtt.dart';
 import '../services/api.dart';
 import '../providers/cart_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +45,7 @@ class QRScannerPage extends ConsumerWidget {
     // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
+    final mqtt = ref.watch(mqttProvider);
 
     return Scaffold(
       floatingActionButton: Column(
@@ -71,25 +73,30 @@ class QRScannerPage extends ConsumerWidget {
               if (qrCode == "" || qrCode == null) {
                 return;
               } else {
-                final connectCart = showQRDialog(context, qrCode);
-                if (await connectCart) {
+                final connectCart = await showQRDialog(context, qrCode);
+                if (connectCart) {
                   var httpBody = <String, String>{
                     'qrcode': qrCode.toString(),
                   };
-                  // if success, create cart
-                  devtools.log("qrcode: ${qrCode.toString()}");
+                  // devtools.log("qrcode: ${qrCode.toString()}");
                   try {
                     http.Response res = await auth.postAuthReq(
                       '/api/v1/cart/connect',
                       body: httpBody,
                     );
-                    devtools.log("code: ${res.statusCode}");
+                    // devtools.log("code: ${res.statusCode}");
+                    // if success, create cart
                     if (res.statusCode == 200) {
                       devtools.log("code: ${res.body}");
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
                       cart.setID(body['id'].toString());
-                      cart.setSocket(auth.user_id, body['token'].toString());
-                      context.goNamed(cartRoute);
+                      final mqttSuccess = await mqtt.establish(
+                          auth.user_id, body['token'].toString());
+                      if (mqttSuccess) {
+                        context.goNamed(cartRoute);
+                      } else {
+                        devtools.log("failed MQTT");
+                      }
                     }
                   } catch (e) {
                     devtools.log("$e");

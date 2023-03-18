@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 import '../services/env.dart' as env;
 import '../services/auth.dart';
-import '../services/socket.dart';
+import '../services/mqtt.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
 import '../services/api.dart';
@@ -21,6 +21,7 @@ class ConnectPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
+    final mqtt = ref.watch(mqttProvider);
     final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
@@ -67,8 +68,13 @@ class ConnectPage extends ConsumerWidget {
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
                       // cart.setID(body['id'].toString());
                       cart.setID(body['id'].toString());
-                      cart.setSocket(auth.user_id, body['token'].toString());
-                      context.goNamed(cartRoute);
+                      final mqttSuccess = await mqtt.establish(
+                          auth.user_id, body['token'].toString());
+                      if (mqttSuccess) {
+                        context.goNamed(cartRoute);
+                      } else {
+                        devtools.log("failed MQTT");
+                      }
                     } else {
                       devtools.log("code: before");
                       // cart.setSocket(body['token'].toString());
