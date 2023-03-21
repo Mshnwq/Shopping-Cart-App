@@ -12,17 +12,6 @@ import 'dart:developer' as devtools;
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
-//   @override
-//   State<CartPage> createState() => _CartPageState();
-// }
-
-// class _CartPageState extends State<CartPage> {
-  // late final TextEditingController _searchText;
-
-  // @override
-  // void initState() {
-  // super.initState();
-  // _searchText = TextEditingController();
   static const List<Item> products = [
     Item(
         name: 'Apple',
@@ -66,9 +55,8 @@ class CartPage extends ConsumerWidget {
             context.pushNamed(barcodeRoute),
           },
           backgroundColor:
-              Color.fromARGB(255, 10, 119, 14), //icon inside button
-          child: Icon(Icons.queue),
-          // child: Icon(Icons.add),
+              const Color.fromARGB(255, 10, 119, 14), //icon inside button
+          child: const Icon(Icons.queue),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -78,7 +66,6 @@ class CartPage extends ConsumerWidget {
           Expanded(
             child: Consumer(
               builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                // final cart = ref.watch(cartProvider);
                 if (cart.isEmpty()) {
                   return const Center(
                       child: Text(

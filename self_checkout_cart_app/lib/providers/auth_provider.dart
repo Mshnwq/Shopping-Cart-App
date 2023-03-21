@@ -2,18 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:developer' as devtools show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web_socket_channel/status.dart' as status;
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import '/services/api.dart';
-// import '/services/socket.dart';
 import '/services/secure.dart';
 import '../widgets/all_widgets.dart';
-import 'env.dart' as env;
+import '../services/env.dart' as env;
 
 final authProvider = ChangeNotifierProvider.autoDispose((ref) => Auth());
-// final authProvider = ChangeNotifierProvider((ref) => Auth());
 
 class Auth with ChangeNotifier {
   // FirebaseAuth auth = FirebaseAuth.instance;
@@ -233,41 +228,32 @@ class Auth with ChangeNotifier {
 
   Future<http.Response> postAuthReq(String route,
       {Map<String, dynamic>? body, Map<String, dynamic>? header}) async {
-    // devtools.log("Hello5,!");
     String? token = await _secureStorage.getAccessToken();
-    // devtools.log("ReeeeeeeEADDDD! $token");
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
-    // Map<String, String> authHeader = {
-    //   HttpHeaders.authorizationHeader: token ?? "",
-    //   ...?header
-    // };
-    // devtools.log("Hello11,!");
-    // devtools.log(authHeader.toString());
     try {
       http.Response res = await postReq(route, body: body, header: authHeader);
-      // devtools.log("Hell ${res.body}");
-      // devtools.log("Hell ${res.statusCode}");
-      // devtools.log("Hello1,!");
       http.Response checkedRes = await checkToken(res);
-      // devtools.log("Hello3,!");
       return checkedRes;
     } catch (e) {
       throw Exception(e);
     }
   }
 
-  Future<http.Response> getAuthReq(String route,
-      {Map<String, dynamic>? header}) async {
-    Map<String, String> authHeader = {
-      HttpHeaders.authorizationHeader:
-          await _secureStorage.getAccessToken() ?? "",
-      ...?header
-    };
+  Future<http.Response> getAuthReq(String route, {Map<String, dynamic>? header})
+  // async {
+  // Map<String, String> authHeader = {
+  //   HttpHeaders.authorizationHeader:
+  //       await _secureStorage.getAccessToken() ?? "",
+  //   ...?header
+  // };
+  async {
+    String? token = await _secureStorage.getAccessToken();
+    Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
     try {
       http.Response res = await getReq(route, header: authHeader);
-      devtools.log("Hello1,!");
+      devtools.log("Hell ${res.body}");
+      devtools.log("Hell ${res.statusCode}");
       http.Response checkedRes = await checkToken(res);
-      devtools.log("Hello2,!");
       return checkedRes;
     } catch (e) {
       throw Exception(e);

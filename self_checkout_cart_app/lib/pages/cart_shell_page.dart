@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:badges/badges.dart';
-import '../services/auth.dart';
-import '../services/mqtt.dart';
+import '../providers/mqtt_provider.dart';
+import '../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
@@ -39,9 +39,8 @@ class CartShellPage extends ConsumerWidget {
             http.Response res = await auth.postAuthReq(
               '/api/v1/cart/disconnect',
             );
-            devtools.log("code: ${res.statusCode}");
             if (res.statusCode == 200) {
-              devtools.log("code: ${res.body}");
+              mqtt.disconnect();
               context.goNamed(connectRoute);
             }
           } catch (e) {
@@ -57,7 +56,7 @@ class CartShellPage extends ConsumerWidget {
             centerTitle: true,
             backgroundColor: Theme.of(context).backgroundColor,
             // title: Text('Cart ${cart.getCartState()} Mode',
-            title: Text('Cart id# ${cart.id}',
+            title: Text('Cart id# ${cart.id}, ${cart.state.stateString}',
                 style: const TextStyle(fontSize: 20)),
             actions: [
               Badge(

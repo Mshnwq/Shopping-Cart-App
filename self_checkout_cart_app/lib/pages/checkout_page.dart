@@ -8,6 +8,8 @@ import '../constants/routes.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/cart_provider.dart';
 import '../providers/receipt_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/mqtt_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -19,9 +21,6 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pdf_w;
 
-// import 'dart:typed_data';
-// import 'dart:io';
-// import 'dart:ui' as ui;
 import 'dart:developer' as devtools;
 
 import 'cart_page.dart';
@@ -37,17 +36,20 @@ class CheckoutPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
-    final receipt = ref.watch(receiptKeyProvider);
+    final auth = ref.watch(authProvider);
+    final mqtt = ref.watch(mqttProvider);
+    final receipt = ref.watch(receiptProvider);
+
     return WillPopScope(
       onWillPop: () async {
-        final shouldLogout = showCustomBoolDialog(
+        final shouldDisconnect = showCustomBoolDialog(
           context,
           "Disconnect Cart",
           "Are you Sure you want to disconnect this cart?",
           "Confirm",
         );
-        if (await shouldLogout) {
-          // Auth().closeSocket(); //TODO DDD
+        if (await shouldDisconnect) {
+          mqtt.disconnect();
           context.goNamed(connectRoute);
         }
         return false;
@@ -58,7 +60,8 @@ class CheckoutPage extends ConsumerWidget {
           child: AppBar(
             centerTitle: true,
             backgroundColor: Theme.of(context).backgroundColor,
-            title: Text('Thank You {_user}', style: TextStyle(fontSize: 20)),
+            title: Text('Thank You {$auth.username}',
+                style: TextStyle(fontSize: 20)),
             actions: [
               Badge(
                 badgeContent: Text(

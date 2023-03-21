@@ -1,32 +1,21 @@
-import 'dart:math';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../services/auth.dart';
+import '../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import '../theme/themes.dart';
 import '../constants/routes.dart';
 import '../widgets/all_widgets.dart';
 import 'dart:developer' as devtools show log;
-import '/services/env.dart' as env;
 
 class LoginPage extends ConsumerStatefulWidget {
-// class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
-  // const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
-  // State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-// class _LoginPageState extends State<LoginPage> {
   // controller objects that connect between button and text field
-  // late final TextEditingController _email = TextEditingController();
   late final TextEditingController _email;
-  // late final TextEditingController _passwd = TextEditingController();
   late final TextEditingController _passwd;
 
   @override
@@ -46,15 +35,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Widget build(BuildContext context, WidgetRef ref) {
-    // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
     final auth = ref.watch(authProvider);
     return Scaffold(
       appBar: AppBar(
-        // backgroundColor: appTheme.green,
         title: const Text("Self Check Out Cart"),
       ),
-      // body: showPage(context)
       body:
           //   child: FutureBuilder(
           //     future: Firebase.initializeApp(

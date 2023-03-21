@@ -1,104 +1,15 @@
-// import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
-
-// import '../../constants/routes.dart';
-// import 'all_widgets.dart';
-
-// class BottomNavBar extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return BottomAppBar(
-//       // return Container(
-//       //   height: 50,
-//       //   decoration: const BoxDecoration(
-//       //     color: Colors.green,
-//       //     borderRadius: BorderRadius.only(
-//       //       topLeft: Radius.circular(30),
-//       //       bottomLeft: Radius.circular(30),
-//       //       topRight: Radius.circular(30),
-//       //       bottomRight: Radius.circular(30),
-//       //     ),
-//       //   ),
-//       color: Colors.green,
-//       shape: CircularNotchedRectangle(), //shape of notch
-//       notchMargin: 5, //notche margin between floating button and bottom appbar
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceAround,
-//         children: <Widget>[
-//           IconButton(
-//             enableFeedback: false,
-//             onPressed: () {
-//               // context.goNamed(cartRoute);
-//             },
-//             icon: const Icon(
-//               Icons.receipt_long,
-//               color: Colors.white,
-//               size: 35,
-//             ),
-//           ),
-//           IconButton(
-//             enableFeedback: false,
-//             onPressed: () {
-//               context.goNamed(prodDirRoute);
-//             },
-//             icon: const Icon(
-//               Icons.find_in_page_outlined,
-//               color: Colors.white,
-//               size: 35,
-//             ),
-//           ),
-//           IconButton(
-//             enableFeedback: false,
-//             onPressed: () {},
-//             icon: const Icon(
-//               Icons.shopping_cart_checkout,
-//               color: Colors.green,
-//               size: 1,
-//             ),
-//           ),
-//           IconButton(
-//             enableFeedback: false,
-//             onPressed: () {
-//               showSuccussSnackBar(context);
-//             },
-//             icon: const Icon(
-//               Icons.live_help_outlined,
-//               color: Colors.white,
-//               size: 35,
-//             ),
-//           ),
-//           IconButton(
-//             enableFeedback: false,
-//             onPressed: () async {
-//               final shouldCheckout = showCustomBoolDialog(
-//                 context,
-//                 "Checkout Cart",
-//                 "Are you Sure you want to checkout?",
-//                 "Confirm Checkout",
-//               );
-//               if (await shouldCheckout) {
-//                 context.goNamed(checkoutRoute);
-//               }
-//             },
-//             icon: const Icon(
-//               Icons.shopping_cart_checkout,
-//               color: Colors.white,
-//               size: 35,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import '../providers/cart_provider.dart';
+import '../providers/receipt_provider.dart';
+import '../providers/auth_provider.dart';
+import 'package:http/http.dart' as http;
 import '../constants/routes.dart';
 import 'all_widgets.dart';
-// import '/dashboard_controller.dart';
+import 'dart:developer' as devtools show log;
 
 class BottomNavigationWidget extends ConsumerStatefulWidget {
   const BottomNavigationWidget({Key? key}) : super(key: key);
@@ -113,6 +24,9 @@ class _BottomNavigationWidgetState
   @override
   Widget build(BuildContext context) {
     final position = ref.watch(dashboardControllerProvider);
+    // final cart = ref.watch(cartProvider);
+    // final receipt = ref.watch(receiptProvider);
+    // final auth = ref.watch(authProvider);
 
     return BottomNavigationBar(
       // backgroundColor: Colors.blueGrey,
@@ -190,17 +104,42 @@ class _BottomNavigationWidgetState
         "Confirm Checkout",
       );
       if (shouldCheckout) {
-        context.goNamed(checkoutRoute);
-        // ref.read(dashboardControllerProvider.notifier).setPosition(index);
-        ref.read(dashboardControllerProvider.notifier).setPosition(index);
+        try {
+          http.Response httpRes =
+              await ref.watch(authProvider).getAuthReq('api/v1/bill/secret');
+          if (httpRes.statusCode == 200) {
+            final body = json.decode(httpRes.body);
+            ref.watch(receiptProvider).setText(body.toString());
+            ref.watch(cartProvider).setCartState('checkout');
+            context.goNamed(checkoutRoute);
+          } else {
+            throw Exception(httpRes.statusCode.toString());
+          }
+        } catch (e) {
+          bool isRetry = await showCustomBoolDialog(
+            context,
+            "Server error",
+            "$e",
+            "Retry",
+          );
+          if (isRetry) {
+            ref.watch(cartProvider).setCartState("active");
+            context.goNamed(cartRoute);
+          } else {
+            ref.watch(cartProvider).setCartState("active");
+            context.goNamed(cartRoute);
+          }
+        }
       }
     } else {
       ref.read(dashboardControllerProvider.notifier).setPosition(index);
       switch (index) {
         case 0:
+          ref.watch(cartProvider).setCartState('active');
           context.goNamed(cartRoute);
           break;
         case 1:
+          ref.watch(cartProvider).setCartState('active');
           context.goNamed(prodDirRoute);
           break;
         case 2:

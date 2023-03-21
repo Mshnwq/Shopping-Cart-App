@@ -13,30 +13,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ProductDirectoryPage extends ConsumerWidget {
   ProductDirectoryPage({super.key});
 
-  // DBHelper? dbHelper = DBHelper();
-  // List<bool> tapped = [];
   late final TextEditingController searchText = TextEditingController();
-
-  // @override
-  // void initState() {
-  // super.initState();
-  // _searchText = TextEditingController();
-  // context.read<CartProvider>().getData();
-  // }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // final cart = ref.watch(cartProvider);
     // final searchText = ref.watch(searchTextProvider);
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        //Floating action button on Scaffold
-        onPressed: () => GoRouter.of(context).pushNamed(barcodeRoute),
-        // child: Icon(Icons.add),
-        backgroundColor: const Color.fromARGB(255, 10, 119, 14),
-        child: const Icon(Icons.queue), //icon inside button
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButton: FloatingActionButton(
+      //   //Floating action button on Scaffold
+      //   onPressed: () => GoRouter.of(context).pushNamed(barcodeRoute),
+      //   // child: Icon(Icons.add),
+      //   backgroundColor: const Color.fromARGB(255, 10, 119, 14),
+      //   child: const Icon(Icons.queue), //icon inside button
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       //floating action button position to center
       body: Padding(
         padding: const EdgeInsets.only(top: 10, right: 10, left: 10),

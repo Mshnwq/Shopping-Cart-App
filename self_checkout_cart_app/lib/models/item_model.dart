@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Item {
   final String name;
   final String unit;
-  final int price;
+  final double price;
   final String image;
 
   const Item(

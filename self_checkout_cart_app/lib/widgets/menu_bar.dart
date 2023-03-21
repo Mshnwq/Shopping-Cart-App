@@ -1,13 +1,10 @@
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
-import '../models/item_model.dart';
-import '../providers/cart_provider.dart';
 import '../theme/theme_controller.dart';
-import '../services/auth.dart';
+import '../providers/mqtt_provider.dart';
+import '../providers/auth_provider.dart';
 import 'alert_dialogs.dart';
 import 'dart:developer' as devtools;
 
@@ -16,7 +13,6 @@ class MenuBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeModeProvider);
-    final cart = ref.watch(cartProvider);
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -46,9 +42,7 @@ class MenuBar extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onLongPress: () => {
-              //TODO hhhhhhhh
-            },
+            onLongPress: () => {},
             onTap: () => {},
           ),
           ListTile(
@@ -62,13 +56,9 @@ class MenuBar extends ConsumerWidget {
             onTap: () async {
               final shouldLogout = await showLogOutDialog(context);
               if (shouldLogout) {
+                ref.read(mqttProvider).disconnect();
                 // Auth().signOut();
                 context.goNamed(logoRoute);
-                // await FirebaseAuth.instance.signOut();
-                // Navigator.of(context).pushNamedAndRemoveUntil(
-                // loginRoute,
-                // (_) => false,
-                // );
               }
             },
           ),

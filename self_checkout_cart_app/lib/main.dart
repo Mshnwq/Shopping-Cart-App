@@ -1,15 +1,13 @@
 // import 'services/auth.dart';
-import 'package:self_checkout_cart_app/pages/all_pages.dart';
-import 'package:self_checkout_cart_app/services/auth.dart';
+import '../pages/all_pages.dart';
+import '../providers/auth_provider.dart';
 
 import 'theme/theme_controller.dart';
 import 'theme/color_themes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
 import 'route/go_router_provider.dart';
 
-// void main() async {
 void main() {
   // Ensure initialization of WidgetsBinding,
   // which is required to use platform channels to call the native code.
@@ -20,32 +18,10 @@ void main() {
   // );
   // Check if the user is already logged in
   // await Auth().checkIfLoggedIn();
-  // Providers for managing app state (shared state)
-  // runApp(
-  //   MultiProvider(
-  //     providers: [
-  //       ChangeNotifierProvider<ThemeProvider>(
-  //         create: (_) => ThemeProvider(MyDarkTheme()),
-  //       ),
-  //       ChangeNotifierProvider<ThemeController>(
-  //         create: (_) => ThemeController(),
-  //       ),
-  //       ChangeNotifierProvider<CartProvider>(
-  //         create: (_) => CartProvider(),
-  //       ),
-  //       // ChangeNotifierProvider<UserProvider>(
-  //       //   create: (_) => UserProvider(),
-  //       // )
-  //     ],
-  //     child: ProviderScope(child: App()),
-  //   ),
-  // );
 }
 
 class MyApp extends ConsumerStatefulWidget {
-// class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  // const MyApp({Key? key}) : super(key: key);
 
   @override
   ConsumerState<MyApp> createState() => _MyAppState();
@@ -57,18 +33,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
-    // final auth = ref.watch(authProvider);
 
-    // return MaterialApp(
-    // title: 'Flutter Demo',
-    // debugShowCheckedModeBanner: false,
-    // theme: ThemeData(
-    // primarySwatch: Colors.indigo,
-    // ),
-    // home: const LoginPage(),
-    // home: const AuthScreen(),
-    // home: AuthScreen(),
-    // );
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routeInformationParser: router.routeInformationParser,

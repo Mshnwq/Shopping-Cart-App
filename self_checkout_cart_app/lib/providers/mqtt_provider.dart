@@ -4,14 +4,12 @@ import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:developer' as devtools;
-import 'env.dart' as env;
+import '../services/env.dart' as env;
 
-final mqttProvider = ChangeNotifierProvider((ref) => MQTT());
+final mqttProvider = ChangeNotifierProvider.autoDispose((ref) => MQTT());
 
 class MQTT extends ChangeNotifier {
   // class variables
@@ -21,18 +19,12 @@ class MQTT extends ChangeNotifier {
   late MqttServerClient _client;
   int _pongCount = 0; // Pong counter
   late mqtt.MqttConnectionState _connectionState;
+
   late StreamController<String> _messageController;
-  // String _latestMessage = '';
   Stream<String> get onMessage => _messageController.stream;
-  // Stream<String> _latestMessage = Stream.fromIterable(''.split(''));
 
   String get clientId => _clientId;
   String get topic => _topic;
-  // String get latestMessage => _latestMessage;
-  // Stream<String> get latestMessage {
-  //   devtools.log("GETTING $_latestMessage");
-  //   return _latestMessage.stream;
-  // }
 
   Future<bool> establish(
     String clientId,
@@ -93,13 +85,10 @@ class MQTT extends ChangeNotifier {
         .withWillQos(mqtt.MqttQos.atLeastOnce);
     _client.connectionMessage = connMessage;
     devtools.log('Mosquitto client connecting....');
-    // connect();
-    // }
 
     /// Connect the client, any errors here are communicated by raising of the appropriate exception. Note
     /// in some circumstances the broker will just disconnect us, see the spec about this, we however will
     /// never send malformed messages.
-    // void connect() async {
     try {
       await _client.connect();
       devtools.log('CONNECT SUCCESS');
@@ -130,11 +119,12 @@ class MQTT extends ChangeNotifier {
 
   /// The unsolicited disconnect callback
   Future<void> disconnect() async {
-    _client.disconnect();
-    // _latestMessage = '';
-    _messageController.close();
-    // _latestMessage = Stream.fromIterable(''.split(''));
-    notifyListeners();
+    if (_connectionState == mqtt.MqttConnectionState.connected) {
+      _client.disconnect();
+      _messageController.close();
+    } else {
+      devtools.log('Already disconnected');
+    }
   }
 
   /// The unsolicited disconnect callback
@@ -177,11 +167,8 @@ class MQTT extends ChangeNotifier {
           devtools.log(e.toString());
         }
       });
-
-      // _latestMessage = payload;
-      // notifyListeners();
     } else {
-      devtools.log('NOT SUBSCRIPED to $_topic');
+      devtools.log('NOT SUBSCRIBED to $_topic');
     }
   }
 
@@ -215,5 +202,11 @@ class MQTT extends ChangeNotifier {
     } else {
       devtools.log('Pong count is incorrect, expected 3. actual $_pongCount');
     }
+  }
+
+  @override
+  void dispose() {
+    devtools.log('Disconnecting MQTT');
+    super.dispose();
   }
 }

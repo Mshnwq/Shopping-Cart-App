@@ -1,23 +1,13 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:self_checkout_cart_app/services/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/cart_model.dart';
+// import '../models/cart_model.dart';
 import '../models/item_model.dart';
-import '../services/socket.dart';
-import '../services/mqtt.dart';
+// import '../providers/mqtt_provider.dart';
+// import '../providers/auth_provider.dart';
 import 'dart:developer' as devtools;
-import '../services/env.dart' as env;
-import '../services/auth.dart';
 
 final cartProvider = ChangeNotifierProvider.autoDispose((ref) => Cart());
-
-// final secondProvider = Provider((ref) {
-//   final clientId = ref.watch(authProvider); // get the value of firstProvider
-//   return clientId;
-// });
 
 enum CartState {
   locked,
@@ -26,7 +16,7 @@ enum CartState {
   weighing,
   alarm,
   error,
-  // abandoned,
+  checkout,
   paid,
 }
 
@@ -45,6 +35,8 @@ extension CartStateExtension on CartState {
         return 'Alarm';
       case CartState.paid:
         return 'Paid';
+      case CartState.checkout:
+        return 'Checkout';
       case CartState.error:
         return 'Error';
       default:
@@ -54,21 +46,6 @@ extension CartStateExtension on CartState {
 }
 
 class Cart with ChangeNotifier {
-  // initialize cart websocket
-  // final SocketClient _cartMQTT = SocketClient();
-  // SocketClient get cartSocket => _cartMQTT;
-  // void setSocket() => _cartMQTT.establishWebSocket();
-
-  // initialize cart MQTT subsciption
-  // late MQTTClient _cartMQTT;
-  // void setSocket(String clientID, String topic) {
-  //   _cartMQTT = MQTTClient(
-  //       brokerUrl: env.brokerURL,
-  //       clientId: 'user-$clientID',
-  //       topic: '/cart/$topic');
-  // }
-  // final mqttService = context.read(mqttProvider);
-
   final List<Item> _items = [];
   List<Item> get items => _items;
 
@@ -145,33 +122,16 @@ class Cart with ChangeNotifier {
         _state = CartState.paid;
         notifyListeners();
         break;
+      case 'checkout':
+        _state = CartState.checkout;
+        notifyListeners();
+        break;
       default:
         _state = CartState.error;
         notifyListeners();
         break;
     }
-    // broadcastState();
   }
-
-  void broadcastState() {
-    // Publish the new state to the MQTT broker
-    // final mqttService = context.read(mqttProvider);
-    // mqtt.publishMessage(_state.stateString);
-    // devtools.log('BROADCASTING STATE ${_state.stateString}');
-    // _cartMQTT.publish(_state.stateString);
-  }
-
-  void publishBarcode(String barcode) {
-    // var publishBody = <String, dynamic>{
-    //   'mqtt_type': 'request_add_item',
-    //   'sender': _cartMQTT.clientId,
-    //   'item_barcode': '123123',
-    //   'timestamp': DateTime.now().millisecondsSinceEpoch,
-    // };
-    // _cartMQTT.publish(json.encode(publishBody));
-  }
-
-  // void clearCar
 
   bool isEmpty() {
     return _counter == 0;
@@ -179,8 +139,7 @@ class Cart with ChangeNotifier {
 
   @override
   void dispose() {
-    devtools.log('Disconnected Cart');
-    // _cartMQTT.disconnect();
+    devtools.log('Disconnecting Cart');
     super.dispose();
   }
 }

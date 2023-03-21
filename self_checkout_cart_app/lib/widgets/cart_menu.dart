@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/all_widgets.dart';
 import '../constants/routes.dart';
-import '../services/auth.dart';
+import '../providers/cart_provider.dart';
+import '../providers/mqtt_provider.dart';
+import '../providers/receipt_provider.dart';
+import '../providers/auth_provider.dart';
+import 'package:http/http.dart' as http;
 
 enum _MenuValues { disconnect, checkout, print }
 
@@ -114,11 +120,39 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
               "Confirm Checkout",
             );
             if (await shouldCheckout) {
-              ref.read(dashboardControllerProvider.notifier).setPosition(3);
-              context.goNamed(checkoutRoute);
+              try {
+                http.Response httpRes = await ref
+                    .watch(authProvider)
+                    .getAuthReq('api/v1/bill/secret');
+                if (httpRes.statusCode == 200) {
+                  final body = json.decode(httpRes.body);
+                  ref.watch(receiptProvider).setText(body.toString());
+                  ref.watch(cartProvider).setCartState('checkout');
+                  context.goNamed(checkoutRoute);
+                } else {
+                  throw Exception(httpRes.statusCode.toString());
+                }
+              } catch (e) {
+                bool isRetry = await showCustomBoolDialog(
+                  context,
+                  "Server error",
+                  "$e",
+                  "Retry",
+                );
+                if (isRetry) {
+                  ref.watch(cartProvider).setCartState("active");
+                  context.goNamed(cartRoute);
+                } else {
+                  ref.watch(cartProvider).setCartState("active");
+                  context.goNamed(cartRoute);
+                }
+              }
             }
             break;
           case _MenuValues.print:
+            print("print"); //TODO
+            print("print"); //TODO
+            print("print"); //TODO
             print("print"); //TODO
             break;
           case _MenuValues.disconnect:
@@ -129,7 +163,7 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
               "Confirm",
             );
             if (await shouldLogout) {
-              // Auth().closeSocket(); //TODO DDD
+              ref.read(mqttProvider).disconnect();
               context.goNamed(connectRoute);
             }
         }

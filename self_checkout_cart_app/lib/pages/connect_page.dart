@@ -3,16 +3,12 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../services/auth.dart';
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-import '../services/env.dart' as env;
-import '../services/auth.dart';
-import '../services/mqtt.dart';
+import '../providers/mqtt_provider.dart';
+import '../providers/auth_provider.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
-import '../services/api.dart';
 import 'package:http/http.dart' as http;
 
 class ConnectPage extends ConsumerWidget {
@@ -40,7 +36,7 @@ class ConnectPage extends ConsumerWidget {
             backgroundColor: Theme.of(context).backgroundColor,
             // backgroundColor: appTheme.green,
             title: Text(
-              'Welcome {\$_username}',
+              'Welcome ${auth.username}',
               style: Theme.of(context).textTheme.titleLarge,
               // style: appTheme.setButtonTextStyle(22, 1.5),
             ),

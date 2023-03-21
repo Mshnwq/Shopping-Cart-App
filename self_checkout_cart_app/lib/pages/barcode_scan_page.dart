@@ -3,17 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:provider/provider.dart';
 import '../widgets/all_widgets.dart';
-// import '../db/db_helper.dart';
-// import '../services/api.dart';
-import '../services/auth.dart';
-import '../services/mqtt.dart';
+import '../providers/mqtt_provider.dart';
+import '../providers/auth_provider.dart';
+
 import 'package:http/http.dart' as http;
-// import '../models/cart_model.dart';
 import '../models/item_model.dart';
 import '../providers/cart_provider.dart';
-// import '../theme/themes.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
 
@@ -29,6 +25,7 @@ class BarcodeScannerPage extends ConsumerWidget {
   ScannerController scannerController = ScannerController();
 
   bool _canScan = true;
+  bool _awaitMqtt = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,14 +47,6 @@ class BarcodeScannerPage extends ConsumerWidget {
       child: Scaffold(
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
-          // children: [
-          //   FunctionBar(
-          //     scannerController: scannerController,
-          //   ),
-          //   const SizedBox(
-          //     height: 100,
-          //   ),
-          // ],
         ),
         body: Stack(
           alignment: Alignment.center,
@@ -89,88 +78,109 @@ class BarcodeScannerPage extends ConsumerWidget {
                       'timestamp': DateTime.now().millisecondsSinceEpoch
                     };
                     try {
+                      _awaitMqtt = true;
                       // Publish the message
                       mqtt.publish(json.encode(publishBody));
-
                       // Wait for the response message
-                      StreamSubscription subscription;
                       devtools.log("subscribing");
-                      subscription = mqtt.onMessage.listen((message) {
-                        // Handle the message as desired
-                        // if (message != null) {
+                      StreamSubscription subscription =
+                          mqtt.onMessage.listen((message) {
                         completer.complete(message);
-                        // }
-                        // } else {
-                        // }
+                        _awaitMqtt = false;
+                        devtools.log("waiting done");
                       });
-                      // subscription.cancel();
-
                       devtools.log("waiting");
                       // Wait for the completer to complete
-                      final mqtt_response = json.decode(await completer.future);
+                      final mqttResponse = json.decode(await completer.future);
                       // Handle the message as desired
-                      devtools.log("RESPONSE: $mqtt_response");
-
-                      if (mqtt_response['status'] == 'success') {
-                        http.Response http_res = await auth.postAuthReq(
-                          '/api/v1/item/add',
-                          body: <String, dynamic>{
-                            'barcode': barCode.toString()
-                          },
-                        );
-                        devtools.log("code: ${http_res.statusCode}");
+                      subscription.cancel();
+                      devtools.log("waiting done");
+                      _awaitMqtt = false;
+                      // devtools.log("RESPONSE: $mqttResponse");
+                      if (mqttResponse['status'] == 'success') {
+                        devtools.log("HERE_11");
+                        // http.Response httpRes = await auth.postAuthReq(
+                        //   '/api/v1/item/add',
+                        //   body: <String, dynamic>{
+                        //     'barcode': barCode.toString()
+                        //   },
+                        // );
+                        // devtools.log("code: ${httpRes.statusCode}");
                         // if success, add item to cart and exit refresh page
-                        if (http_res.statusCode == 200) {
-                          // if (true) {
-                          Item item = mqtt_response;
+                        // if (httpRes.statusCode == 200) {
+                        if (true) {
+                          var product = mqttResponse['product'];
+                          devtools.log("$product");
+                          Item item = Item(
+                              name: product['en_name'],
+                              unit: 'Kg',
+                              price: product['price'],
+                              image:
+                                  'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
+                          // image: product['img_link']);
+
                           cart.addItem(item);
+                          cart.setCartState("active");
                           context.goNamed(cartRoute);
-                        } else {
-                          devtools.log("code: HERE");
-                          bool isRetry = await showCustomBoolDialog(
-                            context,
-                            "Server error",
-                            "Please try again",
-                            "retry",
-                          );
-                          if (isRetry) {
-                            _canScan = true;
-                          } else {
-                            _canScan = true;
-                            cart.setCartState("active");
-                            GoRouter.of(context).pop();
-                          }
                         }
-                      } else if (mqtt_response['status'] == 'scale_fail') {
+                      } else if (mqttResponse['status'] == 'scale_fail') {
                         bool isRetry = await showCustomBoolDialog(
                             context,
                             "Failed to add item",
                             "Make sure item is placed correctly on scale",
-                            "retry");
+                            "Retry");
                         if (isRetry) {
                           _canScan = true;
                         } else {
-                          _canScan = true;
                           cart.setCartState("active");
                           GoRouter.of(context).pop();
                         }
-                      } else if (mqtt_response['status'] == 'item_not_found') {
-                        showAlertMassage(context,
-                            "This item is not in our database try your luck with another item");
-                        cart.setCartState("active");
-                        context.goNamed(cartRoute);
+                      } else if (mqttResponse['status'] == 'item_not_found') {
+                        devtools.log("HERE_4");
+                        bool isRetry = await showCustomBoolDialog(
+                          context,
+                          "Item Not Found",
+                          "This item is not in our database try your luck with another item",
+                          "Ok",
+                        );
+                        if (isRetry) {
+                          cart.setCartState("active");
+                          context.goNamed(cartRoute);
+                        } else {
+                          cart.setCartState("active");
+                          context.goNamed(cartRoute);
+                        }
                       } else {
-                        showAlertMassage(context, "ERROR!");
-                        cart.setCartState("active");
-                        context.goNamed(cartRoute);
+                        bool isRetry = await showCustomBoolDialog(
+                          context,
+                          "ERROR",
+                          "Unexpexted error has occured",
+                          "Ok",
+                        );
+                        if (isRetry) {
+                          cart.setCartState("active");
+                          context.goNamed(cartRoute);
+                        } else {
+                          cart.setCartState("active");
+                          context.goNamed(cartRoute);
+                        }
                       }
                     } catch (e) {
                       devtools.log("$e");
+                      bool isRetry = await showCustomBoolDialog(
+                        context,
+                        "Server error",
+                        "$e",
+                        "Retry",
+                      );
+                      if (isRetry) {
+                        _canScan = true;
+                      } else {
+                        cart.setCartState("active");
+                        GoRouter.of(context).pop();
+                      }
                     }
-                    cart.setCartState("active");
-                    context.goNamed(cartRoute);
                   } else {
-                    _canScan = true;
                     cart.setCartState("active");
                     GoRouter.of(context).pop();
                   }
@@ -181,17 +191,24 @@ class BarcodeScannerPage extends ConsumerWidget {
               top: 100,
               child: Container(
                 decoration: BoxDecoration(
-                    color: Color.fromARGB(85, 94, 238, 101),
+                    color: const Color.fromARGB(85, 94, 238, 101),
                     borderRadius: BorderRadius.circular(20)),
                 width: 300,
                 height: 40,
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Scan an prodcut barcode",
-                    style: TextStyle(
-                        // color: appTheme.textColor,
-                        ),
+                    style: TextStyle(),
                   ),
+                ),
+              ),
+            ),
+            Visibility(
+              visible: _awaitMqtt,
+              child: Container(
+                color: Colors.white.withOpacity(0.8),
+                child: const Center(
+                  child: CircularProgressIndicator(),
                 ),
               ),
             ),
@@ -199,13 +216,5 @@ class BarcodeScannerPage extends ConsumerWidget {
         ),
       ),
     );
-    // }
-    // return const CircularProgressIndicator();
-    // },
-    // );
-  }
-
-  void allowScan() {
-    _canScan = true;
   }
 }

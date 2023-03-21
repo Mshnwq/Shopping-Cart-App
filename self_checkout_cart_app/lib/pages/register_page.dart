@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-// import '../theme/themes.dart';
-import '../pages/all_pages.dart';
 import '../models/custom_exceptions.dart';
-import '../services/auth.dart';
 import '../widgets/all_widgets.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import '../firebase_options.dart';
-import 'package:provider/provider.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
 

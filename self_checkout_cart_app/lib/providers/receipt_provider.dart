@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final receiptKeyProvider = ChangeNotifierProvider((ref) => Receipt());
+final receiptProvider = ChangeNotifierProvider((ref) => Receipt());
 
 class Receipt with ChangeNotifier {
-  String? _text = 'Hi 123';
+  String? _text = 'Error';
   String? get text => _text;
 
   bool _toggle = false;
