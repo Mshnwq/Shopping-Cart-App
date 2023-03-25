@@ -132,7 +132,7 @@ class MQTT extends ChangeNotifier {
     // devtools.log('PUBLISHING $message');
     int id = _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
         mqtt.MqttClientPayloadBuilder().addString(message).payload!);
-    // devtools.log('it got id $id');
+    devtools.log('it got id $id');
   }
 
   /// Subscribe to the topic of interest
@@ -154,6 +154,14 @@ class MQTT extends ChangeNotifier {
           // devtools.log('DECODING RESPONSE');
           var res = jsonDecode(payload);
           if (res['mqtt_type'] == "response_add_item") {
+            // add message to stream
+            // devtools.log('ADDING TO STREAM');
+            _messageController.add(payload);
+          } else {
+            devtools.log('');
+            // devtools.log("NOT FOR US");
+          }
+          if (res['mqtt_type'] == "alarm_detection") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
             _messageController.add(payload);

@@ -24,7 +24,13 @@ class CartShellPage extends ConsumerWidget {
     final mqtt = ref.watch(mqttProvider);
 
     // publush any Listened changes in the cartProvider
-    mqtt.publish(cart.state.stateString);
+    var publishBody = <String, dynamic>{
+      'mqtt_type': 'update_status',
+      'sender': mqtt.clientId,
+      'status': cart.state.stateString,
+      'timestamp': DateTime.now().millisecondsSinceEpoch
+    };
+    mqtt.publish(json.encode(publishBody));
 
     return WillPopScope(
       onWillPop: () async {

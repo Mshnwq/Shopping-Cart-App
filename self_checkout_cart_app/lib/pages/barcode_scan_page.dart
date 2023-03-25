@@ -69,13 +69,14 @@ class BarcodeScannerPage extends ConsumerWidget {
                     "Add it",
                   );
                   if (addToCart) {
+                    var timestamp = DateTime.now().millisecondsSinceEpoch;
                     // build publish body
                     var publishBody = <String, dynamic>{
                       'mqtt_type': 'request_add_item',
                       'sender': mqtt.clientId,
                       'item_barcode': '123123',
                       // 'item_barcode': barCode.toString(),
-                      'timestamp': DateTime.now().millisecondsSinceEpoch
+                      'timestamp': timestamp
                     };
                     try {
                       _awaitMqtt = true;
@@ -99,10 +100,11 @@ class BarcodeScannerPage extends ConsumerWidget {
                       // devtools.log("RESPONSE: $mqttResponse");
                       if (mqttResponse['status'] == 'success') {
                         devtools.log("HERE_11");
-                        // http.Response httpRes = await auth.postAuthReq(
-                        //   '/api/v1/item/add',
+                        // http.Response http_res = await auth.postAuthReq(
+                        //   '/api/v1/item/confirm_mqtt',
                         //   body: <String, dynamic>{
-                        //     'barcode': barCode.toString()
+                        //     'timestamp': timestamp,
+                        //     'confirm_type': 'request_add_item',
                         //   },
                         // );
                         // devtools.log("code: ${httpRes.statusCode}");
@@ -128,6 +130,18 @@ class BarcodeScannerPage extends ConsumerWidget {
                             context,
                             "Failed to add item",
                             "Make sure item is placed correctly on scale",
+                            "Retry");
+                        if (isRetry) {
+                          _canScan = true;
+                        } else {
+                          cart.setCartState("active");
+                          GoRouter.of(context).pop();
+                        }
+                      } else if (mqttResponse['status'] == 'acce_fail') {
+                        bool isRetry = await showCustomBoolDialog(
+                            context,
+                            "Failed to add item",
+                            "Make sure cart is not moving",
                             "Retry");
                         if (isRetry) {
                           _canScan = true;
