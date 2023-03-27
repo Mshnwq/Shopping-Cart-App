@@ -1,44 +1,37 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from window import Ui_MainWindow
-from mettalum import Metallum_Worker
-from excel import XSL_Worker
-from youtube import Youtube_Worker
-from folder import Folder_Worker
+import ctypes
+import json
+import os
+import platform
+import sys
 from functools import partial
-import time, sys, importlib, os, platform, ctypes
 
-fileDirectory = os.path.dirname(__file__)
-# import all UI
-package = 'UI'
-__ui__ = dict()
-# for file_name in os.listdir(f"{fileDirectory}\\{package}"):
-#     if file_name.endswith('.py') and file_name.startswith('Ui_') and file_name != '__init__.py':
-#         module_name = file_name[:-3]
-#         # print(f"{module_name[3:]}")
-#         __ui__[module_name[3:]] = importlib.import_module(
-#             f"{package}.{module_name}", '.')
-        
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
+
+from window import Ui_MainWindow
+from Workers import Payment_Worker, Receipt_Worker
+
+
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.setWindowIcon(QIcon(":SCFS"))
         if platform.system() == 'Windows':
-            myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                myappid) # type: ignore
         elif platform.system() == 'Linux':
             ...
         else:
             print(f"Taskbar Icon not supported in {platform.system()} OS")
 
-        self.setWindowTitle("My Metallum")
+        self.setWindowTitle("My Cashier")
 
         # initialize the ui
         self.init_ui()
-    
-    def init_ui(self):
+
+    def init_ui(self) -> None:
 
         # Window Setup
         self.ui = Ui_MainWindow()
@@ -47,57 +40,100 @@ class MainWindow(QMainWindow):
 
         ''' Button Events '''
         self.ui.extract_event_signal.connect(
-                            partial(self.handle_extract_event))
-        self.ui.youtube_event_signal.connect(
-                            partial(self.handle_youtube_event))
-        self.ui.folder_event_signal .connect(
-                            partial(self.handle_folder_event))
-        self.ui.excel_event_signal  .connect(
-                            partial(self.handle_excel_event))
+            partial(self.handle_extract_receipt_event))
+        self.ui.payment_event_signal.connect(
+            partial(self.handle_payment_event))
+        self.ui.excel_event_signal.connect(
+            partial(self.handle_excel_event))
+        
+        # disable buttons until extract is done
+        self.ui.excel_button.setDisabled(True) 
+        # self.ui.payment_button.setDisabled(True) 
 
-    def handle_extract_event(self):
-        data = [['Setting of the Sun', 'Demo', '2015'], ['Their Malice, Intertwines.', 'Compilation', '2018'], ['Sepitus / Spleen', 'Split', '2019']]
-        self.ui.update_table(data)
-        return
-        _query = self.ui.search_input.text()
-        if _query == '':
-            print("empty")
-            return
-        print(_query)
-        metallum_worker = Metallum_Worker(_query)
-        metallum_worker.albums_json_signal.connect(
-                            partial(self.on_extract_finish, metallum_worker))
-        metallum_worker.start()
+    def handle_extract_receipt_event(self) -> None:
+        # create worker and connect slots
+        receipt_worker = Receipt_Worker() 
+        receipt_worker.response_signal.connect(
+            partial(self.on_extract_receipt_finish, receipt_worker))
+        receipt_worker.error_signal.connect(
+            partial(self.status_code))
+        receipt_worker.start()
         ...
 
-    def on_extract_finish(self, worker, albums,):
+    def on_extract_receipt_finish(self, worker, receipt_dict) -> None:
         worker.terminate()
-        print("DONE")
-        data = self.store_albums(albums)
-        print(data)
-        self.ui.update_table(data)
+        self._receipt = receipt_dict['id']
+        # TODO list comprehension
+        self.ui.update_table(receipt_dict)
+        # enable action buttons
+        self.ui.excel_button.setDisabled(False) 
+        self.ui.statusbar.showMessage('extract receipt finished')
         ...
 
-    def store_albums(self, albums: dict):
-        self.all_albums_dict = albums
-        # print(self.all_albums_dict)
-        self.all_albums_list = []
-        all_albums = albums['albums']
-        for album in all_albums:
-            self.all_albums_list.append([album['name'], album['type'], album['year']])
-        return self.all_albums_list
-
-    def handle_excel_event(self):
-        xsl_worker = XSL_Worker()
+    def handle_payment_event(self) -> None:
+        # create worker and connect slots
+        receipt_worker = Payment_Worker(self._receipt)
+        receipt_worker.success_signal.connect(
+            partial(self.on_payment_finish, receipt_worker))
+        receipt_worker.error_signal.connect(
+            partial(self.status_code))
+        receipt_worker.start()
         ...
 
-    def handle_youtube_event(self):
-        youtube_worker = Youtube_Worker()
+    def on_payment_finish(self, worker) -> None:
+        worker.terminate()
+        dialog = QMessageBox()
+        dialog.setWindowTitle("Error!")
+        dialog.setText("Select entires from table")
+        #TODO my icon
+        # dialog.setIcon()
+        dialog.exec_()
+        # enable action buttons
+        self.ui.statusbar.showMessage('payment finished')
+        self.ui.payment_button.setDisabled(True) 
         ...
 
-    def handle_folder_event(self):
-        selected = self.ui.get_table_selected()
-        # folder_worker = Folder_Worker()
+    def handle_excel_event(self) -> None:
+        # get the selected albums to save and filter them
+        table_selected = self.ui.get_table_selected()
+        if len(table_selected) == 0:
+            self.throw_dialog()
+            return None
+        _selected = self.filter_albums(table_selected)
+        # Use QFileDialog to prompt the user for a excel file
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self,
+            "QFileDialog.getOpenFileName()", "",
+            "Text Files (*.xlsx);;All Files (*)", options=options)
+        if file_name == '':
+            return None
+        # create worker and connect slots
+        # excel_worker = Excel_Worker(file_name, _selected)
+        # excel_worker.done_signal.connect(
+        #     partial(self.on_excel_finish, excel_worker))
+        # excel_worker.start()
+        ...
+
+    def on_excel_finish(self, worker) -> None:
+        worker.terminate()
+        self.ui.statusbar.showMessage('excel work finished')
+        ...
+
+    def status_code(self, code, body):
+        dialog = QMessageBox()
+        dialog.setText(f"{code}!")
+        dialog.setWindowTitle("Error!")
+        dialog.setInformativeText(f'{body}')
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.setStandardButtons(QMessageBox.Retry|QMessageBox.Cancel)
+        dialog.exec_()
+
+    def throw_dialog(self) -> None:
+        dialog = QMessageBox()
+        dialog.setWindowTitle("Error!")
+        dialog.setText("Select entires from table")
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.exec_()
         ...
 
 

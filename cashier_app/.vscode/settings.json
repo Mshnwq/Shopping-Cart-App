@@ -1,4 +1,13 @@
 {
     "files.autoSave":"afterDelay",
     "files.autoSaveDelay": 2000,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+    },
+    "python.linting.enabled": true,
+    "python.analysis.typeCheckingMode": "off",
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#006423",
+        "titleBar.activeForeground": "#e6e2e2",
+    },
 }
