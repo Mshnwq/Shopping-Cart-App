@@ -111,9 +111,9 @@ class CheckoutPage extends ConsumerWidget {
                                 child: QrImage(
                                   eyeStyle: const QrEyeStyle(
                                       color: Colors.black,
-                                      eyeShape: QrEyeShape.circle),
+                                      eyeShape: QrEyeShape.square),
                                   dataModuleStyle: const QrDataModuleStyle(
-                                      dataModuleShape: QrDataModuleShape.circle,
+                                      dataModuleShape: QrDataModuleShape.square,
                                       color: Colors.black),
                                   data: receipt.text ?? "Null",
                                   version: QrVersions.auto,
