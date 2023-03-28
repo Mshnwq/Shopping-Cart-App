@@ -20,8 +20,11 @@ class MQTT extends ChangeNotifier {
   int _pongCount = 0; // Pong counter
   late mqtt.MqttConnectionState _connectionState;
 
-  late StreamController<String> _messageController;
-  Stream<String> get onMessage => _messageController.stream;
+  late StreamController<String> _itemMessageController;
+  Stream<String> get onItemMessage => _itemMessageController.stream;
+
+  late StreamController<String> _alarmMessageController;
+  Stream<String> get onAlarmMessage => _alarmMessageController.stream;
 
   String get clientId => _clientId;
   String get topic => _topic;
@@ -94,8 +97,9 @@ class MQTT extends ChangeNotifier {
       devtools.log('CONNECT SUCCESS');
       _connectionState = _client.connectionStatus!.state;
       await subscribe();
-      // create message stream controller
-      _messageController = StreamController<String>.broadcast();
+      // create message stream controllers
+      _itemMessageController = StreamController<String>.broadcast();
+      _alarmMessageController = StreamController<String>.broadcast();
       return true;
     } on mqtt.NoConnectionException catch (e) {
       // Raised by the client when connection fails.
@@ -121,7 +125,8 @@ class MQTT extends ChangeNotifier {
   Future<void> disconnect() async {
     if (_connectionState == mqtt.MqttConnectionState.connected) {
       _client.disconnect();
-      _messageController.close();
+      _itemMessageController.close();
+      _alarmMessageController.close();
     } else {
       devtools.log('Already disconnected');
     }
@@ -156,15 +161,15 @@ class MQTT extends ChangeNotifier {
           if (res['mqtt_type'] == "response_add_item") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
-            _messageController.add(payload);
+            _itemMessageController.add(payload);
           } else {
             devtools.log('');
             // devtools.log("NOT FOR US");
           }
           if (res['mqtt_type'] == "alarm_detection") {
             // add message to stream
-            // devtools.log('ADDING TO STREAM');
-            _messageController.add(payload);
+            devtools.log('ADDING ALARM TO STREAM');
+            _alarmMessageController.add(payload);
           } else {
             devtools.log('');
             // devtools.log("NOT FOR US");

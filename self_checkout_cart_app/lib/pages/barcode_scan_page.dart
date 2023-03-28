@@ -85,7 +85,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                       // Wait for the response message
                       devtools.log("subscribing");
                       StreamSubscription subscription =
-                          mqtt.onMessage.listen((message) {
+                          mqtt.onItemMessage.listen((message) {
                         completer.complete(message);
                         _awaitMqtt = false;
                         devtools.log("waiting done");
