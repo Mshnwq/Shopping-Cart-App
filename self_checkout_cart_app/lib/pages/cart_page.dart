@@ -3,41 +3,43 @@ import 'package:go_router/go_router.dart';
 import '../models/item_model.dart';
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
-import '../models/cart_model.dart';
 import '../providers/cart_provider.dart';
 import '../constants/routes.dart';
+import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:developer' as devtools;
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
-  static const List<Item> products = [
-    Item(
-        name: 'Apple',
-        unit: 'Kg',
-        price: 20,
-        image:
-            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-    Item(
-        name: 'Mango',
-        unit: 'Doz',
-        price: 30,
-        image:
-            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-    Item(
-        name: 'Banana',
-        unit: 'Doz',
-        price: 10,
-        image:
-            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-    Item(
-        name: 'Organg',
-        unit: 'Kg',
-        price: 15,
-        image:
-            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-  ];
+  // static const List<Item> products = [
+  //   Item(
+  //       name: 'Apple',
+  //       unit: 'Kg',
+  //       price: 20,
+  //       image:
+  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+  //   Item(
+  //       name: 'Mango',
+  //       unit: 'Doz',
+  //       price: 30,
+  //       image:
+  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+  //   Item(
+  //       name: 'Banana',
+  //       unit: 'Doz',
+  //       price: 10,
+  //       image:
+  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+  //   Item(
+  //       barcode: '123',
+  //       name: 'Organg',
+  //       unit: 'Kg',
+  //       price: 15,
+  //       image:
+  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+  // ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,13 +48,20 @@ class CartPage extends ConsumerWidget {
       floatingActionButton: InkWell(
         splashColor: Colors.blue,
         onLongPress: () {
-          cart.addItem(products[cart.getCounter()]);
+          // cart.addItem(products[cart.getCounter()]);
         },
         child: FloatingActionButton(
           //Floating action button on Scaffold
           onPressed: () => {
             cart.setCartState("weighing"),
-            context.pushNamed(barcodeRoute),
+            context.pushNamed(
+              barcodeRoute,
+              params: {
+                'action': 'add',
+                'index': '-1',
+                'barcodeToRead': 'null',
+              },
+            ),
           },
           backgroundColor:
               const Color.fromARGB(255, 10, 119, 14), //icon inside button
@@ -91,8 +100,8 @@ class CartPage extends ConsumerWidget {
                                 width: 80,
                                 image:
                                     NetworkImage(cart.getItems()[index].image),
+                                // MemoryImage(cart.getItems()[index].image),
                               ),
-                              // Image.network(cart.getItems()[index].image),
                               SizedBox(
                                 width: 130,
                                 child: Column(
@@ -162,7 +171,18 @@ class CartPage extends ConsumerWidget {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  cart.removeItem(cart.getItems()[index]);
+                                  // cart.removeItem(cart.getItems()[index]);
+                                  // cart.removeItem(cart.getItems()[index]);
+                                  cart.setCartState("weighing");
+                                  context.pushNamed(
+                                    barcodeRoute,
+                                    params: {
+                                      'action': 'remove',
+                                      'index': '$index',
+                                      'barcodeToRead':
+                                          cart.getItems()[index].barcode,
+                                    },
+                                  );
                                 },
                                 icon: const Icon(Icons.delete),
                               ),

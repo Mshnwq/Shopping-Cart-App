@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,11 +34,19 @@ class BarcodeScannerPage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
     final completer = Completer<String>();
+
     // StreamSubscription subscription;
 
     // return StreamBuilder<String>(
     // stream: mqtt.onMessage,
     // builder: (context, snapshot) {
+
+    final Map<String, String> args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+
+    String action = args['action']!;
+    var index = int.parse(args['index']!);
+    String barcodeToRead = args['barcodeToRead']!;
 
     return WillPopScope(
       onWillPop: () async {
@@ -62,141 +71,182 @@ class BarcodeScannerPage extends ConsumerWidget {
                 if (barCode == "" || barCode == null) {
                   return;
                 } else {
-                  final addToCart = await showCustomBoolDialog(
-                    context,
-                    "Place item on scale",
-                    barCode.toString(),
-                    "Add it",
-                  );
-                  if (addToCart) {
-                    var timestamp = DateTime.now().millisecondsSinceEpoch;
-                    // build publish body
-                    var publishBody = <String, dynamic>{
-                      'mqtt_type': 'request_add_item',
-                      'sender': mqtt.clientId,
-                      'item_barcode': '123123',
-                      // 'item_barcode': barCode.toString(),
-                      'timestamp': timestamp
-                    };
-                    try {
-                      _awaitMqtt = true;
-                      // Publish the message
-                      mqtt.publish(json.encode(publishBody));
-                      // Wait for the response message
-                      devtools.log("subscribing");
-                      StreamSubscription subscription =
-                          mqtt.onItemMessage.listen((message) {
-                        completer.complete(message);
-                        _awaitMqtt = false;
+                  bool isValidBarcode;
+                  if (action == 'add') {
+                    isValidBarcode = true;
+                  } else {
+                    isValidBarcode = barcodeToRead == barCode;
+                  }
+                  if (isValidBarcode) {
+                    final addToCart = await showCustomBoolDialog(
+                      context,
+                      "Place item on scale",
+                      barCode.toString(),
+                      "Add it",
+                    );
+                    if (addToCart) {
+                      var timestamp = DateTime.now().millisecondsSinceEpoch;
+                      // build publish body
+                      var publishBody = <String, dynamic>{
+                        'mqtt_type': 'request_${action}_item',
+                        'sender': mqtt.clientId,
+                        // 'item_barcode': '123123',
+                        'item_barcode': barCode.toString(),
+                        'timestamp': timestamp
+                      };
+                      try {
+                        _awaitMqtt = true;
+                        // Publish the message
+                        mqtt.publish(json.encode(publishBody));
+                        // Wait for the response message
+                        devtools.log("subscribing");
+                        StreamSubscription subscription =
+                            mqtt.onItemMessage.listen((message) {
+                          completer.complete(message);
+                          _awaitMqtt = false;
+                          devtools.log("waiting done");
+                        });
+                        devtools.log("waiting");
+                        // Wait for the completer to complete
+                        final mqttResponse =
+                            json.decode(await completer.future);
+                        // Handle the message as desired
+                        subscription.cancel();
                         devtools.log("waiting done");
-                      });
-                      devtools.log("waiting");
-                      // Wait for the completer to complete
-                      final mqttResponse = json.decode(await completer.future);
-                      // Handle the message as desired
-                      subscription.cancel();
-                      devtools.log("waiting done");
-                      _awaitMqtt = false;
-                      // devtools.log("RESPONSE: $mqttResponse");
-                      if (mqttResponse['status'] == 'success') {
-                        devtools.log("HERE_11");
-                        // http.Response http_res = await auth.postAuthReq(
-                        //   '/api/v1/item/confirm_mqtt',
-                        //   body: <String, dynamic>{
-                        //     'timestamp': timestamp,
-                        //     'confirm_type': 'request_add_item',
-                        //   },
-                        // );
-                        // devtools.log("code: ${httpRes.statusCode}");
-                        // if success, add item to cart and exit refresh page
-                        // if (httpRes.statusCode == 200) {
-                        if (true) {
-                          var product = mqttResponse['product'];
-                          devtools.log("$product");
-                          Item item = Item(
-                              name: product['en_name'],
-                              unit: 'Kg',
-                              price: product['price'],
-                              image:
-                                  'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
-                          // image: product['img_link']);
-
-                          cart.addItem(item);
-                          cart.setCartState("active");
-                          context.goNamed(cartRoute);
-                        }
-                      } else if (mqttResponse['status'] == 'scale_fail') {
-                        bool isRetry = await showCustomBoolDialog(
+                        _awaitMqtt = false;
+                        // devtools.log("RESPONSE: $mqttResponse");
+                        if (mqttResponse['status'] == 'success') {
+                          devtools.log("HERE_11");
+                          http.Response httpRes = await auth.postAuthReq(
+                            '/api/v1/item/${action}_item',
+                            body: <String, dynamic>{
+                              'barcode': barCode.toString(),
+                              'timestamp': timestamp,
+                            },
+                          );
+                          // http.Response imageRes = await auth.postAuthReq(
+                          //   '/api/v1/item/get_image',
+                          //   body: <String, dynamic>{
+                          //     'barcode': barCode.toString(),
+                          //   },
+                          // );
+                          devtools.log("code: ${httpRes.statusCode}");
+                          // if success, add item to cart and exit refresh page
+                          if (httpRes.statusCode == 200) {
+                            // if (true) {
+                            if (action == 'add') {
+                              var product =
+                                  json.decode(httpRes.body)['product'];
+                              devtools.log("$product");
+                              // var blob = json.decode(imageRes.body)['img_link'];
+                              // Uint8List productImage;
+                              // if (blob != null) {
+                              // Only decode if blob is not null to prevent crashes
+                              // productImage = base64.decode(blob);
+                              // } else {
+                              // TODO Empty
+                              // productImage = base64.decode(blob);
+                              // }
+                              Item item = Item(
+                                  barcode: product['barcode'],
+                                  name: product['en_name'],
+                                  unit: 'Kg',
+                                  price: product['price'],
+                                  image:
+                                      'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
+                              // image: productImage);
+                              cart.addItem(item);
+                            } else {
+                              cart.removeItem(cart.getItems()[index]);
+                            }
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          }
+                        } else if (mqttResponse['status'] == 'scale_fail') {
+                          bool isRetry = await showCustomBoolDialog(
+                              context,
+                              "Failed to $action item",
+                              "Make sure item is placed correctly on scale",
+                              "Retry");
+                          if (isRetry) {
+                            _canScan = true;
+                          } else {
+                            cart.setCartState("active");
+                            GoRouter.of(context).pop();
+                          }
+                        } else if (mqttResponse['status'] == 'acce_fail') {
+                          bool isRetry = await showCustomBoolDialog(
+                              context,
+                              "Failed to $action item",
+                              "Make sure cart is not moving",
+                              "Retry");
+                          if (isRetry) {
+                            _canScan = true;
+                          } else {
+                            cart.setCartState("active");
+                            GoRouter.of(context).pop();
+                          }
+                        } else if (mqttResponse['status'] == 'item_not_found') {
+                          devtools.log("HERE_4");
+                          bool isRetry = await showCustomBoolDialog(
                             context,
-                            "Failed to add item",
-                            "Make sure item is placed correctly on scale",
-                            "Retry");
+                            "Item Not Found",
+                            "This item is not in our database try your luck with another item",
+                            "Ok",
+                          );
+                          if (isRetry) {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          } else {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          }
+                        } else {
+                          bool isRetry = await showCustomBoolDialog(
+                            context,
+                            "ERROR",
+                            "Unexpexted error has occured",
+                            "Ok",
+                          );
+                          if (isRetry) {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          } else {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          }
+                        }
+                      } catch (e) {
+                        devtools.log("$e");
+                        bool isRetry = await showCustomBoolDialog(
+                          context,
+                          "Server error",
+                          "$e",
+                          "Retry",
+                        );
                         if (isRetry) {
                           _canScan = true;
                         } else {
                           cart.setCartState("active");
                           GoRouter.of(context).pop();
                         }
-                      } else if (mqttResponse['status'] == 'acce_fail') {
-                        bool isRetry = await showCustomBoolDialog(
-                            context,
-                            "Failed to add item",
-                            "Make sure cart is not moving",
-                            "Retry");
-                        if (isRetry) {
-                          _canScan = true;
-                        } else {
-                          cart.setCartState("active");
-                          GoRouter.of(context).pop();
-                        }
-                      } else if (mqttResponse['status'] == 'item_not_found') {
-                        devtools.log("HERE_4");
-                        bool isRetry = await showCustomBoolDialog(
-                          context,
-                          "Item Not Found",
-                          "This item is not in our database try your luck with another item",
-                          "Ok",
-                        );
-                        if (isRetry) {
-                          cart.setCartState("active");
-                          context.goNamed(cartRoute);
-                        } else {
-                          cart.setCartState("active");
-                          context.goNamed(cartRoute);
-                        }
-                      } else {
-                        bool isRetry = await showCustomBoolDialog(
-                          context,
-                          "ERROR",
-                          "Unexpexted error has occured",
-                          "Ok",
-                        );
-                        if (isRetry) {
-                          cart.setCartState("active");
-                          context.goNamed(cartRoute);
-                        } else {
-                          cart.setCartState("active");
-                          context.goNamed(cartRoute);
-                        }
                       }
-                    } catch (e) {
-                      devtools.log("$e");
-                      bool isRetry = await showCustomBoolDialog(
-                        context,
-                        "Server error",
-                        "$e",
-                        "Retry",
-                      );
-                      if (isRetry) {
-                        _canScan = true;
-                      } else {
-                        cart.setCartState("active");
-                        GoRouter.of(context).pop();
-                      }
+                    } else {
+                      cart.setCartState("active");
+                      GoRouter.of(context).pop();
                     }
                   } else {
-                    cart.setCartState("active");
-                    GoRouter.of(context).pop();
+                    bool isRetry = await showCustomBoolDialog(
+                        context,
+                        "Wrong barcode",
+                        "Make sure you are scanning the same item you chose",
+                        "Retry");
+                    if (isRetry) {
+                      _canScan = true;
+                    } else {
+                      cart.setCartState("active");
+                      GoRouter.of(context).pop();
+                    }
                   }
                 }
               },

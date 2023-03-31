@@ -24,9 +24,9 @@ class CartShellPage extends ConsumerWidget {
 
     // publush any Listened changes in the cartProvider
     var publishBody = <String, dynamic>{
-      'mqtt_type': 'update_status',
+      'mqtt_type': 'update_mode',
       'sender': mqtt.clientId,
-      'status': cart.state.stateString,
+      'mode': cart.state.stateString,
       'timestamp': DateTime.now().millisecondsSinceEpoch
     };
     mqtt.publish(json.encode(publishBody));
@@ -36,7 +36,7 @@ class CartShellPage extends ConsumerWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // handle loading
-          devtools.log('AWAITING ALARM');
+          devtools.log('AWAITING ADMINISTRATOR TO HELP YOU');
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData) {
           // handle data

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import '../models/cart_model.dart';
 import '../models/item_model.dart';
-// import '../providers/mqtt_provider.dart';
-// import '../providers/auth_provider.dart';
 import 'dart:developer' as devtools;
 
 final cartProvider = ChangeNotifierProvider.autoDispose((ref) => Cart());
@@ -24,22 +21,31 @@ extension CartStateExtension on CartState {
   String get stateString {
     switch (this) {
       case CartState.locked:
-        return 'Locked';
+        // return 'Locked';
+        return '0';
       case CartState.initial:
+        // return 'Initial';
         return 'Initial';
       case CartState.active:
-        return 'Active';
+        // return 'Active';
+        return '1';
       case CartState.weighing:
-        return 'Weighing';
+        // return 'Weighing';
+        return '2';
       case CartState.alarm:
+        // return 'Alarm';
         return 'Alarm';
       case CartState.paid:
+        // return 'Paid';
         return 'Paid';
       case CartState.checkout:
-        return 'Checkout';
+        // return 'Checkout';
+        return '3';
       case CartState.error:
+        // return 'Error';
         return 'Error';
       default:
+        // return 'Unknown';
         return 'Unknown';
     }
   }
