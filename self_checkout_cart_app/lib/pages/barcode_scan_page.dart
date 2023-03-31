@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import '../models/item_model.dart';
 import '../providers/cart_provider.dart';
 import '../constants/routes.dart';
+import '../services/env.dart' as env;
 import 'dart:developer' as devtools;
 
 // Barcode scanner imports
@@ -43,10 +44,13 @@ class BarcodeScannerPage extends ConsumerWidget {
 
     final Map<String, String> args =
         ModalRoute.of(context)?.settings.arguments as Map<String, String>;
-
+    devtools.log('$args');
     String action = args['action']!;
+    // String action = 'add';
     var index = int.parse(args['index']!);
+    // var index = 0;
     String barcodeToRead = args['barcodeToRead']!;
+    // String barcodeToRead = '123';
 
     return WillPopScope(
       onWillPop: () async {
@@ -87,12 +91,12 @@ class BarcodeScannerPage extends ConsumerWidget {
                     if (addToCart) {
                       var timestamp = DateTime.now().millisecondsSinceEpoch;
                       // build publish body
-                      var publishBody = <String, dynamic>{
+                      var publishBody = <String, String>{
                         'mqtt_type': 'request_${action}_item',
                         'sender': mqtt.clientId,
-                        // 'item_barcode': '123123',
-                        'item_barcode': barCode.toString(),
-                        'timestamp': timestamp
+                        'item_barcode': '1231231',
+                        // 'item_barcode': barCode.toString(),
+                        'timestamp': timestamp.toString()
                       };
                       try {
                         _awaitMqtt = true;
@@ -118,14 +122,15 @@ class BarcodeScannerPage extends ConsumerWidget {
                         if (mqttResponse['status'] == 'success') {
                           devtools.log("HERE_11");
                           http.Response httpRes = await auth.postAuthReq(
-                            '/api/v1/item/${action}_item',
-                            body: <String, dynamic>{
-                              'barcode': barCode.toString(),
-                              'timestamp': timestamp,
+                            '/api/v1/item/$action',
+                            body: <String, String>{
+                              // 'barcode': barCode.toString(),
+                              'barcode': '1231231',
+                              'process_id': timestamp.toString(),
                             },
                           );
-                          // http.Response imageRes = await auth.postAuthReq(
                           //   '/api/v1/item/get_image',
+                          // http.Response ☻imageRes = await auth.postAuthReq(
                           //   body: <String, dynamic>{
                           //     'barcode': barCode.toString(),
                           //   },
@@ -135,8 +140,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                           if (httpRes.statusCode == 200) {
                             // if (true) {
                             if (action == 'add') {
-                              var product =
-                                  json.decode(httpRes.body)['product'];
+                              var product = json.decode(httpRes.body);
                               devtools.log("$product");
                               // var blob = json.decode(imageRes.body)['img_link'];
                               // Uint8List productImage;
@@ -148,12 +152,12 @@ class BarcodeScannerPage extends ConsumerWidget {
                               // productImage = base64.decode(blob);
                               // }
                               Item item = Item(
-                                  barcode: product['barcode'],
+                                  barcode: barCode.toString(),
                                   name: product['en_name'],
                                   unit: 'Kg',
                                   price: product['price'],
                                   image:
-                                      'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg');
+                                      "http://${env.baseURL}${product['img_path']}");
                               // image: productImage);
                               cart.addItem(item);
                             } else {

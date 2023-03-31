@@ -58,110 +58,110 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 }
 
-class AuthScreen extends ConsumerWidget {
-  // const AuthScreen({Key? key}) : super(key: key);
-  AuthScreen({Key? key}) : super(key: key);
+// class AuthScreen extends ConsumerWidget {
+//   // const AuthScreen({Key? key}) : super(key: key);
+//   AuthScreen({Key? key}) : super(key: key);
 
-  TextEditingController _email = TextEditingController();
-  // final TextEditingController _email;
-  TextEditingController _passwd = TextEditingController();
+//   TextEditingController _email = TextEditingController();
+//   // final TextEditingController _email;
+//   TextEditingController _passwd = TextEditingController();
 
-  // @override
-  // void initState() {
-  // _email = TextEditingController();
-  // _passwd = TextEditingController();
-  // super.initState();
-  // }
+//   // @override
+//   // void initState() {
+//   // _email = TextEditingController();
+//   // _passwd = TextEditingController();
+//   // super.initState();
+//   // }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // final auth = ref.watch(authProvider);
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const TextField(
-              textAlign: TextAlign.center,
-              // controller: _email,
-              autocorrect: false,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                hintText: 'Enter Email or Username',
-              ),
-            ),
-            const TextField(
-              textAlign: TextAlign.center,
-              // controller: _passwd,
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-              decoration: InputDecoration(
-                hintText: 'Enter Password',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                // final String email = _email.text;
-                // final String passwd = _passwd.text;
-                try {
-                  // bool isLoggedIn = await auth.login(context, email, passwd);
-                  // bool isLoggedIn = await auth.login(context, '', '');
-                  // Auth().establishWebSocket(env.sock);
-                  // if (!isLoggedIn) {
-                  // showAlertMassage(context, "Failed to log in");
-                  return;
-                  // }
-                  // context.goNamed(connectRoute);
-                  // } on Exception catch (e) {
-                } catch (e) {
-                  // switch (e) {
-                  //   case 'User-not-found':
-                  //     devtools.log('User-not-found');
-                  //     showAlertMassage(context, "User not found");
-                  //     break;
-                  //   case 'Email-not-found':
-                  //     devtools.log('Email-not-found');
-                  //     showAlertMassage(context, "Email not found");
-                  //     break;
-                  //   case 'Wrong-cred':
-                  //     devtools.log('Wrong-cred');
-                  //     showAlertMassage(context, "Wrong Credentials");
-                  //     break;
-                  //   default:
-                  // devtools.log('Error: $e');
-                  // showAlertMassage(context, "$e");
-                  //     break;
-                  // }
-                }
-              },
-              // style: appTheme.getButtonStyle,
-              child: const Text(
-                'Log In',
-                // style: appTheme.getButtonTextStyle,
-              ),
-            ),
-            TextButton(
-              // onPressed: () => context.goNamed(registerRoute),
-              onPressed: () => {},
-              child: const Text(
-                'Register',
-                // style: appTheme.getButtonTextStyle,
-              ),
-            ),
-            TextButton(
-              // onPressed: () => context.goNamed(logoRoute),
-              onPressed: () => {},
-              child: const Text(
-                'Back',
-                // style: appTheme.getButtonTextStyle,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     // final auth = ref.watch(authProvider);
+//     return Scaffold(
+//       appBar: AppBar(),
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           crossAxisAlignment: CrossAxisAlignment.center,
+//           children: [
+//             const TextField(
+//               textAlign: TextAlign.center,
+//               // controller: _email,
+//               autocorrect: false,
+//               keyboardType: TextInputType.emailAddress,
+//               decoration: InputDecoration(
+//                 hintText: 'Enter Email or Username',
+//               ),
+//             ),
+//             const TextField(
+//               textAlign: TextAlign.center,
+//               // controller: _passwd,
+//               obscureText: true,
+//               enableSuggestions: false,
+//               autocorrect: false,
+//               decoration: InputDecoration(
+//                 hintText: 'Enter Password',
+//               ),
+//             ),
+//             ElevatedButton(
+//               onPressed: () async {
+//                 // final String email = _email.text;
+//                 // final String passwd = _passwd.text;
+//                 try {
+//                   // bool isLoggedIn = await auth.login(context, email, passwd);
+//                   // bool isLoggedIn = await auth.login(context, '', '');
+//                   // Auth().establishWebSocket(env.sock);
+//                   // if (!isLoggedIn) {
+//                   // showAlertMassage(context, "Failed to log in");
+//                   return;
+//                   // }
+//                   // context.goNamed(connectRoute);
+//                   // } on Exception catch (e) {
+//                 } catch (e) {
+//                   // switch (e) {
+//                   //   case 'User-not-found':
+//                   //     devtools.log('User-not-found');
+//                   //     showAlertMassage(context, "User not found");
+//                   //     break;
+//                   //   case 'Email-not-found':
+//                   //     devtools.log('Email-not-found');
+//                   //     showAlertMassage(context, "Email not found");
+//                   //     break;
+//                   //   case 'Wrong-cred':
+//                   //     devtools.log('Wrong-cred');
+//                   //     showAlertMassage(context, "Wrong Credentials");
+//                   //     break;
+//                   //   default:
+//                   // devtools.log('Error: $e');
+//                   // showAlertMassage(context, "$e");
+//                   //     break;
+//                   // }
+//                 }
+//               },
+//               // style: appTheme.getButtonStyle,
+//               child: const Text(
+//                 'Log In',
+//                 // style: appTheme.getButtonTextStyle,
+//               ),
+//             ),
+//             TextButton(
+//               // onPressed: () => context.goNamed(registerRoute),
+//               onPressed: () => {},
+//               child: const Text(
+//                 'Register',
+//                 // style: appTheme.getButtonTextStyle,
+//               ),
+//             ),
+//             TextButton(
+//               // onPressed: () => context.goNamed(logoRoute),
+//               onPressed: () => {},
+//               child: const Text(
+//                 'Back',
+//                 // style: appTheme.getButtonTextStyle,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

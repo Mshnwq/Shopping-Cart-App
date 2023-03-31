@@ -20,12 +20,12 @@ enum CartState {
 extension CartStateExtension on CartState {
   String get stateString {
     switch (this) {
+      case CartState.initial:
+        // return 'Initial';
+        return '-1';
       case CartState.locked:
         // return 'Locked';
         return '0';
-      case CartState.initial:
-        // return 'Initial';
-        return 'Initial';
       case CartState.active:
         // return 'Active';
         return '1';

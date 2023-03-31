@@ -162,28 +162,19 @@ class MQTT extends ChangeNotifier {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
-          } else {
-            devtools.log('');
-            // devtools.log("NOT FOR US");
           }
           if (res['mqtt_type'] == "response_remove_item") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
-          } else {
-            devtools.log('');
-            // devtools.log("NOT FOR US");
           }
           if (res['mqtt_type'] == "alarm_detection") {
             // add message to stream
             devtools.log('ADDING ALARM TO STREAM');
             _alarmMessageController.add(payload);
-          } else {
-            devtools.log('');
-            // devtools.log("NOT FOR US");
           }
         } on FormatException catch (e) {
-          devtools.log('');
+          devtools.log('Format $e');
         } catch (e) {
           devtools.log(e.toString());
         }

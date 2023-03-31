@@ -107,7 +107,7 @@ class CheckoutPage extends ConsumerWidget {
                                       color: Colors.black,
                                       width: 5,
                                     ),
-                                    borderRadius: BorderRadius.circular(35)),
+                                    borderRadius: BorderRadius.circular(5)),
                                 child: QrImage(
                                   eyeStyle: const QrEyeStyle(
                                       color: Colors.black,
