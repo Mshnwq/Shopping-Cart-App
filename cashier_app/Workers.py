@@ -1,4 +1,5 @@
 import importlib
+import json
 import sys
 import time
 
@@ -12,7 +13,7 @@ class Receipt_Worker(QThread):
     '''QR Worker Thread'''
     ##### Signal for GUI Slots #####
     response_signal = pyqtSignal(object)
-    error_signal = pyqtSignal(str, object)
+    error_signal = pyqtSignal(int, object)
 
     def __init__(self):
         super().__init__()
@@ -28,16 +29,18 @@ class Receipt_Worker(QThread):
             _, frame = cap.read()
             code, _, _ = detector.detectAndDecode(frame)
             if code:
-                body = {
-                    'code': code
-                }
+                print(f"CODE {code}")
                 try:
-                    res = requests.post('endpoint', json=body)
+                    res = requests.get(f'http://localhost:1111/api/v1/bill/receipt/{code}')
+                    print(f'status {res.status_code}')
                     if res.status_code == 200:
-                        print(f"{res.json()[0]}")
-                        self.response_signal.emit(res.json()[0])
+                        receipt = {"receipt_id" : code,
+                                    "receipt_body" : res.json()}
+                        print(f"JSON {json.dumps(receipt, indent=2)}")
+                        self.response_signal.emit(receipt)
                         break
                     else:
+                        self.error_signal.emit(res.status_code, res.json())
                         ...
                         # self.error_signal.emit(str(res.status_code), res.json()[0])
                         # break
@@ -57,7 +60,7 @@ class Receipt_Worker(QThread):
 class Payment_Worker(QThread):
     '''Payment Worker Thread'''
     ##### Signal for GUI Slots #####
-    success_signal = pyqtSignal(object)
+    success_signal = pyqtSignal()
     error_signal = pyqtSignal(str)
 
     def __init__(self, receipt):
@@ -66,16 +69,13 @@ class Payment_Worker(QThread):
 
     @pyqtSlot()
     def run(self):
-        body = {
-                    'receipt_id': self.receipt
-                }
         try:
-            res = requests.post('endpoint', json=body)
+            res = requests.get(f'http://localhost:1111/api/v1/bill/pay/{self.receipt}')
             if res.status_code == 200:
-                print(f"{res.json()[0]}")
-                self.success_signal.emit(res.json()[0])
+                print(f"{res.json()}")
+                self.success_signal.emit()
             else:
-                self.error_signal.emit(str(res.status_code), res.json()[0])
+                self.error_signal.emit(res.status_code, res.json())
         except Exception as e:
             print(e)
 
