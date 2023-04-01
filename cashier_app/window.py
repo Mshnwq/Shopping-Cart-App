@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QMetaObject, QPoint, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QGroupBox,
                              QHBoxLayout, QHeaderView, QLabel, QLineEdit,
                              QMainWindow, QMenu, QPushButton, QStatusBar,
@@ -40,9 +41,15 @@ class Ui_MainWindow(QMainWindow):
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.customContextMenuRequested)
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Stretch)
+        header.setSectionsClickable(True)
+        header.setSectionsMovable(True)
+        # header.setSectionResizeMode(QHeaderView.Stretch)
 
         self.layout.addWidget(self.table)
+
+        self.summary_group = QGroupBox(self.centralwidget)
+        self.summary_layout = QHBoxLayout(self.summary_group)
+        self.layout.addWidget(self.summary_group)
 
         # Add action group and button
         self.action_group = QGroupBox(self.centralwidget)
@@ -69,61 +76,95 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setCentralWidget(self.centralwidget) 
         QMetaObject.connectSlotsByName(MainWindow)
 
-    def customContextMenuRequested(self, point: QPoint):
-        # Create context menu and actions
-        menu = QMenu(self.table)
-
-        # Create a QAction with a checkbox widget for the Full Length filter
-        full_length_action = QAction("Full Length", menu)
-        full_length_action.setCheckable(True)
-        full_length_action.setChecked(self.full_length_bool)
-        full_length_action.toggled.connect(lambda: self.toggle_filter('full_length'))
-        full_length_action.setStatusTip("Filter by Full Length")
-        full_length_action.setToolTip("Filter by Full Length")
-
-        # Add checkboxes to menu
-        menu.addAction(full_length_action)
-
-        menu.exec_(self.table.viewport().mapToGlobal(point))
-
     def _emit(self, to_emit: str):
         print(f"Event Triggered: {to_emit}")
         eval(f"self.{to_emit}.emit()")
 
-    def get_table_selected(self):
-        selected = []
-        for row_index in range(self.table.rowCount()):
-            if self.table.isRowHidden(row_index):
-                continue
-            checkbox_widget = self.table.cellWidget(row_index, 3).layout().itemAt(0).widget()
-            if checkbox_widget.isChecked():
-                selected.append([self.table.item(row_index, column_index).text() for column_index in range(3)])
-        return selected
+    def update_table(self, receipt_body_dict: dict):
+        # Clear existing items in table
+        self.table.clearContents()
+        # self.summary_layout.deleteLater()
+        child = self.summary_layout.itemAt(0)
+        if child is not None:
+            child.widget().deleteLater()
 
-    def update_table(self, data: list[str]):
+        # Get the 'items' list from the receipt_body_dict
+        items_list = receipt_body_dict['items']
 
-        # Clear table
-        self.table.setRowCount(0)
+        # Set the number of rows in the table to the number of items
+        self.table.setRowCount(len(items_list))
 
-        # Filter and add rows to table
-        for row_data in data:
-            row_index = self.table.rowCount()
-            self.table.insertRow(row_index)
-            for column_index, column_data in enumerate(row_data):
-                item = QTableWidgetItem(str(column_data))
-                self.table.setItem(row_index, column_index, item)
+        # Iterate over the items and insert them into the table
+        for i, item in enumerate(items_list):
+            # Get the key (i.e., the item ID) and the value (i.e., the item info dictionary)
+            item_id = list(item.keys())[0]
+            item_info = item[item_id]
 
-                # Add checkbox to last column
-                checkbox_container = QWidget()
-                checkbox_layout = QHBoxLayout()
-                checkbox_layout.setAlignment(Qt.AlignCenter) # type: ignore
-                checkbox_layout.setContentsMargins(0,0,0,0)
-                checkbox_widget = QCheckBox()
-                checkbox_layout.addWidget(checkbox_widget)
-                checkbox_container.setLayout(checkbox_layout)
-                self.table.setCellWidget(row_index, 3, checkbox_container)
-        ...
+            # Insert the item ID into the first column
+            item_id_item = QTableWidgetItem(item_id)
+            item_id_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 0, item_id_item)
 
+            # Insert the item name (in English) into the second column
+            item_name_item = QTableWidgetItem(item_info['en_name'])
+            item_name_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 1, item_name_item)
+
+            # Insert the item price into the third column
+            item_price_item = QTableWidgetItem(str(item_info['unit_price']))
+            item_price_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 2, item_price_item)
+
+            # Insert the item count into the fourth column
+            item_count_item = QTableWidgetItem(str(item_info['count']))
+            item_count_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 3, item_count_item)
+
+        # Create bottom header
+        bill_data = receipt_body_dict['bill']
+        bottom_header = BottomBox(bill_data)
+
+        # Update bottom header
+        self.summary_layout.addWidget(bottom_header)
+
+class BottomBox(QWidget):
+    def __init__(self, bill_data: dict):
+        super().__init__()
+
+        # Create the layout for the box
+        layout = QHBoxLayout(self)
+
+        # Create a vertical layout for each piece of bill data
+        for label_text, value_text in bill_data.items():
+            vlayout = QVBoxLayout()
+
+            # Create the label widget
+            label = QLabel(label_text, self)
+            label.setAlignment(Qt.AlignCenter)
+            vlayout.addWidget(label)
+
+            # Create the value widget
+            value = QLabel(str(value_text), self)
+            value.setAlignment(Qt.AlignCenter)
+            vlayout.addWidget(value)
+
+            # Add the vertical layout to the horizontal layout
+            layout.addLayout(vlayout)
+
+        # Set color of status
+        status = bill_data['status']
+        if status == 'paid':
+            layout.itemAt(0).itemAt(1).widget().setStyleSheet("QLabel { color: green;}")
+        elif status == 'unpaid':
+            layout.itemAt(0).itemAt(1).widget().setStyleSheet("QLabel { color: red;}")
+        else:
+            layout.itemAt(0).itemAt(1).widget().setStyleSheet("QLabel { color: blue;}")
+
+        # Set font of total price
+        layout.itemAt(3).itemAt(1).widget().setFont(QFont('Arial', 14, QFont.Bold))
+
+        # Set the layout for the widget
+        self.setLayout(layout)
 
 if __name__ == '__main__':
     app = QApplication([])

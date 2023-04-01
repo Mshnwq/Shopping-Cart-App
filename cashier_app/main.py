@@ -54,27 +54,39 @@ class MainWindow(QMainWindow):
 
     def handle_extract_receipt_event(self) -> None:
         # create worker and connect slots
-        TEST = {"receipt_id": "4tQBX3VFgE5kTOMhpOjwDA7fu",
-  "receipt_body": {
-    "bill": {
-      "status": "unpaid",
-      "created_at": "2023-03-31T21:14:45.539142",
-      "num_of_items": 3,
-      "total_price": 60.0,
-      "user_id": 1
-    },
-    "items": [
-      {
-        "1231231": {
-          "ar_name": "\u062a\u0628\u063a",
-          "en_name": "snus",
-          "count": 3,
-          "unit_price": 20.0
+        receipt_dict = {"receipt_id": "4tQBX3VFgE5kTOMhpOjwDA7fu",
+            "receipt_body": {
+                "bill": {
+                "status": "unpaid",
+                "created_at": "2023-03-31T21:14:45.539142",
+                "num_of_items": 4,
+                "total_price": 70.0,
+                "user_id": 1
+                },
+                "items": [
+                {
+                    "1231231": {
+                    "ar_name": "\u062a\u0628\u063a",
+                    "en_name": "snus",
+                    "count": 3,
+                    "unit_price": 20.0
+                    }
+                },
+                {
+                    "12312ssssssssssssssssssssss38": {
+                    "ar_name": "\u062a\u0628\u063a",
+                    "en_name": "saanus",
+                    "count": 1,
+                    "unit_price": 10.0
+                    }
+                }
+                ]
+            }
         }
-      }
-    ]
-  }}
-        
+        receipt_body = receipt_dict['receipt_body']
+        # TODO list comprehension
+        self.ui.update_table(receipt_body)
+        return
         receipt_worker = Receipt_Worker() 
         receipt_worker.response_signal.connect(
             partial(self.on_extract_receipt_finish, receipt_worker))
@@ -88,7 +100,7 @@ class MainWindow(QMainWindow):
         self._receipt = receipt_dict['receipt_id']
         receipt_body = receipt_dict['receipt_body']
         # TODO list comprehension
-        # self.ui.update_table(receipt_body)
+        self.ui.update_table(receipt_body)
         # enable action buttons
         self.ui.excel_button.setDisabled(False) 
         self.ui.statusbar.showMessage('extract receipt finished')
