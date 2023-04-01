@@ -5,10 +5,11 @@ import platform
 import sys
 from functools import partial
 
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
 
-from window import Ui_MainWindow
+import assets.qrc
+from window import SuccessDialog, Ui_MainWindow
 from Workers import Payment_Worker, Receipt_Worker
 
 
@@ -50,7 +51,7 @@ class MainWindow(QMainWindow):
         
         # disable buttons until extract is done
         self.ui.excel_button.setDisabled(True) 
-        # self.ui.payment_button.setDisabled(True) 
+        self.ui.payment_button.setDisabled(True) 
 
     def handle_extract_receipt_event(self) -> None:
         # create worker and connect slots
@@ -86,6 +87,8 @@ class MainWindow(QMainWindow):
         receipt_body = receipt_dict['receipt_body']
         # TODO list comprehension
         self.ui.update_table(receipt_body)
+        dialog = SuccessDialog()
+        dialog.exec_()
         return
         receipt_worker = Receipt_Worker() 
         receipt_worker.response_signal.connect(
@@ -103,7 +106,7 @@ class MainWindow(QMainWindow):
         self.ui.update_table(receipt_body)
         # enable action buttons
         self.ui.excel_button.setDisabled(False) 
-        self.ui.statusbar.showMessage('extract receipt finished')
+        self.ui.showMessage('extract receipt finished')
         ...
 
     def handle_payment_event(self) -> None:
@@ -118,13 +121,11 @@ class MainWindow(QMainWindow):
 
     def on_payment_finish(self, worker) -> None:
         worker.terminate()
-        dialog = QMessageBox()
-        dialog.setWindowTitle("Success!")
-        #TODO my icon
-        # dialog.setIcon()
+        dialog = SuccessDialog()
         dialog.exec_()
         # enable action buttons
-        self.ui.statusbar.showMessage('payment finished')
+        self.ui.showMessage('payment finished')
+        self.ui.clear_data()
         self.ui.payment_button.setDisabled(True) 
         ...
 
@@ -151,7 +152,7 @@ class MainWindow(QMainWindow):
 
     def on_excel_finish(self, worker) -> None:
         worker.terminate()
-        self.ui.statusbar.showMessage('excel work finished')
+        self.ui.showMessage('excel work finished')
         ...
 
     def status_code(self, code, body):
