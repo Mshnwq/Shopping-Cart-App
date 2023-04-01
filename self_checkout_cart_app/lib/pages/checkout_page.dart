@@ -1,6 +1,7 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 // import 'package:flutter/rendering.dart';
 import 'package:screenshot/screenshot.dart';
+import '../widgets/menu_bar.dart' as menu;
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -63,13 +64,13 @@ class CheckoutPage extends ConsumerWidget {
             title: Text('Thank You {$auth.username}',
                 style: TextStyle(fontSize: 20)),
             actions: [
-              Badge(
+              badge.Badge(
                 badgeContent: Text(
                   cart.getCounter().toString(),
                   style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
-                position: const BadgePosition(start: 30, bottom: 30),
+                position: const badge.BadgePosition(start: 30, bottom: 30),
                 child: Container(
                   margin: const EdgeInsets.only(top: 5, right: 5),
                   alignment: Alignment.topRight,
@@ -79,7 +80,7 @@ class CheckoutPage extends ConsumerWidget {
             ],
           ),
         ),
-        drawer: const MenuBar(),
+        drawer: const menu.MenuBar(),
         body: Screenshot(
           controller: screenshotController,
           // child: SingleChildScrollView(

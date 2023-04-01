@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/menu_bar.dart' as menu;
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
 import '../providers/mqtt_provider.dart';
@@ -29,7 +30,7 @@ class ConnectPage extends ConsumerWidget {
         return false;
       },
       child: Scaffold(
-        endDrawer: const MenuBar(),
+        endDrawer: const menu.MenuBar(),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60), //height of appbar
           child: AppBar(

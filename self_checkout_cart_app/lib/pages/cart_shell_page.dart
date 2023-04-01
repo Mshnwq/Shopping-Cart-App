@@ -1,13 +1,14 @@
 import 'dart:convert';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import '../providers/mqtt_provider.dart';
 import '../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
 import '../providers/cart_provider.dart';
-import '../widgets/all_widgets.dart';
+import 'package:self_checkout_cart_app/widgets/menu_bar.dart' as menuBar;
+import 'package:self_checkout_cart_app/widgets/all_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:developer' as devtools;
 import 'package:http/http.dart' as http;
@@ -94,13 +95,13 @@ class CartShellPage extends ConsumerWidget {
           title: Text('Cart id# ${cart.id}, ${cart.state.stateString}',
               style: const TextStyle(fontSize: 20)),
           actions: [
-            Badge(
+            badge.Badge(
               badgeContent: Text(
                 cart.getCounter().toString(),
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              position: const BadgePosition(start: 30, bottom: 30),
+              position: const badge.BadgePosition(start: 30, bottom: 30),
               child: Container(
                 margin: const EdgeInsets.only(top: 5, right: 5),
                 alignment: Alignment.topRight,
@@ -110,7 +111,7 @@ class CartShellPage extends ConsumerWidget {
           ],
         ),
       ),
-      drawer: const MenuBar(),
+      drawer: const menuBar.MenuBar(),
       body: child,
       bottomNavigationBar: const BottomNavigationWidget(),
     );
