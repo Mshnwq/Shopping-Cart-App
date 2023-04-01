@@ -22,7 +22,16 @@ import '../services/qrcode_scanner.dart';
 // import '../services/connectivity_service.dart';
 
 class BarcodeScannerPage extends ConsumerWidget {
-  BarcodeScannerPage({Key? key}) : super(key: key);
+  final String action;
+  final String index;
+  final String barcodeToRead;
+
+  BarcodeScannerPage({
+    Key? key,
+    required this.action,
+    required this.index,
+    required this.barcodeToRead,
+  }) : super(key: key);
 
   ScannerController scannerController = ScannerController();
 
@@ -36,21 +45,9 @@ class BarcodeScannerPage extends ConsumerWidget {
     final mqtt = ref.watch(mqttProvider);
     final completer = Completer<String>();
 
-    // StreamSubscription subscription;
-
-    // return StreamBuilder<String>(
-    // stream: mqtt.onMessage,
-    // builder: (context, snapshot) {
-
-    final Map<String, String> args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, String>;
-    devtools.log('$args');
-    String action = args['action']!;
-    // String action = 'add';
-    var index = int.parse(args['index']!);
-    // var index = 0;
-    String barcodeToRead = args['barcodeToRead']!;
-    // String barcodeToRead = '123';
+    devtools.log("action $action");
+    devtools.log("toBarcode $barcodeToRead");
+    devtools.log("index $index");
 
     return WillPopScope(
       onWillPop: () async {
@@ -161,7 +158,8 @@ class BarcodeScannerPage extends ConsumerWidget {
                               // image: productImage);
                               cart.addItem(item);
                             } else {
-                              cart.removeItem(cart.getItems()[index]);
+                              cart.removeItem(
+                                  cart.getItems()[int.parse(index)]);
                             }
                             cart.setCartState("active");
                             context.goNamed(cartRoute);

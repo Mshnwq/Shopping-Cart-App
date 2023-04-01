@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../pages/all_pages.dart';
 import '../route/go_router_notifier.dart';
 import '../constants/routes.dart';
+import 'dart:developer' as devtools;
 
 // final GlobalKey<NavigatorState> _rootNavigator = GlobalKey(debugLabel: 'root');
 // final GlobalKey<NavigatorState> _shellNavigator =
@@ -72,11 +73,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/prod_detail/:id',
             name: productDetailRoute,
             pageBuilder: (context, state) {
-              // final id = state.params['id'].toString();
               return NoTransitionPage(
                   child: ProductDetailPage(
-                id: state.params['id'].toString(),
                 key: state.pageKey,
+                id: state.params['id'].toString(),
               ));
             },
           ),
@@ -95,9 +95,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: "/barcode_scan",
             name: barcodeRoute,
             pageBuilder: (context, state) {
+              // Get the parameters from the state object
+              Map<String, dynamic> params = state.extra as Map<String, dynamic>;
+              // devtools.log('${state.extra}');
+              // Extract the individual parameters
+              String action = params['action'] as String;
+              String index = params['index'] as String;
+              String barcodeToRead = params['barcodeToRead'] as String;
+
               return NoTransitionPage(
                 child: BarcodeScannerPage(
                   key: state.pageKey,
+                  // action: state.params['action'].toString(),
+                  action: action,
+                  // index: state.params['index'].toString(),
+                  index: index,
+                  // barcodeToRead: state.params['barcodeToRead'].toString()),
+                  barcodeToRead: barcodeToRead,
                 ),
               );
             },

@@ -56,7 +56,7 @@ class CartPage extends ConsumerWidget {
             cart.setCartState("weighing"),
             context.pushNamed(
               barcodeRoute,
-              params: {
+              extra: {
                 'action': 'add',
                 'index': '-1',
                 'barcodeToRead': 'null',
@@ -176,7 +176,7 @@ class CartPage extends ConsumerWidget {
                                   cart.setCartState("weighing");
                                   context.pushNamed(
                                     barcodeRoute,
-                                    params: {
+                                    extra: {
                                       'action': 'remove',
                                       'index': '$index',
                                       'barcodeToRead':
