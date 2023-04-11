@@ -84,12 +84,12 @@ class MainWindow(QMainWindow):
                 ]
             }
         }
-        receipt_body = receipt_dict['receipt_body']
+        # receipt_body = receipt_dict['receipt_body']
         # TODO list comprehension
-        self.ui.update_table(receipt_body)
-        dialog = SuccessDialog()
-        dialog.exec_()
-        return
+        # self.ui.update_table(receipt_body)
+        # dialog = SuccessDialog()
+        # dialog.exec_()
+        # return
         receipt_worker = Receipt_Worker() 
         receipt_worker.response_signal.connect(
             partial(self.on_extract_receipt_finish, receipt_worker))
