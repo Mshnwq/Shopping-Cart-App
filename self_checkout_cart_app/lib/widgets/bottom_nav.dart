@@ -24,9 +24,6 @@ class _BottomNavigationWidgetState
   @override
   Widget build(BuildContext context) {
     final position = ref.watch(dashboardControllerProvider);
-    // final cart = ref.watch(cartProvider);
-    // final receipt = ref.watch(receiptProvider);
-    // final auth = ref.watch(authProvider);
 
     return BottomNavigationBar(
       // backgroundColor: Colors.blueGrey,
@@ -44,53 +41,57 @@ class _BottomNavigationWidgetState
       ),
       items: [
         BottomNavigationBarItem(
-            activeIcon: Icon(
-              Icons.receipt_long,
-              color: Theme.of(context).focusColor,
-              size: 35,
-            ),
-            icon: Icon(
-              Icons.receipt_long,
-              color: Theme.of(context).indicatorColor,
-              size: 30,
-            ),
-            label: 'Cart'),
+          activeIcon: Icon(
+            Icons.receipt_long,
+            color: Theme.of(context).focusColor,
+            size: 35,
+          ),
+          icon: Icon(
+            Icons.receipt_long,
+            color: Theme.of(context).indicatorColor,
+            size: 30,
+          ),
+          label: 'Cart',
+        ),
         BottomNavigationBarItem(
-            activeIcon: Icon(
-              Icons.find_in_page_outlined,
-              color: Theme.of(context).focusColor,
-              size: 35,
-            ),
-            icon: Icon(
-              Icons.find_in_page_outlined,
-              color: Theme.of(context).indicatorColor,
-              size: 30,
-            ),
-            label: 'Products'),
+          activeIcon: Icon(
+            Icons.find_in_page_outlined,
+            color: Theme.of(context).focusColor,
+            size: 35,
+          ),
+          icon: Icon(
+            Icons.find_in_page_outlined,
+            color: Theme.of(context).indicatorColor,
+            size: 30,
+          ),
+          label: 'Products',
+        ),
         BottomNavigationBarItem(
-            activeIcon: Icon(
-              Icons.live_help_outlined,
-              color: Theme.of(context).focusColor,
-              size: 35,
-            ),
-            icon: Icon(
-              Icons.live_help_outlined,
-              color: Theme.of(context).indicatorColor,
-              size: 30,
-            ),
-            label: 'Guide'),
+          activeIcon: Icon(
+            Icons.live_help_outlined,
+            color: Theme.of(context).focusColor,
+            size: 35,
+          ),
+          icon: Icon(
+            Icons.live_help_outlined,
+            color: Theme.of(context).indicatorColor,
+            size: 30,
+          ),
+          label: 'Guide',
+        ),
         BottomNavigationBarItem(
-            activeIcon: Icon(
-              Icons.shopping_cart_checkout,
-              color: Theme.of(context).focusColor,
-              size: 35,
-            ),
-            icon: Icon(
-              Icons.shopping_cart_checkout,
-              color: Theme.of(context).indicatorColor,
-              size: 30,
-            ),
-            label: 'Checkout'),
+          activeIcon: Icon(
+            Icons.shopping_cart_checkout,
+            color: Theme.of(context).focusColor,
+            size: 35,
+          ),
+          icon: Icon(
+            Icons.shopping_cart_checkout,
+            color: Theme.of(context).indicatorColor,
+            size: 30,
+          ),
+          label: 'Checkout',
+        ),
       ],
     );
   }

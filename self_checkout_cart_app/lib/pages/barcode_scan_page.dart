@@ -117,7 +117,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                         _awaitMqtt = false;
                         // devtools.log("RESPONSE: $mqttResponse");
                         if (mqttResponse['status'] == 'success') {
-                          devtools.log("HERE_11");
+                          // devtools.log("HERE_11");
                           http.Response httpRes = await auth.postAuthReq(
                             '/api/v1/item/$action',
                             body: <String, String>{
