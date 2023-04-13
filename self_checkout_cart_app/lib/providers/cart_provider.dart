@@ -106,6 +106,12 @@ class Cart with ChangeNotifier {
     return _items;
   }
 
+  void clearItems() {
+    _items.clear();
+    _counter = 0;
+    _totalPrice = 0.0;
+  }
+
   int getCounter() {
     return _counter;
   }
