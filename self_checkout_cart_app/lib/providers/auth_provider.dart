@@ -21,8 +21,8 @@ class Auth with ChangeNotifier {
   final String _registerRoute = '/api/v1/mobile/register';
   final String _refreshRoute = "/api/v1/mobile/refresh";
   final String ping = '/ping';
-  late String user_id;
-  late String username;
+  late String user_id = 'test';
+  late String username = 'test';
 
   // static final Auth _auth = Auth._internal();
 

@@ -69,15 +69,35 @@ class Cart with ChangeNotifier {
   void setID(String id) => _id = id;
 
   void addItem(Item item) {
-    _items.add(item);
-    _counter++;
-    _totalPrice += item.price;
+    // Check if an item with the same count is already in the list
+    bool itemExists = false;
+    for (int i = 0; i < _items.length; i++) {
+      if (_items[i].barcode == item.barcode) {
+        // Item with the same barcode already exists
+        itemExists = true;
+        // Increase the count of the existing item
+        _items[i].count += item.count;
+        break;
+      }
+    }
+    if (!itemExists) {
+      // Item with the same count does not exist, add a new item
+      _items.add(item);
+      _counter++;
+    }
+    _totalPrice += item.price * item.count;
     notifyListeners();
   }
 
   void removeItem(Item item) {
-    _items.remove(_items.firstWhere((element) => element.name == item.name));
-    _counter--;
+    if (item.count > 1) {
+      // item has duplicates
+      item.count--;
+    } else {
+      _items.remove(
+          _items.firstWhere((element) => element.barcode == item.barcode));
+      _counter--;
+    }
     _totalPrice -= item.price;
     notifyListeners();
   }

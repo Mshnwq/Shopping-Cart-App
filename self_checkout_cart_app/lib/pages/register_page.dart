@@ -39,7 +39,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
     return Scaffold(
         appBar: AppBar(
           // backgroundColor: appTheme.green,

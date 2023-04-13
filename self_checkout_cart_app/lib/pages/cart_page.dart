@@ -13,33 +13,35 @@ import 'dart:developer' as devtools;
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
-  // static const List<Item> products = [
-  //   Item(
-  //       name: 'Apple',
-  //       unit: 'Kg',
-  //       price: 20,
-  //       image:
-  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-  //   Item(
-  //       name: 'Mango',
-  //       unit: 'Doz',
-  //       price: 30,
-  //       image:
-  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-  //   Item(
-  //       name: 'Banana',
-  //       unit: 'Doz',
-  //       price: 10,
-  //       image:
-  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-  //   Item(
-  //       barcode: '123',
-  //       name: 'Organg',
-  //       unit: 'Kg',
-  //       price: 15,
-  //       image:
-  //           'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
-  // ];
+  static List<Item> products = [
+    Item(
+      barcode: '100',
+      name: 'Apple',
+      unit: 'Kg',
+      price: 20,
+      count: 1,
+      image:
+          'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+    ),
+    Item(
+      barcode: '123',
+      name: 'Organg',
+      unit: 'Kg',
+      price: 15,
+      count: 1,
+      image:
+          'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+    ),
+    Item(
+      barcode: '100',
+      name: 'Apple',
+      unit: 'Kg',
+      price: 20,
+      count: 2,
+      image:
+          'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +50,7 @@ class CartPage extends ConsumerWidget {
       floatingActionButton: InkWell(
         splashColor: Colors.blue,
         onLongPress: () {
-          // cart.addItem(products[cart.getCounter()]);
+          cart.addItem(products[cart.getCounter()]);
         },
         child: FloatingActionButton(
           //Floating action button on Scaffold
@@ -68,8 +70,8 @@ class CartPage extends ConsumerWidget {
           child: const Icon(Icons.queue),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       //floating action button position to center
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: Column(
         children: [
           Expanded(
@@ -83,114 +85,126 @@ class CartPage extends ConsumerWidget {
                         TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
                   ));
                 } else {
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cart.getCounter(),
-                    itemBuilder: (context, index) {
-                      return Card(
-                        elevation: 5.0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Image(
-                                height: 80,
-                                width: 80,
-                                image:
-                                    NetworkImage(cart.getItems()[index].image),
-                                // MemoryImage(cart.getItems()[index].image),
-                              ),
-                              SizedBox(
-                                width: 130,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(
-                                      height: 5.0,
-                                    ),
-                                    RichText(
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Name: ',
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text:
-                                                    '${cart.getItems()[index].name}\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                    RichText(
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Unit: ',
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text:
-                                                    '${cart.getItems()[index].unit}\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                    RichText(
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Price: ' r"SAR",
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text:
-                                                    '${cart.getItems()[index].price}\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  GoRouter.of(context).push(
-                                      '/prod_detail/${cart.getItems()[index].name}');
-                                },
-                                icon: const Icon(Icons.more_vert),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  // cart.removeItem(cart.getItems()[index]);
-                                  // cart.removeItem(cart.getItems()[index]);
-                                  cart.setCartState("weighing");
-                                  context.pushNamed(
-                                    barcodeRoute,
-                                    extra: {
-                                      'action': 'remove',
-                                      'index': '$index',
-                                      'barcodeToRead':
-                                          cart.getItems()[index].barcode,
-                                    },
-                                  );
-                                },
-                                icon: const Icon(Icons.delete),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      // Add your refresh logic here, for example, you can fetch new data or reset the cart state
+                      // Once the refresh logic is complete, you can return a Future.delayed() to simulate a delay before hiding the indicator
+                      await Future.delayed(const Duration(seconds: 1));
+                      devtools.log("refreshing");
                     },
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: cart.getCounter(),
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 5.0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Image(
+                                  height: 80,
+                                  width: 80,
+                                  image: NetworkImage(
+                                      cart.getItems()[index].image),
+                                  // MemoryImage(cart.getItems()[index].image),
+                                ),
+                                SizedBox(
+                                  width: 130,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                        height: 5.0,
+                                      ),
+                                      RichText(
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Name: ',
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${cart.getItems()[index].name}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                      RichText(
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Count: ',
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${cart.getItems()[index].count}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                      RichText(
+                                        maxLines: 1,
+                                        text: TextSpan(
+                                            text: 'Price: ' r"SAR",
+                                            style: TextStyle(
+                                                color: Colors.blueGrey.shade800,
+                                                fontSize: 16.0),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${cart.getItems()[index].price}\n',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    GoRouter.of(context).push(
+                                        '/prod_detail/${cart.getItems()[index].name}');
+                                  },
+                                  icon: const Icon(Icons.more_vert),
+                                ),
+                                InkWell(
+                                  onLongPress: () =>
+                                      {cart.removeItem(cart.getItems()[index])},
+                                  child: IconButton(
+                                    onPressed: () {
+                                      // cart.removeItem(cart.getItems()[index]);
+                                      cart.setCartState("weighing");
+                                      context.pushNamed(
+                                        barcodeRoute,
+                                        extra: {
+                                          'action': 'remove',
+                                          'index': '$index',
+                                          'barcodeToRead':
+                                              cart.getItems()[index].barcode,
+                                        },
+                                      );
+                                    },
+                                    icon: const Icon(Icons.delete),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 }
               },

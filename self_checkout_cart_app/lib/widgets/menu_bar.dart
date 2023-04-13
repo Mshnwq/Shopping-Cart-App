@@ -42,7 +42,7 @@ class MenuBar extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onLongPress: () => {},
+            onLongPress: () => {context.goNamed(cartRoute)},
             onTap: () => {},
           ),
           ListTile(
@@ -56,8 +56,8 @@ class MenuBar extends ConsumerWidget {
             onTap: () async {
               final shouldLogout = await showLogOutDialog(context);
               if (shouldLogout) {
-                ref.read(mqttProvider).disconnect();
-                // Auth().signOut();
+                // ref.read(mqttProvider).disconnect();
+                // Auth().signOut(); TODO:
                 context.goNamed(logoRoute);
               }
             },

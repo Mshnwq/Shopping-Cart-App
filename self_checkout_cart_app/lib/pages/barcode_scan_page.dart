@@ -153,6 +153,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                                   name: product['en_name'],
                                   unit: 'Kg',
                                   price: product['price'],
+                                  count: 1,
                                   image:
                                       "http://${env.baseURL}${product['img_path']}");
                               // image: productImage);

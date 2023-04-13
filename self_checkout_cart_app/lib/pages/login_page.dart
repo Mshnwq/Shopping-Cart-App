@@ -96,8 +96,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   devtools.log("email $email");
                   devtools.log("pass $passwd");
                   bool isLoggedIn = await auth.login(context, email, passwd);
-                  // bool isLoggedIn = true;
-                  // Auth().establishWebSocket(env.sock);
                   if (!isLoggedIn) {
                     showAlertMassage(context, "Failed to log in");
                     return;
