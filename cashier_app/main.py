@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         self.ui.update_table(receipt_body)
         # enable action buttons
         self.ui.excel_button.setDisabled(False) 
+        self.ui.payment_button.setDisabled(False) 
         self.ui.showMessage('extract receipt finished')
         ...
 
