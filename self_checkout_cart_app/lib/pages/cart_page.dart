@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../constants/routes.dart';
 import 'dart:typed_data';
 import 'dart:convert';
+import '../services/env.dart' as env;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:developer' as devtools;
 
@@ -112,15 +113,17 @@ class CartPage extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: RefreshIndicator(
         onRefresh: () async {
-          cart.clearItems();
           await Future.delayed(const Duration(milliseconds: 420));
-          // devtools.log("refreshing");
-          // http.Response httpRes = await auth.getAuthReq(
-          // '/api/v1/item/items',
-          // );
-          if (true) {
-            // if (httpRes.statusCode == 200) {
-            String receiptBodyJson = '''{
+          http.Response httpRes = await auth.getAuthReq(
+            '/api/v1/item/items',
+          );
+          // if (true) {
+          // devtools.log("items ${httpRes.statusCode}");
+          if (httpRes.statusCode == 200) {
+            if (httpRes.body != null) {
+              devtools.log("items ${httpRes.body}");
+              cart.clearItems();
+              String receiptBodyJson = '''{
                 "bill": {
                   "status": "unpaid",
                   "created_at": "2023-03-31T21:14:45.539142",
@@ -147,24 +150,27 @@ class CartPage extends ConsumerWidget {
                   }
                 ]
               }''';
-            var items = json.decode(receiptBodyJson)['items'];
-            for (int i = 0; i < items.length; i++) {
-              // extract item info
-              Map itemMap = items[i];
-              String itemId = itemMap.keys.first;
-              Map itemDetails = itemMap.values.first;
-              // create item object
-              Item item = Item(
-                barcode: itemId,
-                name: itemDetails['en_name'],
-                unit: 'Kg',
-                price: itemDetails['unit_price'],
-                count: itemDetails['count'],
-                image:
-                    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-              );
-              // add to cart
-              cart.addItem(item);
+              // var items = json.decode(receiptBodyJson)['items'];
+              var items = json.decode(httpRes.body)['items'];
+              // devtools.log("$items");
+              for (int i = 0; i < items.length; i++) {
+                // extract item info
+                Map itemMap = items[i];
+                String itemId = itemMap.keys.first;
+                Map itemDetails = itemMap.values.first;
+                // create item object
+                Item item = Item(
+                  barcode: itemId,
+                  name: itemDetails['en_name'],
+                  unit: 'Kg',
+                  price: itemDetails['unit_price'],
+                  count: itemDetails['count'],
+                  image: "http://${env.baseURL}${itemDetails['img_path']}",
+                  // 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+                );
+                // add to cart
+                cart.addItem(item);
+              }
             }
             devtools.log("refreshing");
           } else {

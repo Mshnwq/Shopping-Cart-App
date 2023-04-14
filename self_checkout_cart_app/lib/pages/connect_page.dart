@@ -18,7 +18,7 @@ class ConnectPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
-    // final mqtt = ref.watch(mqttProvider);
+    final mqtt = ref.watch(mqttProvider);
     final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
@@ -65,9 +65,9 @@ class ConnectPage extends ConsumerWidget {
                       final body = jsonDecode(res.body) as Map<String, dynamic>;
                       // cart.setID(body['id'].toString());
                       cart.setID(body['id'].toString());
-                      // final mqttSuccess = await mqtt.establish(
-                      // auth.user_id, body['token'].toString());
-                      final mqttSuccess = true;
+                      final mqttSuccess = await mqtt.establish(
+                          auth.user_id, body['token'].toString());
+                      // final mqttSuccess = true;
                       if (mqttSuccess) {
                         context.goNamed(cartRoute);
                       } else {

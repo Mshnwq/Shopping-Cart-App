@@ -110,6 +110,7 @@ class Cart with ChangeNotifier {
     _items.clear();
     _counter = 0;
     _totalPrice = 0.0;
+    notifyListeners();
   }
 
   int getCounter() {

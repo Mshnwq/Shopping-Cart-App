@@ -21,16 +21,16 @@ class CartShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
-    // final mqtt = ref.watch(mqttProvider);
+    final mqtt = ref.watch(mqttProvider);
 
     // publush any Listened changes in the cartProvider
-    // var publishBody = <String, dynamic>{
-    //   'mqtt_type': 'update_mode',
-    //   'sender': mqtt.clientId,
-    //   'mode': cart.state.stateString,
-    //   'timestamp': DateTime.now().millisecondsSinceEpoch
-    // };
-    // mqtt.publish(json.encode(publishBody));
+    var publishBody = <String, dynamic>{
+      'mqtt_type': 'update_mode',
+      'sender': mqtt.clientId,
+      'mode': cart.state.stateString,
+      'timestamp': DateTime.now().millisecondsSinceEpoch
+    };
+    mqtt.publish(json.encode(publishBody));
 
     return WillPopScope(
       onWillPop: () async {
@@ -42,13 +42,13 @@ class CartShellPage extends ConsumerWidget {
         );
         if (await shouldDisconnect) {
           try {
-            // http.Response res = await auth.postAuthReq(
-            // '/api/v1/cart/disconnect',
-            // );
-            // if (res.statusCode == 200) {
-            // mqtt.disconnect();
-            context.goNamed(connectRoute);
-            // }
+            http.Response res = await auth.postAuthReq(
+              '/api/v1/cart/disconnect',
+            );
+            if (res.statusCode == 200) {
+              mqtt.disconnect();
+              context.goNamed(connectRoute);
+            }
           } catch (e) {
             devtools.log("$e");
           }
@@ -56,7 +56,7 @@ class CartShellPage extends ConsumerWidget {
         return false;
       },
       child: StreamBuilder<String>(
-        // stream: mqtt.onAlarmMessage,
+        stream: mqtt.onAlarmMessage,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             // handle loading
