@@ -26,61 +26,25 @@ class CartShellPage extends ConsumerWidget {
           "Confirm",
         );
         if (await shouldDisconnect) {
-          try {
-            http.Response res = await auth.postAuthReq(
-              '/api/v1/cart/disconnect',
-            );
-            if (res.statusCode == 200) {
-              context.goNamed(connectRoute);
-            }
-          } catch (e) {
-            devtools.log("$e");
-          }
+          context.goNamed(connectRoute);
         }
         return false;
       },
-      child: StreamBuilder<String>(
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            // handle loading
-            if (json.decode(snapshot.data!)['trigger']) {
-              devtools
-                  .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-              return const Text('AWAITING ADMINISTRATOR');
-            } else {
-              return cartShell(context, ref);
-            }
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            // handle data
-            return cartShell(context, ref);
-          } else if (snapshot.hasError) {
-            // handle error (note: snapshot.error has type [Object?])
-            final error = snapshot.error!;
-            return Text(error.toString());
-          } else {
-            // uh, oh, what goes here?
-            return const Text('Some error occurred - welp!');
-          }
-        },
-      ),
-    );
-  }
-
-  Widget cartShell(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60), //height of appbar
-        child: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).backgroundColor,
-          title: Text(
-            'Cart Mode',
-            style: const TextStyle(fontSize: 20),
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60), //height of appbar
+          child: AppBar(
+            centerTitle: true,
+            backgroundColor: Theme.of(context).backgroundColor,
+            title: Text(
+              'Cart ID ${auth.cart_id}',
+              style: const TextStyle(fontSize: 20),
+            ),
           ),
         ),
+        body: child,
+        // bottomNavigationBar: const BottomNavigationWidget(),
       ),
-      body: child,
-      bottomNavigationBar: const BottomNavigationWidget(),
     );
   }
 }

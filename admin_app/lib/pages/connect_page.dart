@@ -41,14 +41,15 @@ class ConnectPage extends ConsumerWidget {
                 };
                 // if success, add item to cart and exit refresh page
                 try {
-                  http.Response res = await auth
-                      .postAuthReq('/api/v1/cart/connect', body: httpBody);
-                  devtools.log("code: ${res.statusCode}");
+                  // http.Response res = await auth
+                  // .postAuthReq('/api/v1/cart/connect', body: httpBody);
+                  // devtools.log("code: ${res.statusCode}");
                   // if success, create cart
-                  if (res.statusCode == 200) {
-                    devtools.log("code: ${res.body}");
-                    context.goNamed(cartRoute);
-                  }
+                  // if (res.statusCode == 200) {
+                  // devtools.log("code: ${res.body}");
+                  auth.setCartId('Welcome');
+                  context.goNamed(cartRoute);
+                  // }
                 } catch (e) {
                   devtools.log("$e");
                 }

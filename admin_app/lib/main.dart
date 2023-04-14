@@ -34,7 +34,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       themeMode: themeMode,
       // These themes are modifiable
       theme: lightTheme,
-      darkTheme: darkTheme,
+      // darkTheme: darkTheme,
     );
   }
 }

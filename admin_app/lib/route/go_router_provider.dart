@@ -8,14 +8,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final notifier = ref.read(goRouterNotifierProvider);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/connect',
     refreshListenable: notifier,
     routes: [
-      GoRoute(
-        path: '/',
-        name: logoRoute,
-        builder: (context, state) => const LogoPage(),
-      ),
       GoRoute(
         path: "/connect",
         name: connectRoute,
@@ -51,15 +46,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               Map<String, dynamic> params = state.extra as Map<String, dynamic>;
               // Extract the individual parameters
               String action = params['action'] as String;
-              String index = params['index'] as String;
-              String barcodeToRead = params['barcodeToRead'] as String;
 
               return NoTransitionPage(
                 child: BarcodeScannerPage(
                   key: state.pageKey,
                   action: action,
-                  index: index,
-                  barcodeToRead: barcodeToRead,
                 ),
               );
             },
