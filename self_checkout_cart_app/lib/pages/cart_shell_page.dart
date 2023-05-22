@@ -76,7 +76,7 @@ class CartShellPage extends ConsumerWidget {
             return Text(error.toString());
           } else {
             // uh, oh, what goes here?
-            // return const Text('Some error occurred - welp!');
+            return const Text('Some error occurred - welp!');
             return cartShell(context, ref);
           }
         },

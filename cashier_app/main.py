@@ -55,40 +55,42 @@ class MainWindow(QMainWindow):
 
     def handle_extract_receipt_event(self) -> None:
         # create worker and connect slots
-        receipt_dict = {"receipt_id": "4tQBX3VFgE5kTOMhpOjwDA7fu",
-            "receipt_body": {
-                "bill": {
-                "status": "unpaid",
-                "created_at": "2023-03-31T21:14:45.539142",
-                "num_of_items": 4,
-                "total_price": 70.0,
-                "user_id": 1
-                },
-                "items": [
-                {
-                    "1231231": {
-                    "ar_name": "\u062a\u0628\u063a",
-                    "en_name": "snus",
-                    "count": 3,
-                    "unit_price": 20.0
-                    }
-                },
-                {
-                    "12312ssssssssssssssssssssss38": {
-                    "ar_name": "\u062a\u0628\u063a",
-                    "en_name": "saanus",
-                    "count": 1,
-                    "unit_price": 10.0
-                    }
-                }
-                ]
-            }
-        }
+        # receipt_dict = {"receipt_id": "4tQBX3VFgE5kTOMhpOjwDA7fu",
+        #     "receipt_body": {
+        #         "bill": {
+        #         "status": "unpaid",
+        #         "created_at": "2023-03-31T21:14:45.539142",
+        #         "num_of_items": 4,
+        #         "total_price": 70.0,
+        #         "user_id": 1
+        #         },
+        #         "items": [
+        #         {
+        #             "1231231": {
+        #             "ar_name": "\u062a\u0628\u063a",
+        #             "en_name": "snus",
+        #             "count": 3,
+        #             "unit_price": 20.0
+        #             }
+        #         },
+        #         {
+        #             "12312ssssssssssssssssssssss38": {
+        #             "ar_name": "\u062a\u0628\u063a",
+        #             "en_name": "saanus",
+        #             "count": 1,
+        #             "unit_price": 10.0
+        #             }
+        #         }
+        #         ]
+        #     }
+        # }
         # receipt_body = receipt_dict['receipt_body']
         # TODO list comprehension
         # self.ui.update_table(receipt_body)
         # dialog = SuccessDialog()
         # dialog.exec_()
+        # self.ui.excel_button.setDisabled(False) 
+        # self.ui.payment_button.setDisabled(False)
         # return
         receipt_worker = Receipt_Worker() 
         receipt_worker.response_signal.connect(
@@ -127,7 +129,6 @@ class MainWindow(QMainWindow):
         # enable action buttons
         self.ui.showMessage('payment finished')
         self.ui.clear_data()
-        self.ui.payment_button.setDisabled(True) 
         ...
 
     def handle_excel_event(self) -> None:
@@ -145,10 +146,10 @@ class MainWindow(QMainWindow):
         if file_name == '':
             return None
         # create worker and connect slots
-        # excel_worker = Excel_Worker(file_name, _selected)
-        # excel_worker.done_signal.connect(
-        #     partial(self.on_excel_finish, excel_worker))
-        # excel_worker.start()
+        excel_worker = Excel_Worker(file_name, _selected)
+        excel_worker.done_signal.connect(
+            partial(self.on_excel_finish, excel_worker))
+        excel_worker.start()
         ...
 
     def on_excel_finish(self, worker) -> None:

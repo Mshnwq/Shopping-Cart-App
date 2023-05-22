@@ -55,33 +55,33 @@ class ConnectPage extends ConsumerWidget {
                     'qrcode': 'Welcome',
                   };
                   // if success, add item to cart and exit refresh page
-                  try {
-                    http.Response res = await auth
-                        .postAuthReq('/api/v1/cart/connect', body: httpBody);
-                    devtools.log("code: ${res.statusCode}");
-                    // if success, create cart
-                    if (res.statusCode == 200) {
-                      devtools.log("code: ${res.body}");
-                      final body = jsonDecode(res.body) as Map<String, dynamic>;
-                      // cart.setID(body['id'].toString());
-                      cart.setID(body['id'].toString());
-                      final mqttSuccess = await mqtt.establish(
-                          auth.user_id, body['token'].toString());
-                      // final mqttSuccess = true;
-                      if (mqttSuccess) {
-                        context.goNamed(cartRoute);
-                      } else {
-                        devtools.log("failed MQTT");
-                      }
-                    } else {
-                      devtools.log("code: before");
-                      // cart.setSocket(body['token'].toString());
-                      devtools.log("code: after");
-                      context.goNamed(cartRoute);
-                    }
-                  } catch (e) {
-                    devtools.log("$e");
-                  }
+                  // try {
+                  // http.Response res = await auth
+                  // .postAuthReq('/api/v1/cart/connect', body: httpBody);
+                  // devtools.log("code: ${res.statusCode}");
+                  // if success, create cart
+                  // if (res.statusCode == 200) {
+                  // devtools.log("code: ${res.body}");
+                  // final body = jsonDecode(res.body) as Map<String, dynamic>;
+                  // cart.setID(body['id'].toString());
+                  // final mqttSuccess = await mqtt.establish(
+                  // auth.user_id, body['token'].toString());
+                  // final mqttSuccess = true;
+                  // if (mqttSuccess) {
+                  // context.goNamed(cartRoute);
+                  // } else {
+                  // devtools.log("failed MQTT");
+                  // }
+                  // } else {
+                  devtools.log("code: before");
+                  cart.setID('test');
+                  // mqtt.establish(auth.user_id, 'test');
+                  devtools.log("code: after");
+                  context.goNamed(cartRoute);
+                  // }
+                  // } catch (e) {
+                  // devtools.log("$e");
+                  // }
                 },
                 child: ElevatedButton(
                   onPressed: () => context.goNamed(qrScanRoute),

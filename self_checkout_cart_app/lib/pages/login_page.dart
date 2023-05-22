@@ -129,11 +129,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 // style: appTheme.getButtonTextStyle,
               ),
             ),
-            TextButton(
-              onPressed: () => context.goNamed(registerRoute),
-              child: Text(
-                'Register',
-                // style: appTheme.getButtonTextStyle,
+            InkWell(
+              onLongPress: () => context.goNamed(connectRoute),
+              child: TextButton(
+                onPressed: () => context.goNamed(registerRoute),
+                child: Text(
+                  'Register',
+                  // style: appTheme.getButtonTextStyle,
+                ),
               ),
             ),
             TextButton(
