@@ -87,7 +87,7 @@ class CartPage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     return Scaffold(
       floatingActionButton: InkWell(
-        splashColor: Colors.blue,
+        splashColor: Colors.lightGreen,
         onLongPress: () {
           cart.addItem(products[cart.getCounter()]);
         },
@@ -104,9 +104,12 @@ class CartPage extends ConsumerWidget {
               },
             ),
           },
-          backgroundColor:
-              const Color.fromARGB(255, 10, 119, 14), //icon inside button
-          child: const Icon(Icons.queue),
+          backgroundColor: Colors.green,
+          hoverColor: Colors.black, //icon inside button
+          child: const Icon(
+            Icons.queue,
+            color: Colors.white,
+          ),
         ),
       ),
       //floating action button position to center

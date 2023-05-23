@@ -26,6 +26,9 @@ class MQTT extends ChangeNotifier {
   late StreamController<String> _alarmMessageController;
   Stream<String> get onAlarmMessage => _alarmMessageController.stream;
 
+  late StreamController<String> _penetMessageController;
+  Stream<String> get onPenetMessage => _penetMessageController.stream;
+
   String get clientId => _clientId;
   String get topic => _topic;
 
@@ -100,6 +103,7 @@ class MQTT extends ChangeNotifier {
       // create message stream controllers
       _itemMessageController = StreamController<String>.broadcast();
       _alarmMessageController = StreamController<String>.broadcast();
+      _penetMessageController = StreamController<String>.broadcast();
       return true;
     } on mqtt.NoConnectionException catch (e) {
       // Raised by the client when connection fails.
@@ -127,6 +131,7 @@ class MQTT extends ChangeNotifier {
       _client.disconnect();
       _itemMessageController.close();
       _alarmMessageController.close();
+      _penetMessageController.close();
     } else {
       devtools.log('Already disconnected');
     }
@@ -167,6 +172,11 @@ class MQTT extends ChangeNotifier {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
+          }
+          if (res['mqtt_type'] == "response_penetration_item") {
+            // add message to stream
+            // devtools.log('ADDING TO STREAM');
+            _penetMessageController.add(payload);
           }
           if (res['mqtt_type'] == "alarm_detection") {
             // add message to stream

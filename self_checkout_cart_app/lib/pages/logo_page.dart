@@ -35,6 +35,13 @@ class _LogoPageState extends State<LogoPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image.asset('assets/images/cart.png'),
+            const SizedBox(height: 20),
+            Text(
+              'Shop smarter... faster',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            const SizedBox(height: 120),
             ElevatedButton(
               onPressed: () => context.goNamed(loginRoute),
               // style: appTheme.getButtonStyle,

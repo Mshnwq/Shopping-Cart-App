@@ -21,16 +21,16 @@ class CartShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
-    final mqtt = ref.watch(mqttProvider);
+    // final mqtt = ref.watch(mqttProvider);
 
-    // publush any Listened changes in the cartProvider
-    var publishBody = <String, dynamic>{
-      'mqtt_type': 'update_mode',
-      'sender': mqtt.clientId,
-      'mode': cart.state.stateString,
-      'timestamp': DateTime.now().millisecondsSinceEpoch
-    };
-    mqtt.publish(json.encode(publishBody));
+    // // publush any Listened changes in the cartProvider
+    // var publishBody = <String, dynamic>{
+    //   'mqtt_type': 'update_mode',
+    //   'sender': mqtt.clientId,
+    //   'mode': cart.state.stateString,
+    //   'timestamp': DateTime.now().millisecondsSinceEpoch
+    // };
+    // mqtt.publish(json.encode(publishBody));
 
     return WillPopScope(
       onWillPop: () async {
@@ -46,7 +46,7 @@ class CartShellPage extends ConsumerWidget {
               '/api/v1/cart/disconnect',
             );
             if (res.statusCode == 200) {
-              mqtt.disconnect();
+              // mqtt.disconnect();
               context.goNamed(connectRoute);
             }
           } catch (e) {
@@ -56,14 +56,14 @@ class CartShellPage extends ConsumerWidget {
         return false;
       },
       child: StreamBuilder<String>(
-        stream: mqtt.onAlarmMessage,
+        // stream: mqtt.onAlarmMessage,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             // handle loading
             if (json.decode(snapshot.data!)['trigger']) {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-              return const Text('AWAITING ADMINISTRATOR');
+              return alarm(context, snapshot.hasData.toString());
             } else {
               return cartShell(context, ref);
             }
@@ -76,8 +76,7 @@ class CartShellPage extends ConsumerWidget {
             return Text(error.toString());
           } else {
             // uh, oh, what goes here?
-            return const Text('Some error occurred - welp!');
-            return cartShell(context, ref);
+            return error(context);
           }
         },
       ),
@@ -113,10 +112,68 @@ class CartShellPage extends ConsumerWidget {
         ),
       ),
       drawer: const menu_bar.MenuBar(),
-      body: !cart.isOnline()
-          ? const Center(child: Text('Cart is Disconnected!'))
-          : child,
+      body: !cart.isOnline() ? cartOffline(context) : child,
       bottomNavigationBar: const BottomNavigationWidget(),
+    );
+  }
+
+  Widget cartOffline(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Image.asset('assets/images/disconnected.png'),
+          const SizedBox(height: 20),
+          Text(
+            'Cart is Disconnected',
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget error(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Image.asset('assets/images/disconnected.png'),
+            const SizedBox(height: 20),
+            Text(
+              'Some error occurred - welp!',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget alarm(BuildContext context, String message) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Image.asset('assets/images/lock.png'),
+            const SizedBox(height: 20),
+            Text(
+              'AWAITING ADMINISTRATOR',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

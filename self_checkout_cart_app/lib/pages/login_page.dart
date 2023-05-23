@@ -69,6 +69,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image.asset('assets/images/cart.png'),
+            const SizedBox(height: 60),
             TextField(
               textAlign: TextAlign.center,
               controller: _email,

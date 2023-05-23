@@ -36,14 +36,14 @@ class BarcodeScannerPage extends ConsumerWidget {
   ScannerController scannerController = ScannerController();
 
   bool _canScan = true;
-  bool _awaitMqtt = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
-    final completer = Completer<String>();
+    final scale_completer = Completer<String>();
+    final penet_completer = Completer<String>();
 
     devtools.log("action $action");
     devtools.log("toBarcode $barcodeToRead");
@@ -96,76 +96,111 @@ class BarcodeScannerPage extends ConsumerWidget {
                         'timestamp': timestamp.toString()
                       };
                       try {
-                        _awaitMqtt = true;
-                        // Publish the message
+                        // Publish the request
                         mqtt.publish(json.encode(publishBody));
-                        // Wait for the response message
-                        devtools.log("subscribing");
-                        StreamSubscription subscription =
+                        // Wait for the scale response message
+                        devtools.log("subscribing scale");
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                        StreamSubscription scaleSubscription =
                             mqtt.onItemMessage.listen((message) {
-                          completer.complete(message);
-                          _awaitMqtt = false;
-                          devtools.log("waiting done");
+                          scale_completer.complete(message);
+                          devtools.log("scale waiting done");
                         });
-                        devtools.log("waiting");
-                        // Wait for the completer to complete
-                        final mqttResponse =
-                            json.decode(await completer.future);
+                        // Wait for the scale completer to complete
+                        final mqttResponseScale =
+                            json.decode(await scale_completer.future);
                         // Handle the message as desired
-                        subscription.cancel();
-                        devtools.log("waiting done");
-                        _awaitMqtt = false;
+                        scaleSubscription.cancel();
+                        context.pop();
+                        devtools.log("scale completed done");
                         // devtools.log("RESPONSE: $mqttResponse");
-                        if (mqttResponse['status'] == 'success') {
-                          // devtools.log("HERE_11");
-                          http.Response httpRes = await auth.postAuthReq(
-                            '/api/v1/item/$action',
-                            body: <String, String>{
-                              // 'barcode': barCode.toString(),
-                              'barcode': '1231231',
-                              'process_id': timestamp.toString(),
-                            },
+                        if (mqttResponseScale['status'] == 'success') {
+                          // Wait for the penet completer to complete
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                           );
-                          //   '/api/v1/item/get_image',
-                          // http.Response ☻imageRes = await auth.postAuthReq(
-                          //   body: <String, dynamic>{
-                          //     'barcode': barCode.toString(),
-                          //   },
-                          // );
-                          devtools.log("code: ${httpRes.statusCode}");
-                          // if success, add item to cart and exit refresh page
-                          if (httpRes.statusCode == 200) {
-                            // if (true) {
-                            if (action == 'add') {
-                              var product = json.decode(httpRes.body);
-                              devtools.log("$product");
-                              // var blob = json.decode(imageRes.body)['img_link'];
-                              // Uint8List productImage;
-                              // if (blob != null) {
-                              // Only decode if blob is not null to prevent crashes
-                              // productImage = base64.decode(blob);
-                              // } else {
-                              // TODO Empty
-                              // productImage = base64.decode(blob);
-                              // }
-                              Item item = Item(
-                                  barcode: barCode.toString(),
-                                  name: product['en_name'],
-                                  unit: 'Kg',
-                                  price: product['price'],
-                                  count: 1,
-                                  image:
-                                      "http://${env.baseURL}${product['img_path']}");
-                              // image: productImage);
-                              cart.addItem(item);
-                            } else {
-                              cart.removeItem(
-                                  cart.getItems()[int.parse(index)]);
+                          StreamSubscription subscription =
+                              mqtt.onPenetMessage.listen((message) {
+                            penet_completer.complete(message);
+                            devtools.log("penet waiting done");
+                          });
+                          final mqttResponsePenet =
+                              json.decode(await scale_completer.future);
+                          // Handle the message as desired
+                          subscription.cancel();
+                          context.pop();
+                          devtools.log("penet completed done");
+
+                          if (mqttResponsePenet['status'] == 'success') {
+                            // devtools.log("HERE_11");
+                            http.Response httpRes = await auth.postAuthReq(
+                              '/api/v1/item/$action',
+                              body: <String, String>{
+                                // 'barcode': barCode.toString(),
+                                'barcode': '1231231',
+                                'process_id': timestamp.toString(),
+                              },
+                            );
+
+                            devtools.log("code: ${httpRes.statusCode}");
+                            // if success, add item to cart and exit refresh page
+                            if (httpRes.statusCode == 200) {
+                              // if (true) {
+                              if (action == 'add') {
+                                var product = json.decode(httpRes.body);
+                                devtools.log("$product");
+                                // var blob = json.decode(imageRes.body)['img_link'];
+                                // Uint8List productImage;
+                                // if (blob != null) {
+                                // Only decode if blob is not null to prevent crashes
+                                // productImage = base64.decode(blob);
+                                // } else {
+                                // TODO Empty
+                                // productImage = base64.decode(blob);
+                                // }
+                                Item item = Item(
+                                    barcode: barCode.toString(),
+                                    name: product['en_name'],
+                                    unit: 'Kg',
+                                    price: product['price'],
+                                    count: 1,
+                                    image:
+                                        "http://${env.baseURL}${product['img_path']}");
+                                // image: productImage);
+                                cart.addItem(item);
+                              } else {
+                                // if case is remove
+                                cart.removeItem(
+                                    cart.getItems()[int.parse(index)]);
+                              }
+                              cart.setCartState("active");
+                              context.goNamed(cartRoute);
                             }
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
+                          } else {
+                            bool isRetry = await showCustomBoolDialog(
+                                context,
+                                "Failed to $action item",
+                                "Make sure item is not leaving the cart",
+                                "Retry");
+                            if (isRetry) {
+                              _canScan = true;
+                            } else {
+                              cart.setCartState("active");
+                              GoRouter.of(context).pop();
+                            }
                           }
-                        } else if (mqttResponse['status'] == 'scale_fail') {
+                        } else if (mqttResponseScale['status'] ==
+                            'scale_fail') {
                           bool isRetry = await showCustomBoolDialog(
                               context,
                               "Failed to $action item",
@@ -177,7 +212,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                             cart.setCartState("active");
                             GoRouter.of(context).pop();
                           }
-                        } else if (mqttResponse['status'] == 'acce_fail') {
+                        } else if (mqttResponseScale['status'] == 'acce_fail') {
                           bool isRetry = await showCustomBoolDialog(
                               context,
                               "Failed to $action item",
@@ -189,8 +224,9 @@ class BarcodeScannerPage extends ConsumerWidget {
                             cart.setCartState("active");
                             GoRouter.of(context).pop();
                           }
-                        } else if (mqttResponse['status'] == 'item_not_found') {
-                          devtools.log("HERE_4");
+                        } else if (mqttResponseScale['status'] ==
+                            'item_not_found') {
+                          // devtools.log("HERE_4");
                           bool isRetry = await showCustomBoolDialog(
                             context,
                             "Item Not Found",
@@ -267,15 +303,6 @@ class BarcodeScannerPage extends ConsumerWidget {
                     "Scan an prodcut barcode",
                     style: TextStyle(),
                   ),
-                ),
-              ),
-            ),
-            Visibility(
-              visible: _awaitMqtt,
-              child: Container(
-                color: Colors.white.withOpacity(0.8),
-                child: const Center(
-                  child: CircularProgressIndicator(),
                 ),
               ),
             ),

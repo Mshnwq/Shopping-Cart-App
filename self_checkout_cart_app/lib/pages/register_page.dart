@@ -82,6 +82,8 @@ class _RegisterPageState extends State<RegisterPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Image.asset('assets/images/cart.png'),
+          const SizedBox(height: 40),
           TextField(
             textAlign: TextAlign.center,
             controller: _username,
