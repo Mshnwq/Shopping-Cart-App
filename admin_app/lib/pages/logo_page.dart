@@ -27,7 +27,22 @@ class LogoPage extends ConsumerWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                // TODO remove shortcut
+                try {
+                  http.Response res = await auth
+                      .postReq('/api/v1/cart/update_status/${auth.cart_id}/0');
+                  devtools.log("code: ${res.statusCode}");
+                } catch (e) {
+                  devtools.log("$e");
+                }
+              },
+              // style: appTheme.getButtonStyle,
+              child: Text(
+                'Set Cart Ready',
+                // style: appTheme.getButtonTextStyle,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
                 var httpBody = <String, String>{
                   'qrcode': auth.cart_id,
                 };
@@ -47,9 +62,6 @@ class LogoPage extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                // var httpBody = <String, String>{
-                // 'qrcode': auth.cart_id,
-                // };
                 try {
                   http.Response res = await auth
                       .postReq('/api/v1/cart/update_status/${auth.cart_id}/1');
