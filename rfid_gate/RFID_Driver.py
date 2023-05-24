@@ -25,8 +25,8 @@ class RFID_Reader():
         self.timeout = timeout # timeout of queue
         self.p = Process(target=self._reading_job, args=(self.q,)) # a process for the job
         self.Exit_Flag = multiprocessing.Value('i', 0) # process flag  
- 
- #### PROCESS CONTROL METHODS ####
+
+#### PROCESS CONTROL METHODS ####
     def run(self):
         '''start the job'''
         self.Exit_Flag.value = 0
@@ -53,14 +53,14 @@ class RFID_Reader():
         # Device Setup
         self.__setup_dll()
         self.setSettings(SINGLE_READ_SETTINGS, False)
-        # self.getSettings() #Use when needed
+        self.getSettings() #Use when needed
 
-        # print(f"Entering the Reading Loop, Flag = {self.Exit_Flag.value}")
+        print(f"Entering the Reading Loop, Flag = {self.Exit_Flag.value}")
         while self.Exit_Flag.value == 0:
             tagRead = self.singleReadSimEPC()
             if tagRead:
                 q.put(tagRead)
-        # print(f"Exiting the Reading Loop, Flag = {self.Exit_Flag.value}")
+        print(f"Exiting the Reading Loop, Flag = {self.Exit_Flag.value}")
 
     def readTag(self):
         '''Dequeue a Tag Read from Queue'''
@@ -68,11 +68,11 @@ class RFID_Reader():
             tagValue = self.q.get(block=True, timeout=self.timeout)
         except Empty:
             tagValue = None
-
-        if tagValue and self.checkSum(tagValue) == 1:
-            return tagValue
-        else: 
-            return None
+        # print(tagValue)
+        # if tagValue and self.checkSum(tagValue) == 1:
+        return tagValue
+        # else: 
+            # return None
 
 ########### DEVICE INITIALIZATION METHODS ############
 
@@ -313,6 +313,7 @@ class RFID_Reader():
         readLen = 0x08
         rsv_data = bytes(16)
         if self.Objdll.CFHid_ReadCardG2(0xff, passWrd, mem, wordPtr, readLen, rsv_data) == 1:
+            print(rsv_data)
             return rsv_data
 
 ##### HELPER METHODS #####

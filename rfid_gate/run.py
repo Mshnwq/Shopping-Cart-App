@@ -10,10 +10,10 @@ import time
 WINDOW_WIDTH = 900
 WINDOW_HEIGHT = 600
 
-# CHECKPOINT VARIABLES TODO
+# CHECKPOINT VARIABLES
 GATE_ID = "Checkpoint Gate"
 
-BUFFER_SIZE = 2 # Size of buffer that forces the post
+BUFFER_SIZE = 1 # Size of buffer that forces the post
 POLLING_CONTROL_TIME = 2 # time period of control polling
 TIME_WINDOW = 2 # time window to post when no new tag is detected
 TIMEOUT = 0.5 # Queue timeout

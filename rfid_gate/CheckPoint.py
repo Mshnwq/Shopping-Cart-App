@@ -90,7 +90,6 @@ class CheckPoint():
                 # print("FULL")
                 break
             tagRead = self.reader.readTag()   
-            # print(tagRead)
             if tagRead == None: # corrupt read or no read
                 NoFlagTime = time.time() - Window_Start_time
                 continue
@@ -98,8 +97,9 @@ class CheckPoint():
                 self.data.append(tagRead) # for Filter
                 #TODO
                 cartInfoDict = {}
-                cartInfoDict["key"] = (str(int.from_bytes(tagRead[7:11], 'big')).rjust(12,'0')) # cart key
+                cartInfoDict["key"] = (str(int.from_bytes(tagRead[:], 'big'))) # cart key
                 print("adding: ", end='')
+                # print(tagRead[:])
                 print(cartInfoDict)
                 # self.q.put(cartInfoDict)
                 self.logsAppendSignal.emit(f"adding: {cartInfoDict}")
@@ -137,7 +137,7 @@ class CheckPoint():
         # construct JSON
         checkPointInfoDict = dict()
         checkPointInfoDict["gate_id"] = self.__GATE_ID
-        checkPointInfoDict["bags"] = self.cartsList
+        checkPointInfoDict["carts"] = self.cartsList
 
         # Serializing json  
         json_object = json.dumps(checkPointInfoDict, indent = 4) 
@@ -145,19 +145,19 @@ class CheckPoint():
 
         # TODO request link
         # Attempt Post Rquest
-        try:
-            r = requests.post('http://38.54.61.211:8989/api/v1/gate/scan', data=json_object, timeout=1)
-        except:
-            print(f"Status Code: , Response:")
-            pass
-        if r.status_code == 200:
-            print(f"Status Code: {r.status_code}, Response: {r.json()}")
-            self.logsAppendSignal.emit("Success")
-            self.sendingRequestSignal.emit(0)
-        else:
-            print(f"Status Code: {r.status_code}, Response: {r.json()}")
-            self.logsAppendSignal.emit("Failed")
-            self.sendingRequestSignal.emit(2)
+        # try:
+            # r = requests.post(f'http://192.168.55.66:1111/api/v1/cart/checkpoint/{checkPointInfoDict["carts"]}', timeout=1)
+        # except:
+            # print(f"Status Code: , Response:")
+            # pass
+        # if r.status_code == 200:
+            # print(f"Status Code: {r.status_code}, Response: {r.json()}")
+            # self.logsAppendSignal.emit("Success")
+            # self.sendingRequestSignal.emit(0)
+        # else:
+            # print(f"Status Code: {r.status_code}, Response: {r.json()}")
+            # self.logsAppendSignal.emit("Failed")
+            # self.sendingRequestSignal.emit(2)
     
     def control(self, polling_time):
         '''
