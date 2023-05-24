@@ -77,110 +77,115 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget showPage(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset('assets/images/cart.png'),
-          const SizedBox(height: 40),
-          TextField(
-            textAlign: TextAlign.center,
-            controller: _username,
-            autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: 'Username',
-            ),
-          ),
-          TextField(
-            textAlign: TextAlign.center,
-            controller: _email,
-            autocorrect: false,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              hintText: 'Enter Email',
-            ),
-          ),
-          TextField(
-            textAlign: TextAlign.center,
-            controller: _passwd,
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: 'Enter Password',
-            ),
-          ),
-          TextField(
-            textAlign: TextAlign.center,
-            controller: _passwdConf,
-            obscureText: true,
-            enableSuggestions: false,
-            autocorrect: false,
-            decoration: const InputDecoration(
-              hintText: 'Confirm Password',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final username = _username.text;
-              final email = _email.text;
-              final passwd = _passwd.text;
-              final passwdConf = _passwdConf.text;
-              try {
-                if (passwdConf == passwd) {
-                  // bool isSuccess = await Auth().register(
-                  // context, username, email, passwd);
-                  bool isSuccess = true; // TODO email message
-                  if (isSuccess) {
-                    context.goNamed(connectRoute);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset('assets/images/cart.png'),
+              const SizedBox(height: 40),
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _username,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  hintText: 'Username',
+                ),
+              ),
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _email,
+                autocorrect: false,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  hintText: 'Enter Email',
+                ),
+              ),
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _passwd,
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  hintText: 'Enter Password',
+                ),
+              ),
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _passwdConf,
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  hintText: 'Confirm Password',
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final username = _username.text;
+                  final email = _email.text;
+                  final passwd = _passwd.text;
+                  final passwdConf = _passwdConf.text;
+                  try {
+                    if (passwdConf == passwd) {
+                      // bool isSuccess = await Auth().register(
+                      // context, username, email, passwd);
+                      bool isSuccess = true; // TODO email message
+                      if (isSuccess) {
+                        context.goNamed(connectRoute);
+                      }
+                    } else {
+                      throw const PassWordMismatchException();
+                    }
+                  } on PassWordMismatchException {
+                    showAlertMassage(context, "Passwords don't match");
+                  } catch (e) {
+                    // switch (e) {
+                    // case 'User-found':
+                    // devtools.log('Error: $e');
+                    // showAlertMassage(context, "User name in use");
+                    // break;
+                    // case 'Email-found':
+                    // devtools.log('Error: $e');
+                    // showAlertMassage(context, "Email in use");
+                    // break;
+                    // case 'Invalid-Email':
+                    // devtools.log('Error: $e');
+                    // showAlertMassage(context, "Invalid Email");
+                    // break;
+                    // default:
+                    devtools.log('Error: $e');
+                    showAlertMassage(context, "$e");
+                    // break;
+                    // }
                   }
-                } else {
-                  throw const PassWordMismatchException();
-                }
-              } on PassWordMismatchException {
-                showAlertMassage(context, "Passwords don't match");
-              } catch (e) {
-                // switch (e) {
-                // case 'User-found':
-                // devtools.log('Error: $e');
-                // showAlertMassage(context, "User name in use");
-                // break;
-                // case 'Email-found':
-                // devtools.log('Error: $e');
-                // showAlertMassage(context, "Email in use");
-                // break;
-                // case 'Invalid-Email':
-                // devtools.log('Error: $e');
-                // showAlertMassage(context, "Invalid Email");
-                // break;
-                // default:
-                devtools.log('Error: $e');
-                showAlertMassage(context, "$e");
-                // break;
-                // }
-              }
-            },
-            child: Text(
-              'Register',
-              // style: appTheme.getButtonTextStyle,
-            ),
+                },
+                child: Text(
+                  'Register',
+                  // style: appTheme.getButtonTextStyle,
+                ),
+              ),
+              TextButton(
+                onPressed: () => context.goNamed(loginRoute),
+                child: Text(
+                  'Log in',
+                  // style: appTheme.getButtonTextStyle,
+                ),
+              ),
+              TextButton(
+                onPressed: () => context.goNamed(logoRoute),
+                child: Text(
+                  'Back',
+                  // style: appTheme.getButtonTextStyle,
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => context.goNamed(loginRoute),
-            child: Text(
-              'Log in',
-              // style: appTheme.getButtonTextStyle,
-            ),
-          ),
-          TextButton(
-            onPressed: () => context.goNamed(logoRoute),
-            child: Text(
-              'Back',
-              // style: appTheme.getButtonTextStyle,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

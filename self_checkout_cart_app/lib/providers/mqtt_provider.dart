@@ -173,7 +173,7 @@ class MQTT extends ChangeNotifier {
             // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
           }
-          if (res['mqtt_type'] == "response_penetration_item") {
+          if (res['mqtt_type'] == "penetration_data") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
             _penetMessageController.add(payload);

@@ -140,8 +140,8 @@ class BarcodeScannerPage extends ConsumerWidget {
                           subscription.cancel();
                           context.pop();
                           devtools.log("penet completed done");
-
-                          if (mqttResponsePenet['status'] == 'success') {
+                          // on penetration success
+                          if (mqttResponsePenet['status'] == 1) {
                             // devtools.log("HERE_11");
                             http.Response httpRes = await auth.postAuthReq(
                               '/api/v1/item/$action',
