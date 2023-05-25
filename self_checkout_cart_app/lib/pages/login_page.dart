@@ -48,25 +48,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               children: [
                 Image.asset('assets/images/cart.png'),
                 const SizedBox(height: 60),
-                TextField(
-                  textAlign: TextAlign.center,
+                CustomTextField(
                   controller: _email,
-                  autocorrect: false,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter Email or Username',
-                  ),
+                  hintText: 'Enter Email or Username',
                 ),
-                TextField(
-                  textAlign: TextAlign.center,
+                const SizedBox(height: 10),
+                CustomTextField(
                   controller: _passwd,
-                  obscureText: true,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter Password',
-                  ),
+                  hintText: 'Enter Password',
+                  enableToggle: true,
                 ),
+                // TextField(
+                //   textAlign: TextAlign.center,
+                //   controller: _email,
+                //   autocorrect: false,
+                //   keyboardType: TextInputType.emailAddress,
+                //   decoration: const InputDecoration(
+                //     hintText: 'Enter Email or Username',
+                //   ),
+                // ),
+                // TextField(
+                //   textAlign: TextAlign.center,
+                //   controller: _passwd,
+                //   obscureText: true,
+                //   enableSuggestions: false,
+                //   autocorrect: false,
+                //   decoration: const InputDecoration(
+                //     hintText: 'Enter Password',
+                //   ),
+                // ),
+                const SizedBox(height: 20),
                 CustomButton(
                   onPressed: () async {
                     final String email = _email.text;
@@ -104,6 +115,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     }
                   },
                   text: 'Log In',
+                  textStyle: Theme.of(context).textTheme.titleMedium,
                 ),
                 InkWell(
                   onLongPress: () => context.goNamed(connectRoute),
@@ -111,17 +123,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onPressed: () => context.goNamed(registerRoute),
                     child: Text(
                       'Register',
-                      // style: appTheme.getButtonTextStyle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                          ),
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () => context.goNamed(logoRoute),
-                  child: Text(
-                    'Back',
-                    // style: appTheme.getButtonTextStyle,
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () => context.goNamed(logoRoute),
+                //   child: Text(
+                //     'Back',
+                //   ),
+                // ),
               ],
             ),
           ),
