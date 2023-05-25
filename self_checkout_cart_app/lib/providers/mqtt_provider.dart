@@ -26,8 +26,8 @@ class MQTT extends ChangeNotifier {
   late StreamController<String> _alarmMessageController;
   Stream<String> get onAlarmMessage => _alarmMessageController.stream;
 
-  late StreamController<String> _penetMessageController;
-  Stream<String> get onPenetMessage => _penetMessageController.stream;
+  late StreamController<String> scaleMessageController;
+  Stream<String> get onScaleMessage => scaleMessageController.stream;
 
   String get clientId => _clientId;
   String get topic => _topic;
@@ -103,7 +103,7 @@ class MQTT extends ChangeNotifier {
       // create message stream controllers
       _itemMessageController = StreamController<String>.broadcast();
       _alarmMessageController = StreamController<String>.broadcast();
-      _penetMessageController = StreamController<String>.broadcast();
+      scaleMessageController = StreamController<String>.broadcast();
       return true;
     } on mqtt.NoConnectionException catch (e) {
       // Raised by the client when connection fails.
@@ -131,7 +131,7 @@ class MQTT extends ChangeNotifier {
       _client.disconnect();
       _itemMessageController.close();
       _alarmMessageController.close();
-      _penetMessageController.close();
+      scaleMessageController.close();
     } else {
       devtools.log('Already disconnected');
     }
@@ -173,12 +173,12 @@ class MQTT extends ChangeNotifier {
             // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
           }
-          if (res['mqtt_type'] == "penetration_data") {
+          if (res['mqtt_type'] == "scale_confirmation") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
-            _penetMessageController.add(payload);
+            scaleMessageController.add(payload);
           }
-          if (res['mqtt_type'] == "alarm_detection") {
+          if (res['mqtt_type'] == "update_status") {
             // add message to stream
             devtools.log('ADDING ALARM TO STREAM');
             _alarmMessageController.add(payload);

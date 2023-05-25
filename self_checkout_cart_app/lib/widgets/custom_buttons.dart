@@ -1,97 +1,71 @@
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
-// import '../../theme/themes.dart';
+class ConnectButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
 
-// typedef Action = void Function();
+  const ConnectButton({
+    Key? key,
+    required this.text,
+    required this.onPressed,
+  }) : super(key: key);
 
-// class CustomSlidButton extends StatefulWidget {
-//   final Action? onTapLeft;
-//   final Action? onTapRight;
-//   final String leftLabel;
-//   final String rightLabel;
-//   final double width;
-//   final double hight;
-//   const CustomSlidButton({
-//     required this.width,
-//     required this.hight,
-//     this.onTapLeft,
-//     this.onTapRight,
-//     required this.leftLabel,
-//     required this.rightLabel,
-//     Key? key,
-//   }) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context)
+            .colorScheme
+            .background, // Set your desired button color
+        foregroundColor: Colors.white, // Set your desired text color
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(20.0), // Set your desired border radius
+        ),
+        elevation: 4.0, // Set the elevation of the button
+      ),
+      child: Text(text),
+    );
+  }
+}
 
-//   @override
-//   State<CustomSlidButton> createState() => _CustomSlidButtonState();
-// }
+class CustomButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final double buttonHeight;
 
-// class _CustomSlidButtonState extends State<CustomSlidButton> {
-//   bool isLeftSelected = true;
+  const CustomButton({
+    Key? key,
+    required this.text,
+    required this.onPressed,
+    this.buttonHeight = 48.0,
+  }) : super(key: key);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     String label = (isLeftSelected) ? widget.leftLabel : widget.rightLabel;
-//     return Container(
-//       margin: const EdgeInsets.only(top: 20),
-//       width: widget.width,
-//       height: widget.hight,
-//       decoration: BoxDecoration(
-//           borderRadius: BorderRadius.circular(30), color: Colors.white),
-//       child: Stack(children: [
-//         buildTextHolder(widget.leftLabel, isLeftSelected),
-//         buildTextHolder(widget.rightLabel, !isLeftSelected),
-//         buildSlidButton(label)
-//       ]),
-//     );
-//   }
-
-//   AnimatedAlign buildSlidButton(String label) {
-//     AppTheme appTheme = context.read<ThemeProvider>().getAppTheme();
-//     return AnimatedAlign(
-//       alignment:
-//           (isLeftSelected) ? Alignment.centerLeft : Alignment.centerRight,
-//       duration: const Duration(milliseconds: 200),
-//       child: buildButton(label, appTheme.cardColor, Colors.white),
-//     );
-//   }
-
-//   AnimatedOpacity buildTextHolder(String label, bool isActive) {
-//     return AnimatedOpacity(
-//       opacity: (isActive) ? 0 : 1,
-//       duration: const Duration(milliseconds: 200),
-//       child: Align(
-//         alignment:
-//             (isLeftSelected) ? Alignment.centerRight : Alignment.centerLeft,
-//         child: GestureDetector(
-//           onTap: () => setState(() {
-//             isLeftSelected = !isLeftSelected;
-//             Action onTap = (isLeftSelected)
-//                 ? widget.onTapLeft as Action
-//                 : widget.onTapRight as Action;
-//             onTap();
-//           }),
-//           child: buildButton(label, Colors.white, Colors.grey),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Container buildButton(String label, Color backgroundColor, Color textColor) {
-//     return Container(
-//       margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-//       width: widget.width / 2,
-//       height: widget.hight - 6,
-//       decoration: BoxDecoration(
-//         borderRadius: BorderRadius.circular(25),
-//         color: backgroundColor,
-//       ),
-//       child: Center(
-//         child: Text(
-//           label,
-//           style: TextStyle(fontSize: 11, color: textColor),
-//         ),
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: buttonHeight,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context)
+              .colorScheme
+              .background, // Set your desired button color
+          foregroundColor: Theme.of(context)
+              .colorScheme
+              .secondary, // Set your desired text color
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(20.0), // Set your desired border radius
+          ),
+          elevation: 4.0, // Set the elevations of the button
+        ),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+      ),
+    );
+  }
+}

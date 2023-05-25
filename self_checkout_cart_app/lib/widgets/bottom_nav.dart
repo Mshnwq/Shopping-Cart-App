@@ -106,18 +106,18 @@ class _BottomNavigationWidgetState
       );
       if (shouldCheckout) {
         try {
-          // http.Response httpRes =
-          // await ref.watch(authProvider).getAuthReq('api/v1/bill/secret');
-          // if (httpRes.statusCode == 200) {
-          if (true) {
-            // final body = json.decode(httpRes.body);
-            // ref.watch(receiptProvider).setText(body.toString());
-            ref.watch(receiptProvider).setText('cred5f6g7f67d445f6g');
+          http.Response httpRes =
+              await ref.watch(authProvider).getAuthReq('api/v1/bill/secret');
+          if (httpRes.statusCode == 200) {
+            // if (true) {
+            final body = json.decode(httpRes.body);
+            ref.watch(receiptProvider).setText(body.toString());
+            // ref.watch(receiptProvider).setText('cred5f6g7f67d445f6g');
             ref.watch(cartProvider).setCartState('checkout');
             context.goNamed(checkoutRoute);
           } else {
-            // throw Exception(httpRes.statusCode.toString());
-            throw Exception('oops');
+            throw Exception(httpRes.statusCode.toString());
+            // throw Exception('oops');
           }
         } catch (e) {
           bool isRetry = await showCustomBoolDialog(

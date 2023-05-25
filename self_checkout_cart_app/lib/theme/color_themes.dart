@@ -4,11 +4,11 @@ import 'typography.dart';
 const lightColorScheme = ColorScheme(
   // amber: Colors.amber,
   brightness: Brightness.light,
-  primary: Color(0xFF6750A4),
-  onPrimary: Color(0xFFFFFFFF),
-  primaryContainer: Color(0xFFEADDFF),
+  primary: Color(0xFF2ECC71),
+  onPrimary: Color.fromARGB(255, 198, 87, 87),
+  primaryContainer: Color.fromARGB(255, 0, 0, 0),
   onPrimaryContainer: Color(0xFF21005D),
-  secondary: Color(0xFF625B71),
+  secondary: Color.fromARGB(255, 0, 0, 0),
   onSecondary: Color(0xFFFFFFFF),
   secondaryContainer: Color(0xFFE8DEF8),
   onSecondaryContainer: Color(0xFF1D192B),
@@ -21,7 +21,7 @@ const lightColorScheme = ColorScheme(
   errorContainer: Color(0xFFF9DEDC),
   onErrorContainer: Color(0xFF410E0B),
   outline: Color(0xFF79747E),
-  background: Color.fromARGB(255, 10, 7, 164),
+  background: Colors.white,
   onBackground: Color(0xFF1C1B1F),
   surface: Color(0xFFFFFBFE),
   onSurface: Color(0xFF1C1B1F),
@@ -31,11 +31,11 @@ const lightColorScheme = ColorScheme(
   onInverseSurface: Color(0xFFF4EFF4),
   inversePrimary: Color(0xFFD0BCFF),
   shadow: Color(0xFF000000),
-  surfaceTint: Color(0xFF6750A4),
+  surfaceTint: Color.fromARGB(255, 35, 0, 131),
 );
 
 ThemeData lightTheme = ThemeData(
-  backgroundColor: Colors.amber,
+  backgroundColor: Color.fromARGB(255, 4, 218, 7),
   indicatorColor: Colors.black,
   focusColor: Colors.green,
   useMaterial3: true,

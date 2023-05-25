@@ -25,9 +25,9 @@ class CartShellPage extends ConsumerWidget {
 
     // publush any Listened changes in the cartProvider
     var publishBody = <String, dynamic>{
-      'mqtt_type': 'update_mode',
+      'mqtt_type': 'request_update_status',
       'sender': mqtt.clientId,
-      'mode': cart.state.stateString,
+      'status': cart.state.stateString,
       'timestamp': DateTime.now().millisecondsSinceEpoch
     };
     mqtt.publish(json.encode(publishBody));
@@ -60,7 +60,7 @@ class CartShellPage extends ConsumerWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             // handle loading
-            if (json.decode(snapshot.data!)['trigger']) {
+            if (json.decode(snapshot.data!)['status'].toString() == '5') {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
               return alarm(context, snapshot.hasData.toString());
@@ -73,7 +73,7 @@ class CartShellPage extends ConsumerWidget {
           } else if (snapshot.hasError) {
             // handle error (note: snapshot.error has type [Object?])
             final error = snapshot.error!;
-            return Text(error.toString());
+            return alarm(context, error.toString());
           } else {
             // uh, oh, what goes here?
             return error(context);

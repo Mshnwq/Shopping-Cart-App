@@ -37,9 +37,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Self Check Out Cart"),
-      ),
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center(
@@ -69,7 +67,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     hintText: 'Enter Password',
                   ),
                 ),
-                ElevatedButton(
+                CustomButton(
                   onPressed: () async {
                     final String email = _email.text;
                     final String passwd = _passwd.text;
@@ -105,11 +103,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       // }
                     }
                   },
-                  // style: appTheme.getButtonStyle,
-                  child: Text(
-                    'Log In',
-                    // style: appTheme.getButtonTextStyle,
-                  ),
+                  text: 'Log In',
                 ),
                 InkWell(
                   onLongPress: () => context.goNamed(connectRoute),

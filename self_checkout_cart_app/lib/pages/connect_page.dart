@@ -35,7 +35,6 @@ class ConnectPage extends ConsumerWidget {
           preferredSize: const Size.fromHeight(60), //height of appbar
           child: AppBar(
             backgroundColor: Theme.of(context).backgroundColor,
-            // backgroundColor: appTheme.green,
             title: Text(
               'Welcome ${auth.username}',
               style: Theme.of(context).textTheme.titleLarge,
@@ -52,7 +51,7 @@ class ConnectPage extends ConsumerWidget {
                 onLongPress: () async {
                   // TODO remove shortcut
                   var httpBody = <String, String>{
-                    'qrcode': 'Welcome',
+                    'qrcode': '123',
                   };
                   // if success, add item to cart and exit refresh page
                   try {
@@ -83,9 +82,9 @@ class ConnectPage extends ConsumerWidget {
                     devtools.log("$e");
                   }
                 },
-                child: ElevatedButton(
+                child: ConnectButton(
                   onPressed: () => context.goNamed(qrScanRoute),
-                  child: const Text('Scan QR code'),
+                  text: 'Scan QR code',
                 ),
               ),
             ],

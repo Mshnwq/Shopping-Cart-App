@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../widgets/all_widgets.dart';
-// import '../theme/themes.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools show log;
 
@@ -14,9 +13,6 @@ class LogoPage extends StatefulWidget {
 }
 
 class _LogoPageState extends State<LogoPage> {
-  String? receiptKey;
-  bool receiptKeyTextState = false;
-
   @override
   void initState() {
     super.initState();
@@ -24,12 +20,8 @@ class _LogoPageState extends State<LogoPage> {
 
   @override
   Widget build(BuildContext context) {
-    // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
     return Scaffold(
-      // endDrawer: const MenuBar(),
-      appBar: AppBar(
-          // backgroundColor: appTheme.green,
-          ),
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -39,24 +31,21 @@ class _LogoPageState extends State<LogoPage> {
             const SizedBox(height: 20),
             Text(
               'Shop smarter... faster',
-              style: Theme.of(context).textTheme.subtitle1,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Colors.white, // Set your desired text color here
+                  ),
             ),
             const SizedBox(height: 120),
-            ElevatedButton(
+            CustomButton(
               onPressed: () => context.goNamed(loginRoute),
-              // style: appTheme.getButtonStyle,
-              child: Text(
-                'Log In',
-                // style: appTheme.getButtonTextStyle,
-              ),
+              text: 'Log In',
+              buttonHeight: 60,
             ),
-            ElevatedButton(
+            const SizedBox(height: 20),
+            CustomButton(
               onPressed: () => context.goNamed(registerRoute),
-              // style: appTheme.getButtonStyle,
-              child: Text(
-                'Register',
-                // style: appTheme.getButtonTextStyle,
-              ),
+              text: 'Register',
+              buttonHeight: 60,
             ),
           ],
         ),

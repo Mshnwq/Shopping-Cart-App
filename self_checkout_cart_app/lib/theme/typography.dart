@@ -24,10 +24,10 @@ final textTheme = TextTheme(
     height: 40 / 32,
   ),
   headlineMedium: GoogleFonts.inter(
-    fontWeight: FontWeight.w400,
-    fontSize: 28,
-    height: 36 / 28,
-  ),
+      fontWeight: FontWeight.w400,
+      fontSize: 28,
+      height: 36 / 28,
+      color: Colors.amber),
   headlineSmall: GoogleFonts.inter(
     fontWeight: FontWeight.w400,
     fontSize: 24,

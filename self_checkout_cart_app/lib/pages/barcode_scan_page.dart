@@ -43,7 +43,7 @@ class BarcodeScannerPage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
     final scale_completer = Completer<String>();
-    final penet_completer = Completer<String>();
+    final item_completer = Completer<String>();
 
     devtools.log("action $action");
     devtools.log("toBarcode $barcodeToRead");
@@ -108,7 +108,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                           ),
                         );
                         StreamSubscription scaleSubscription =
-                            mqtt.onItemMessage.listen((message) {
+                            mqtt.onScaleMessage.listen((message) {
                           scale_completer.complete(message);
                           devtools.log("scale waiting done");
                         });
@@ -120,7 +120,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                         context.pop();
                         devtools.log("scale completed done");
                         // devtools.log("RESPONSE: $mqttResponse");
-                        if (mqttResponseScale['status'] == 'success') {
+                        if (mqttResponseScale['status'] == 'pass') {
                           // Wait for the penet completer to complete
                           showDialog(
                             context: context,
@@ -130,18 +130,18 @@ class BarcodeScannerPage extends ConsumerWidget {
                             ),
                           );
                           StreamSubscription subscription =
-                              mqtt.onPenetMessage.listen((message) {
-                            penet_completer.complete(message);
-                            devtools.log("penet waiting done");
+                              mqtt.onItemMessage.listen((message) {
+                            item_completer.complete(message);
+                            devtools.log("item waiting done");
                           });
                           final mqttResponsePenet =
-                              json.decode(await scale_completer.future);
+                              json.decode(await item_completer.future);
                           // Handle the message as desired
                           subscription.cancel();
                           context.pop();
-                          devtools.log("penet completed done");
+                          devtools.log("item completed done");
                           // on penetration success
-                          if (mqttResponsePenet['status'] == 1) {
+                          if (mqttResponsePenet['status'] == 'success') {
                             // devtools.log("HERE_11");
                             http.Response httpRes = await auth.postAuthReq(
                               '/api/v1/item/$action',
