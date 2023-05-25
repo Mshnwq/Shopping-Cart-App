@@ -31,7 +31,7 @@ class _LogoPageState extends State<LogoPage> {
             const SizedBox(height: 20),
             Text(
               'Shop smarter... faster',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     color: Colors.white, // Set your desired text color here
                   ),
             ),

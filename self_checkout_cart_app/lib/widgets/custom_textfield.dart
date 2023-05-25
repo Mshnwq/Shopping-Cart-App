@@ -4,12 +4,14 @@ class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
   final bool enableToggle;
+  final bool isEmail;
 
   const CustomTextField({
     Key? key,
     required this.controller,
     required this.hintText,
     this.enableToggle = false,
+    this.isEmail = false,
   }) : super(key: key);
 
   @override
@@ -36,6 +38,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             obscureText: widget.enableToggle ? _obscureText : false,
             enableSuggestions: !widget.enableToggle || !_obscureText,
             autocorrect: false,
+            keyboardType: widget.isEmail ? TextInputType.emailAddress : null,
             style: TextStyle(color: Colors.black.withOpacity(0.75)),
             decoration: InputDecoration(
               hintText: widget.hintText,

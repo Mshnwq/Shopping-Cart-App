@@ -19,9 +19,9 @@ final textTheme = TextTheme(
     height: 44 / 36,
   ),
   headlineLarge: GoogleFonts.inter(
-    fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.w700,
     fontSize: 32,
-    height: 40 / 32,
+    height: 44 / 32,
   ),
   headlineMedium: GoogleFonts.inter(
       fontWeight: FontWeight.w400,

@@ -58,25 +58,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   hintText: 'Enter Password',
                   enableToggle: true,
                 ),
-                // TextField(
-                //   textAlign: TextAlign.center,
-                //   controller: _email,
-                //   autocorrect: false,
-                //   keyboardType: TextInputType.emailAddress,
-                //   decoration: const InputDecoration(
-                //     hintText: 'Enter Email or Username',
-                //   ),
-                // ),
-                // TextField(
-                //   textAlign: TextAlign.center,
-                //   controller: _passwd,
-                //   obscureText: true,
-                //   enableSuggestions: false,
-                //   autocorrect: false,
-                //   decoration: const InputDecoration(
-                //     hintText: 'Enter Password',
-                //   ),
-                // ),
                 const SizedBox(height: 20),
                 CustomButton(
                   onPressed: () async {

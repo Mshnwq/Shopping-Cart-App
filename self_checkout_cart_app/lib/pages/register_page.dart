@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/custom_exceptions.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/all_widgets.dart';
 import '../constants/routes.dart';
 import 'dart:developer' as devtools;
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   // controller onbjects that connect between button and text field
   late final TextEditingController _username;
   late final TextEditingController _email;
@@ -40,10 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          // backgroundColor: appTheme.green,
-          title: const Text("Self Check Out Cart"),
-        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         body: showPage(context)
         // body: Center(
         // child: FutureBuilder(
@@ -77,6 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget showPage(BuildContext context) {
+    final auth = ref.watch(authProvider);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Center(
@@ -87,44 +87,30 @@ class _RegisterPageState extends State<RegisterPage> {
             children: [
               Image.asset('assets/images/cart.png'),
               const SizedBox(height: 40),
-              TextField(
-                textAlign: TextAlign.center,
+              CustomTextField(
                 controller: _username,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  hintText: 'Username',
-                ),
+                hintText: 'Username',
               ),
-              TextField(
-                textAlign: TextAlign.center,
+              const SizedBox(height: 10),
+              CustomTextField(
                 controller: _email,
-                autocorrect: false,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'Enter Email',
-                ),
+                hintText: 'Email',
+                isEmail: true,
               ),
-              TextField(
-                textAlign: TextAlign.center,
+              const SizedBox(height: 10),
+              CustomTextField(
                 controller: _passwd,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  hintText: 'Enter Password',
-                ),
+                hintText: 'Enter Password',
+                enableToggle: true,
               ),
-              TextField(
-                textAlign: TextAlign.center,
+              const SizedBox(height: 10),
+              CustomTextField(
                 controller: _passwdConf,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  hintText: 'Confirm Password',
-                ),
+                hintText: 'Confirm Password',
+                enableToggle: true,
               ),
-              ElevatedButton(
+              const SizedBox(height: 20),
+              CustomButton(
                 onPressed: () async {
                   final username = _username.text;
                   final email = _email.text;
@@ -132,9 +118,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   final passwdConf = _passwdConf.text;
                   try {
                     if (passwdConf == passwd) {
-                      // bool isSuccess = await Auth().register(
-                      // context, username, email, passwd);
-                      bool isSuccess = true; // TODO email message
+                      bool isSuccess =
+                          await auth.register(context, username, email, passwd);
+                      // bool isSuccess = true; // TODO email message
                       if (isSuccess) {
                         context.goNamed(connectRoute);
                       }
@@ -164,16 +150,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     // }
                   }
                 },
-                child: Text(
-                  'Register',
-                  // style: appTheme.getButtonTextStyle,
-                ),
+                text: 'Register',
+                textStyle: Theme.of(context).textTheme.titleMedium,
               ),
               TextButton(
                 onPressed: () => context.goNamed(loginRoute),
                 child: Text(
                   'Log in',
-                  // style: appTheme.getButtonTextStyle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
                 ),
               ),
               TextButton(
