@@ -62,8 +62,8 @@ class Auth with ChangeNotifier {
       return false;
     } catch (e) {
       showAlertMassage(context, "$e");
-      throw Exception(e); // TODO: Implement internet error
-      // return false;
+      // throw Exception(e); // TODO: Implement internet error
+      return false;
       // } finally {
       // showAlertMassage(context, "$e");
     }
@@ -98,8 +98,8 @@ class Auth with ChangeNotifier {
       return false;
     } catch (e) {
       showAlertMassage(context, "$e");
-      throw Exception(e); // TODO: Implement internet error
-      // return false;
+      // throw Exception(e); // TODO: Implement internet error
+      return false;
       // } finally {
       // showAlertMassage(context, "$e");
     }

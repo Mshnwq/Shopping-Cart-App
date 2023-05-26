@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
+import '../widgets/all_widgets.dart';
 import '../theme/theme_controller.dart';
 import '../providers/mqtt_provider.dart';
 import '../providers/auth_provider.dart';
-import 'alert_dialogs.dart';
 import 'dart:developer' as devtools;
 
 class MenuBar extends ConsumerWidget {
   const MenuBar({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeModeProvider);
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
               decoration: BoxDecoration(
-                color: Theme.of(context).backgroundColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
               child: Text(
                 'Side menu',
@@ -54,10 +53,24 @@ class MenuBar extends ConsumerWidget {
             leading: const Icon(Icons.exit_to_app),
             title: const Text('Logout'),
             onTap: () async {
-              final shouldLogout = await showLogOutDialog(context);
+              final shouldLogout = await customDialog(
+                context: context,
+                title: 'Log Out',
+                message: 'Confirm logging out',
+                buttons: [
+                  const ButtonArgs(
+                    text: 'Log Out',
+                    value: true,
+                  ),
+                  const ButtonArgs(
+                    text: 'Cancel',
+                    value: false,
+                  ),
+                ],
+              );
               if (shouldLogout) {
                 // ref.read(mqttProvider).disconnect();
-                // Auth().signOut(); TODO:
+                ref.read(authProvider).logout();
                 context.goNamed(logoRoute);
               }
             },
@@ -75,10 +88,12 @@ class MenuBar extends ConsumerWidget {
           IconButton(
             onPressed: () {
               ref.read(themeModeProvider.notifier).state =
-                  theme == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+                  // theme == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+                  ThemeMode.light;
             },
             icon: Icon(
-                theme == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+                // theme == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+                Icons.light_mode),
           ),
         ],
       ),

@@ -14,8 +14,9 @@ import 'dart:developer' as devtools;
 import 'package:http/http.dart' as http;
 
 class CartShellPage extends ConsumerWidget {
-  const CartShellPage({required this.child, Key? key}) : super(key: key);
+  CartShellPage({required this.child, Key? key}) : super(key: key);
   final Widget child;
+  bool isDrawerOpen = false; // Track the state of the drawer
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,23 +35,30 @@ class CartShellPage extends ConsumerWidget {
 
     return WillPopScope(
       onWillPop: () async {
-        final shouldDisconnect = showCustomBoolDialog(
-          context,
-          "Disconnect Cart",
-          "Are you Sure you want to disconnect this cart?",
-          "Confirm",
-        );
-        if (await shouldDisconnect) {
-          try {
-            http.Response res = await auth.postAuthReq(
-              '/api/v1/cart/disconnect',
-            );
-            if (res.statusCode == 200) {
-              mqtt.disconnect();
-              context.goNamed(connectRoute);
+        if (isDrawerOpen) {
+          context.pop();
+        } else {
+          final shouldDisconnect = await customDialog(
+            context: context,
+            title: 'Disconnect Cart?',
+            message: 'Are you Sure you want to disconnect this cart?',
+            buttons: [
+              ButtonArgs(text: 'Disconnect', value: true),
+              ButtonArgs(text: 'Cancel', value: false),
+            ],
+          );
+          if (await shouldDisconnect) {
+            try {
+              http.Response res = await auth.postAuthReq(
+                '/api/v1/cart/disconnect',
+              );
+              if (res.statusCode == 200) {
+                mqtt.disconnect();
+                context.goNamed(connectRoute);
+              }
+            } catch (e) {
+              devtools.log("$e");
             }
-          } catch (e) {
-            devtools.log("$e");
           }
         }
         return false;
@@ -76,6 +84,7 @@ class CartShellPage extends ConsumerWidget {
             return alarm(context, error.toString());
           } else {
             // uh, oh, what goes here?
+            return cartShell(context, ref);
             return error(context);
           }
         },
@@ -90,7 +99,7 @@ class CartShellPage extends ConsumerWidget {
         preferredSize: const Size.fromHeight(60), //height of appbar
         child: AppBar(
           centerTitle: true,
-          backgroundColor: Theme.of(context).backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           // title: Text('Cart ${cart.getCartState()} Mode',
           title: Text('Cart id# ${cart.id}, ${cart.state.stateString}',
               style: const TextStyle(fontSize: 20)),
@@ -112,6 +121,9 @@ class CartShellPage extends ConsumerWidget {
         ),
       ),
       drawer: const menu_bar.MenuBar(),
+      onDrawerChanged: (isOpened) {
+        isDrawerOpen = isOpened;
+      },
       body: !cart.isOnline() ? cartOffline(context) : child,
       bottomNavigationBar: const BottomNavigationWidget(),
     );

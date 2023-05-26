@@ -59,7 +59,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   enableToggle: true,
                 ),
                 const SizedBox(height: 20),
-                CustomButton(
+                CustomPrimaryButton(
                   onPressed: () async {
                     final String email = _email.text;
                     final String passwd = _passwd.text;

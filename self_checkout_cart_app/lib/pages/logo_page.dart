@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../widgets/all_widgets.dart';
 import '../constants/routes.dart';
@@ -36,13 +35,13 @@ class _LogoPageState extends State<LogoPage> {
                   ),
             ),
             const SizedBox(height: 120),
-            CustomButton(
+            CustomPrimaryButton(
               onPressed: () => context.goNamed(loginRoute),
               text: 'Log In',
               buttonHeight: 60,
             ),
             const SizedBox(height: 20),
-            CustomButton(
+            CustomPrimaryButton(
               onPressed: () => context.goNamed(registerRoute),
               text: 'Register',
               buttonHeight: 60,

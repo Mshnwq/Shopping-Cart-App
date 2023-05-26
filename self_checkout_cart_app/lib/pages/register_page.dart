@@ -110,7 +110,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 enableToggle: true,
               ),
               const SizedBox(height: 20),
-              CustomButton(
+              CustomPrimaryButton(
                 onPressed: () async {
                   final username = _username.text;
                   final email = _email.text;

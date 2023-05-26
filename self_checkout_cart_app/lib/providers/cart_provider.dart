@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import '../models/item_model.dart';
 import 'dart:developer' as devtools;
 
@@ -22,7 +22,7 @@ extension CartStateExtension on CartState {
     switch (this) {
       case CartState.initial:
         // return 'Initial';
-        return '-1';
+        return '1';
       case CartState.locked:
         // return 'Locked';
         return '0';

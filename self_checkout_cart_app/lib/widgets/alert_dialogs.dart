@@ -1,16 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-// import 'package:main_project/module/user.dart';
-// import 'package:main_project/states/stream_state.dart';
-// import '../../theme/themes.dart';
-import 'package:provider/provider.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../widgets/all_widgets.dart';
+// import 'package:flutter_g  en/gen_l10n/app_localizations.dart';
 
 typedef Action = void Function();
 
+Future<bool> showDialogWithWillPopScope({
+  required BuildContext context,
+  String? title,
+  required String content,
+  required List<ButtonArgs> buttons,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          title: title != null ? Text(title) : null,
+          content: Text(content),
+          actions: buttons.map((button) {
+            return ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop<bool>(button.value);
+              },
+              child: Text(button.text),
+            );
+          }).toList(),
+        ),
+      );
+    },
+  ).then((value) => value ?? false);
+}
+
+void showAlertMessage(BuildContext context, String message,
+    {Action? onOk, Action? then}) {
+  showDialogWithWillPopScope(
+    context: context,
+    title: "",
+    content: message,
+    buttons: [
+      // CustomDialogButton(text: "OK", value: true),
+    ],
+  ).then((value) {
+    if (then != null) then();
+  });
+}
+
+Future<bool> customDialog({
+  required BuildContext context,
+  required String title,
+  required List<ButtonArgs> buttons,
+  String? message,
+}) {
+  return showDialog(
+    barrierDismissible: true,
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message ?? ''),
+        actions: buttons.map((button) {
+          return CustomDialogButton(
+            onPressed: () {
+              Navigator.of(context).pop<bool>(button.value);
+            },
+            text: button.text,
+          );
+        }).toList(),
+      );
+    },
+  ).then((value) => value ?? false);
+}
+
+class ButtonArgs {
+  final String text;
+  final bool value;
+  final VoidCallback? onPressed;
+
+  const ButtonArgs({
+    required this.text,
+    required this.value,
+    this.onPressed,
+  });
+}
+
+Future<void> showCustomDialog(
+    BuildContext context, String title, String content, String buttonText) {
+  return showDialog<void>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('$title'),
+        content: Text('$content'),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('$buttonText'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// Future<bool> showQRDialog(BuildContext context, String id) {
+//   return showDialogWithWillPopScope(
+//     context: context,
+//     title: 'Confirm QR',
+//     content: 'Connecting to Cart $id',
+//     buttons: [
+//       CustomDialogButton<bool>(text: 'Confirm', value: true),
+//       CustomDialogButton<bool>(text: 'Cancel', value: false),
+//     ],
+//   ).then((value) => value ?? false);
+// }
+
+// typedef Action = void Function();
+
 void showAlertMassage(context, String message, {Action? onOk, Action? then}) {
-  SchedulerBinding.instance.addPostFrameCallback((_) {
-    showDialog<String>(
+  SchedulerBinding.instance.addPostFrameCallback(
+    (_) => showDialog<String>(
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) => WillPopScope(
@@ -19,118 +131,30 @@ void showAlertMassage(context, String message, {Action? onOk, Action? then}) {
           // title: Text(AppLocalizations.of(context)!.errorDialogTitle),
           title: Text(""), //TODO app local
           content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                if (onOk != null) onOk();
-                Navigator.pop(context, 'OK');
-              },
-              // child: Text(AppLocalizations.of(context)!.ok),
-              child: Text("ok"),
-            ),
-          ],
+          // actions: <Widget>[
+          //   CustomButton(
+          //     onPressed: () {
+          //       if (onOk != null) onOk();
+          //       Navigator.pop(context, 'OK');
+          //     },
+          //     // child: Text(AppLocalizations.of(context)!.ok),
+          //     text: "ok",
+          //   ),
+          // ],
         ),
       ),
-    ).then((value) {
-      if (then == null) return;
-      then();
-    });
-  });
-}
-
-Future<bool> showLogOutDialog(BuildContext context) {
-  // AppTheme appTheme =
-  // Provider.of<ThemeProvider>(context, listen: false).getAppTheme();
-  return showDialog<bool>(
-    // conditional bool if phone return tap
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Confirm logging out'),
-        actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            // style: appTheme.getButtonStyle,
-            child: const Text('Log Out'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            // style: appTheme.getButtonStyle,
-            child: const Text('Cancel'),
-          )
-        ],
-      );
-    },
-  ).then((value) => value ?? false);
-}
-
-Future<bool> showCustomBoolDialog(
-    BuildContext context, String title, String content, String buttonText) {
-  // AppTheme appTheme =
-  // Provider.of<ThemeProvider>(context, listen: false).getAppTheme();
-  return showDialog<bool>(
-    // conditional bool if phone return tap
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('${title}'),
-        content: Text('${content}'),
-        actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            // style: appTheme.getButtonStyle,
-            child: Text('${buttonText}'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            // style: appTheme.getButtonStyle,
-            child: const Text('Cancel'),
-          )
-        ],
-      );
-    },
-  ).then((value) => value ?? false);
-}
-
-Future<void> showCustomDialog(
-    BuildContext context, String title, String content, String buttonText) {
-  // AppTheme appTheme =
-  // Provider.of<ThemeProvider>(context, listen: false).getAppTheme();
-  return showDialog<void>(
-    // conditional bool if phone return tap
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('${title}'),
-        content: Text('${content}'),
-        actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            // style: appTheme.getButtonStyle,
-            child: Text('${buttonText}'),
-          ),
-        ],
-      );
-    },
+    ).then(
+      (value) {
+        if (then == null) return;
+        then();
+      },
+    ),
   );
 }
 
 //TODO parametrize an alert
 
 Future<bool> showQRDialog(BuildContext context, String id) {
-  // AppTheme appTheme =
-  // Provider.of<ThemeProvider>(context, listen: false).getAppTheme();
   return showDialog<bool>(
     // conditional bool if phone return tap
     context: context,
@@ -257,7 +281,7 @@ Future<bool> showQRDialog(BuildContext context, String id) {
 //                                       context.read<User>(), controller.text);
 //                                 },
 //                                 child: Text(
-//                                   local.authDialogButtonText,
+//                                   local.authCustomDialogButtonText,
 //                                   style: const TextStyle(color: Colors.black87),
 //                                 )),
 //                           )

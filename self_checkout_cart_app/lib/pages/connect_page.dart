@@ -15,6 +15,8 @@ import 'package:http/http.dart' as http;
 class ConnectPage extends ConsumerWidget {
   ConnectPage({Key? key}) : super(key: key);
 
+  bool isDrawerOpen = false; // Track the state of the drawer
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
@@ -22,19 +24,35 @@ class ConnectPage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
-        final shouldLogout = await showLogOutDialog(context);
-        if (shouldLogout) {
-          auth.logout();
-          context.goNamed(logoRoute);
+        if (isDrawerOpen) {
+          context.pop();
+        } else {
+          // final shouldLogout = await showLogOutDialog(context);
+          final shouldLogout = await customDialog(
+            context: context,
+            title: 'Log Out',
+            message: 'Confirm logging out',
+            buttons: [
+              ButtonArgs(text: 'Log Out', value: true),
+              ButtonArgs(text: 'Cancel', value: false),
+            ],
+          );
+          if (shouldLogout) {
+            auth.logout();
+            context.goNamed(logoRoute);
+          }
         }
         return false;
       },
       child: Scaffold(
         drawer: const menu_bar.MenuBar(),
+        onDrawerChanged: (isOpened) {
+          isDrawerOpen = isOpened;
+        },
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60), //height of appbar
           child: AppBar(
-            backgroundColor: Theme.of(context).backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             title: Text(
               'Welcome ${auth.username}',
               style: Theme.of(context).textTheme.titleLarge,
@@ -74,7 +92,7 @@ class ConnectPage extends ConsumerWidget {
                     } else {
                       devtools.log("code: before");
                       cart.setID('test');
-                      // mqtt.establish(auth.user_id, 'test');
+                      mqtt.establish(auth.user_id, 'test');
                       devtools.log("code: after");
                       context.goNamed(cartRoute);
                     }
@@ -82,7 +100,7 @@ class ConnectPage extends ConsumerWidget {
                     devtools.log("$e");
                   }
                 },
-                child: ConnectButton(
+                child: CustomSecondaryButton(
                   onPressed: () => context.goNamed(qrScanRoute),
                   text: 'Scan QR code',
                 ),

@@ -139,10 +139,11 @@ class MQTT extends ChangeNotifier {
 
   /// The unsolicited disconnect callback
   Future<void> publish(String message) async {
-    // devtools.log('PUBLISHING $message');
-    int id = _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
+    devtools.log('PUBLISHING $message');
+    // int id = _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
+    _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
         mqtt.MqttClientPayloadBuilder().addString(message).payload!);
-    devtools.log('it got id $id');
+    // devtools.log('it got id $id');
   }
 
   /// Subscribe to the topic of interest
@@ -150,7 +151,6 @@ class MQTT extends ChangeNotifier {
     if (_connectionState == mqtt.MqttConnectionState.connected) {
       _client.subscribe(_topic, mqtt.MqttQos.exactlyOnce);
       // devtools.log('SUBSCRIPED to $_topic');
-
       /// listen to subscribed topic
       _client.updates!
           .listen((List<mqtt.MqttReceivedMessage<mqtt.MqttMessage>> messages) {
@@ -180,7 +180,7 @@ class MQTT extends ChangeNotifier {
           }
           if (res['mqtt_type'] == "update_status") {
             // add message to stream
-            devtools.log('ADDING ALARM TO STREAM');
+            // devtools.log('ADDING ALARM TO STREAM');
             _alarmMessageController.add(payload);
           }
         } on FormatException catch (e) {
