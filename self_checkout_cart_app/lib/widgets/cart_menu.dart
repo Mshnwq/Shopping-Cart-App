@@ -113,11 +113,20 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
       onSelected: (value) async {
         switch (value) {
           case _MenuValues.checkout:
-            final shouldCheckout = showCustomBoolDialog(
-              context,
-              "Checkout Cart",
-              "Are you Sure you want to checkout?",
-              "Confirm Checkout",
+            final shouldCheckout = await customDialog(
+              context: context,
+              title: "Checkout Cart",
+              message: "Are you Sure you want to checkout?",
+              buttons: [
+                const ButtonArgs(
+                  text: 'Confirm',
+                  value: true,
+                ),
+                const ButtonArgs(
+                  text: 'Cancel',
+                  value: false,
+                ),
+              ],
             );
             if (await shouldCheckout) {
               try {
@@ -133,11 +142,16 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                   throw Exception(httpRes.statusCode.toString());
                 }
               } catch (e) {
-                bool isRetry = await showCustomBoolDialog(
-                  context,
-                  "Server error",
-                  "$e",
-                  "Retry",
+                bool isRetry = await customDialog(
+                  context: context,
+                  title: "Server error",
+                  message: "$e",
+                  buttons: [
+                    const ButtonArgs(
+                      text: 'Retry',
+                      value: true,
+                    ),
+                  ],
                 );
                 if (isRetry) {
                   ref.watch(cartProvider).setCartState("active");
@@ -156,13 +170,22 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
             print("print"); //TODO
             break;
           case _MenuValues.disconnect:
-            final shouldLogout = showCustomBoolDialog(
-              context,
-              "Disconnect Cart",
-              "Are you Sure you want to disconnect this cart?",
-              "Confirm",
+            final shouldDisconnect = await customDialog(
+              context: context,
+              title: 'Disconnect Cart?',
+              message: 'Are you Sure you want to disconnect this cart?',
+              buttons: [
+                ButtonArgs(
+                  text: 'Disconnect',
+                  value: true,
+                ),
+                ButtonArgs(
+                  text: 'Cancel',
+                  value: false,
+                ),
+              ],
             );
-            if (await shouldLogout) {
+            if (await shouldDisconnect) {
               ref.read(mqttProvider).disconnect();
               context.goNamed(connectRoute);
             }

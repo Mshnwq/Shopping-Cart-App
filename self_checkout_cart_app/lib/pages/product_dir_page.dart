@@ -33,7 +33,7 @@ class ProductDirectoryPage extends ConsumerWidget {
         padding: const EdgeInsets.only(top: 10, right: 10, left: 10),
         child: AnimSearchBar(
           color: Colors.green,
-          searchIconColor: Colors.white,
+          searchIconColor: Theme.of(context).colorScheme.background,
           width: 400,
           textController: searchText,
           onSuffixTap: () {

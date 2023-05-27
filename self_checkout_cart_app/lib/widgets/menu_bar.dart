@@ -13,6 +13,7 @@ class MenuBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
+      backgroundColor: Theme.of(context).colorScheme.background,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
@@ -22,7 +23,9 @@ class MenuBar extends ConsumerWidget {
               ),
               child: Text(
                 'Side menu',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.background,
+                    ),
               )
               // image: DecorationImage(
               // fit: BoxFit.fill,

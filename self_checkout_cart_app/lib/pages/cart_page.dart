@@ -104,11 +104,12 @@ class CartPage extends ConsumerWidget {
               },
             ),
           },
-          backgroundColor: Colors.green,
-          hoverColor: Colors.black, //icon inside button
-          child: const Icon(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          hoverColor:
+              Theme.of(context).colorScheme.secondary, //icon inside button
+          child: Icon(
             Icons.queue,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.background,
           ),
         ),
       ),

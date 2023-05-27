@@ -105,7 +105,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: Text(
                       'Register',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.background,
                           ),
                     ),
                   ),

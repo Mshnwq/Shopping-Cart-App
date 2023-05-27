@@ -300,7 +300,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                 height: 40,
                 child: const Center(
                   child: Text(
-                    "Scan an prodcut barcode",
+                    "Scan a product barcode",
                     style: TextStyle(),
                   ),
                 ),

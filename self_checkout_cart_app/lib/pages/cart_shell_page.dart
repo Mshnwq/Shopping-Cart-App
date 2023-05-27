@@ -43,8 +43,14 @@ class CartShellPage extends ConsumerWidget {
             title: 'Disconnect Cart?',
             message: 'Are you Sure you want to disconnect this cart?',
             buttons: [
-              ButtonArgs(text: 'Disconnect', value: true),
-              ButtonArgs(text: 'Cancel', value: false),
+              ButtonArgs(
+                text: 'Disconnect',
+                value: true,
+              ),
+              ButtonArgs(
+                text: 'Cancel',
+                value: false,
+              ),
             ],
           );
           if (await shouldDisconnect) {
@@ -97,27 +103,45 @@ class CartShellPage extends ConsumerWidget {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60), //height of appbar
-        child: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          // title: Text('Cart ${cart.getCartState()} Mode',
-          title: Text('Cart id# ${cart.id}, ${cart.state.stateString}',
-              style: const TextStyle(fontSize: 20)),
-          actions: [
-            badge.Badge(
-              badgeContent: Text(
-                cart.getCounter().toString(),
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+        child: Builder(
+          builder: (BuildContext context) {
+            return AppBar(
+              centerTitle: true,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              // title: Text('Cart ${cart.getCartState()} Mode',
+              title: Text(
+                'Cart id# ${cart.id}, ${cart.state.stateString}',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.background,
+                    ),
               ),
-              position: const badge.BadgePosition(start: 30, bottom: 30),
-              child: Container(
-                margin: const EdgeInsets.only(top: 5, right: 5),
-                alignment: Alignment.topRight,
-                child: const CartMenuWidget(),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.menu,
+                  color: Theme.of(context).colorScheme.background,
+                ),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
               ),
-            ),
-          ],
+              actions: [
+                badge.Badge(
+                  badgeContent: Text(
+                    cart.getCounter().toString(),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.background,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  position: const badge.BadgePosition(start: 30, bottom: 30),
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 5, right: 5),
+                    alignment: Alignment.topRight,
+                    child: const CartMenuWidget(),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       drawer: const menu_bar.MenuBar(),

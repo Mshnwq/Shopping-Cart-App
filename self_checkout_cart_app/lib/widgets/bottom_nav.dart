@@ -98,11 +98,20 @@ class _BottomNavigationWidgetState
 
   void _onTap(int index) async {
     if (index == 3) {
-      final shouldCheckout = await showCustomBoolDialog(
-        context,
-        "Checkout Cart",
-        "Are you Sure you want to checkout?",
-        "Confirm Checkout",
+      final shouldCheckout = await customDialog(
+        context: context,
+        title: "Checkout Cart",
+        message: "Are you Sure you want to checkout?",
+        buttons: [
+          const ButtonArgs(
+            text: 'Confirm',
+            value: true,
+          ),
+          const ButtonArgs(
+            text: 'Cancel',
+            value: false,
+          ),
+        ],
       );
       if (shouldCheckout) {
         try {
@@ -120,11 +129,16 @@ class _BottomNavigationWidgetState
             // throw Exception('oops');
           }
         } catch (e) {
-          bool isRetry = await showCustomBoolDialog(
-            context,
-            "Server error",
-            "$e",
-            "Retry",
+          bool isRetry = await customDialog(
+            context: context,
+            title: "Server error",
+            message: "$e",
+            buttons: [
+              const ButtonArgs(
+                text: 'Retry',
+                value: true,
+              ),
+            ],
           );
           if (isRetry) {
             ref.watch(cartProvider).setCartState("active");

@@ -43,10 +43,10 @@ void showSuccussSnackBar(context) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Coming Soon"),
-          backgroundColor: Color.fromARGB(255, 118, 208, 121),
+          backgroundColor: Theme.of(context).colorScheme.primary,
           action: SnackBarAction(
             label: 'dismiss',
-            textColor: Colors.white,
+            textColor: Theme.of(context).colorScheme.background,
             onPressed: () {},
           ),
         ),

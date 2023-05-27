@@ -30,7 +30,7 @@ class CustomDialogButton extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.background,
             ),
       ),
     );
@@ -116,7 +116,7 @@ class CustomSecondaryButton extends StatelessWidget {
           text,
           style: textStyle ??
               Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.background,
                   ),
         ),
       ),

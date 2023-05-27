@@ -43,11 +43,20 @@ class CheckoutPage extends ConsumerWidget {
 
     return WillPopScope(
       onWillPop: () async {
-        final shouldDisconnect = showCustomBoolDialog(
-          context,
-          "Disconnect Cart",
-          "Are you Sure you want to disconnect this cart?",
-          "Confirm",
+        final shouldDisconnect = await customDialog(
+          context: context,
+          title: 'Disconnect Cart?',
+          message: 'Are you Sure you want to disconnect this cart?',
+          buttons: [
+            ButtonArgs(
+              text: 'Disconnect',
+              value: true,
+            ),
+            ButtonArgs(
+              text: 'Cancel',
+              value: false,
+            ),
+          ],
         );
         if (await shouldDisconnect) {
           mqtt.disconnect();
@@ -67,8 +76,9 @@ class CheckoutPage extends ConsumerWidget {
               badge.Badge(
                 badgeContent: Text(
                   cart.getCounter().toString(),
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.background,
+                      fontWeight: FontWeight.bold),
                 ),
                 position: const badge.BadgePosition(start: 30, bottom: 30),
                 child: Container(
@@ -103,9 +113,13 @@ class CheckoutPage extends ConsumerWidget {
                               onTap: () => receipt.toggleIt(),
                               child: Container(
                                 decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .background,
                                     border: Border.all(
-                                      color: Colors.black,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                       width: 5,
                                     ),
                                     borderRadius: BorderRadius.circular(5)),

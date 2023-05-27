@@ -5,45 +5,15 @@ import '../widgets/all_widgets.dart';
 
 typedef Action = void Function();
 
-Future<bool> showDialogWithWillPopScope({
-  required BuildContext context,
-  String? title,
-  required String content,
-  required List<ButtonArgs> buttons,
-}) {
-  return showDialog<bool>(
-    context: context,
-    builder: (context) {
-      return WillPopScope(
-        onWillPop: () async => false,
-        child: AlertDialog(
-          title: title != null ? Text(title) : null,
-          content: Text(content),
-          actions: buttons.map((button) {
-            return ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop<bool>(button.value);
-              },
-              child: Text(button.text),
-            );
-          }).toList(),
-        ),
-      );
-    },
-  ).then((value) => value ?? false);
-}
+class ButtonArgs {
+  final String text;
+  final bool value;
+  final VoidCallback? onPressed;
 
-void showAlertMessage(BuildContext context, String message,
-    {Action? onOk, Action? then}) {
-  showDialogWithWillPopScope(
-    context: context,
-    title: "",
-    content: message,
-    buttons: [
-      // CustomDialogButton(text: "OK", value: true),
-    ],
-  ).then((value) {
-    if (then != null) then();
+  const ButtonArgs({
+    required this.text,
+    required this.value,
+    this.onPressed,
   });
 }
 
@@ -63,7 +33,7 @@ Future<bool> customDialog({
         actions: buttons.map((button) {
           return CustomDialogButton(
             onPressed: () {
-              Navigator.of(context).pop<bool>(button.value);
+              Navigator.of(context).pop(button.value);
             },
             text: button.text,
           );
@@ -73,38 +43,55 @@ Future<bool> customDialog({
   ).then((value) => value ?? false);
 }
 
-class ButtonArgs {
-  final String text;
-  final bool value;
-  final VoidCallback? onPressed;
-
-  const ButtonArgs({
-    required this.text,
-    required this.value,
-    this.onPressed,
-  });
-}
-
-Future<void> showCustomDialog(
+Future<bool> showCustomBoolDialog(
     BuildContext context, String title, String content, String buttonText) {
-  return showDialog<void>(
+  return showDialog<bool>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('$title'),
-        content: Text('$content'),
+        title: Text('${title}'),
+        content: Text('${content}'),
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true);
             },
-            child: Text('$buttonText'),
+            // style: appTheme.getButtonStyle,
+            child: Text('${buttonText}'),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            // style: appTheme.getButtonStyle,
+            child: const Text('Cancel'),
+          )
         ],
       );
     },
-  );
+  ).then((value) => value ?? false);
 }
+
+// Future<bool> showCustomBoolDialog(
+//     BuildContext context, String title, String content, String buttonText) {
+//   return showDialog<bool>(
+//     context: context,
+//     builder: (context) {
+//       return AlertDialog(
+//         title: Text('$title'),
+//         content: Text('$content'),
+//         actions: <Widget>[
+//           ElevatedButton(
+//             onPressed: () {
+//               Navigator.of(context).pop();
+//             },
+//             child: Text('$buttonText'),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
 
 // Future<bool> showQRDialog(BuildContext context, String id) {
 //   return showDialogWithWillPopScope(

@@ -51,13 +51,27 @@ class ConnectPage extends ConsumerWidget {
         },
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60), //height of appbar
-          child: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title: Text(
-              'Welcome ${auth.username}',
-              style: Theme.of(context).textTheme.titleLarge,
-              // style: appTheme.setButtonTextStyle(22, 1.5),
-            ),
+          child: Builder(
+            builder: (BuildContext context) {
+              return AppBar(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                title: Text(
+                  'Welcome ${auth.username}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                ),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Theme.of(context).colorScheme.background,
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              );
+            },
           ),
         ),
         body: Center(

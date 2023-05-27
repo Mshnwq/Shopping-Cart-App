@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:self_checkout_cart_app/pages/all_pages.dart';
 import '../providers/mqtt_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
@@ -70,7 +71,24 @@ class QRScannerPage extends ConsumerWidget {
               if (qrCode == "" || qrCode == null) {
                 return;
               } else {
-                final connectCart = await showQRDialog(context, qrCode);
+                final connectCart = await customDialog(
+                  context: context,
+                  title: 'Confirm QR',
+                  message: 'connecting to cart $qrCode',
+                  buttons: [
+                    ButtonArgs(
+                      text: 'Confirm',
+                      value: true,
+                    ),
+                    ButtonArgs(
+                        text: 'Cancel',
+                        value: false,
+                        onPressed: () {
+                          _canScan = true;
+                          GoRouter.of(context).pop();
+                        }),
+                  ],
+                );
                 if (connectCart) {
                   var httpBody = <String, String>{
                     'qrcode': qrCode.toString(),
@@ -94,6 +112,11 @@ class QRScannerPage extends ConsumerWidget {
                       } else {
                         devtools.log("failed MQTT");
                       }
+                    } else {
+                      showAlertMassage(
+                        context,
+                        res.statusCode.toString(),
+                      );
                     }
                   } catch (e) {
                     devtools.log("$e");

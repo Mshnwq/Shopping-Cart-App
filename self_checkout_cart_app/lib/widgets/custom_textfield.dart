@@ -25,7 +25,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.background.withOpacity(0.5),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Stack(
