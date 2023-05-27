@@ -20,27 +20,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 class QRScannerPage extends ConsumerWidget {
   QRScannerPage({Key? key}) : super(key: key);
 
-// class _QRScannerPageState extends State<QRScannerPage> {
   ScannerController scannerController = ScannerController();
-
   bool _canScan = true;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   if (!scannerController.cameraController.isStarting) {
-  //     scannerController.cameraController.start();
-  //   }
-  // }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // AppTheme appTheme = Provider.of<ThemeProvider>(context).getAppTheme();
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
@@ -48,14 +32,6 @@ class QRScannerPage extends ConsumerWidget {
     return Scaffold(
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        // children: [
-        //   // FunctionBar(
-        //     // scannerController: scannerController,
-        //   // ),
-        //   const SizedBox(
-        //     height: 100,
-        //   ),
-        // ],
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -76,17 +52,18 @@ class QRScannerPage extends ConsumerWidget {
                   title: 'Confirm QR',
                   message: 'connecting to cart $qrCode',
                   buttons: [
-                    ButtonArgs(
+                    const ButtonArgs(
                       text: 'Confirm',
                       value: true,
                     ),
                     ButtonArgs(
-                        text: 'Cancel',
-                        value: false,
-                        onPressed: () {
-                          _canScan = true;
-                          GoRouter.of(context).pop();
-                        }),
+                      text: 'Cancel',
+                      value: false,
+                      onPressed: () {
+                        _canScan = true;
+                        GoRouter.of(context).pop();
+                      },
+                    ),
                   ],
                 );
                 if (connectCart) {
@@ -139,8 +116,8 @@ class QRScannerPage extends ConsumerWidget {
               child: Center(
                 child: Text(
                   "Scan a Cart QR code",
-                  style: TextStyle(
-                      // color: appTheme.textColor,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.background,
                       ),
                 ),
               ),

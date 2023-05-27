@@ -42,7 +42,7 @@ class CartShellPage extends ConsumerWidget {
             context: context,
             title: 'Disconnect Cart?',
             message: 'Are you Sure you want to disconnect this cart?',
-            buttons: [
+            buttons: const [
               ButtonArgs(
                 text: 'Disconnect',
                 value: true,
@@ -53,7 +53,7 @@ class CartShellPage extends ConsumerWidget {
               ),
             ],
           );
-          if (await shouldDisconnect) {
+          if (shouldDisconnect) {
             try {
               http.Response res = await auth.postAuthReq(
                 '/api/v1/cart/disconnect',
@@ -75,15 +75,11 @@ class CartShellPage extends ConsumerWidget {
           if (snapshot.hasData) {
             devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
-            if (json.decode(snapshot.data!)['status'].toString() == '5') {
-              devtools
-                  .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-              return alarm(context, snapshot.hasData.toString());
-            } else {
-              return cartShell(context, ref);
-            }
+            devtools.log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
+            return alarm(context, snapshot.hasData.toString());
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             // handle data
+            return error(context);
             return cartShell(context, ref);
           } else if (snapshot.hasError) {
             // handle error (note: snapshot.error has type [Object?])
@@ -92,7 +88,6 @@ class CartShellPage extends ConsumerWidget {
           } else {
             // uh, oh, what goes here?
             return cartShell(context, ref);
-            return error(context);
           }
         },
       ),

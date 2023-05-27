@@ -32,9 +32,15 @@ class ConnectPage extends ConsumerWidget {
             context: context,
             title: 'Log Out',
             message: 'Confirm logging out',
-            buttons: [
-              ButtonArgs(text: 'Log Out', value: true),
-              ButtonArgs(text: 'Cancel', value: false),
+            buttons: const [
+              ButtonArgs(
+                text: 'Log Out',
+                value: true,
+              ),
+              ButtonArgs(
+                text: 'Cancel',
+                value: false,
+              ),
             ],
           );
           if (shouldLogout) {
@@ -85,7 +91,6 @@ class ConnectPage extends ConsumerWidget {
                   var httpBody = <String, String>{
                     'qrcode': '123',
                   };
-                  // if success, add item to cart and exit refresh page
                   try {
                     http.Response res = await auth
                         .postAuthReq('/api/v1/cart/connect', body: httpBody);
@@ -108,7 +113,7 @@ class ConnectPage extends ConsumerWidget {
                       // cart.setID('test');
                       // mqtt.establish(auth.user_id, 'test');
                       devtools.log("code: after");
-                      context.goNamed(cartRoute);
+                      // context.goNamed(cartRoute);
                     }
                   } catch (e) {
                     devtools.log("$e");

@@ -183,9 +183,11 @@ class MQTT extends ChangeNotifier {
             _scaleMessageController.add(payload);
           }
           if (res['mqtt_type'] == "update_status") {
-            // add message to stream
-            devtools.log('ADDING ALARM TO STREAM');
-            _alarmMessageController.add(payload);
+            if (res['sttatus'].toString() == "5") {
+              // add message to stream
+              devtools.log('ADDING ALARM TO STREAM');
+              _alarmMessageController.add(payload);
+            }
           }
         } on FormatException catch (e) {
           devtools.log('Format $e');

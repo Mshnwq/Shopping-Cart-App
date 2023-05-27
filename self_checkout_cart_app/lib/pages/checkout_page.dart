@@ -3,6 +3,7 @@ import 'package:badges/badges.dart' as badge;
 import 'package:screenshot/screenshot.dart';
 import '../widgets/menu_bar.dart' as menu;
 import '../widgets/all_widgets.dart';
+import '../pages/all_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../constants/routes.dart';
@@ -28,18 +29,14 @@ import 'cart_page.dart';
 
 class CheckoutPage extends ConsumerWidget {
   CheckoutPage({super.key});
-  // final GlobalKey _globalKey = GlobalKey();
-  // Uint8List _imageFile;
 
   // Create an instance of ScreenshotController
   ScreenshotController screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
-    final receipt = ref.watch(receiptProvider);
 
     return WillPopScope(
       onWillPop: () async {
@@ -47,7 +44,7 @@ class CheckoutPage extends ConsumerWidget {
           context: context,
           title: 'Disconnect Cart?',
           message: 'Are you Sure you want to disconnect this cart?',
-          buttons: [
+          buttons: const [
             ButtonArgs(
               text: 'Disconnect',
               value: true,
@@ -58,246 +55,183 @@ class CheckoutPage extends ConsumerWidget {
             ),
           ],
         );
-        if (await shouldDisconnect) {
+        if (shouldDisconnect) {
           mqtt.disconnect();
           context.goNamed(connectRoute);
         }
         return false;
       },
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60), //height of appbar
-          child: Builder(builder: (BuildContext context) {
-            return AppBar(
-              centerTitle: true,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              title: Text(
-                'Thank You {$auth.username}',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: Theme.of(context).colorScheme.background),
+      child: StreamBuilder<String>(
+        stream: mqtt.onAlarmMessage,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            devtools.log('AWAITING ${snapshot.data.toString()}');
+            // handle loading
+            devtools.log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
+            return alarm(context, snapshot.hasData.toString());
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            // handle data
+            return error(context);
+            return checkout(context, ref);
+          } else if (snapshot.hasError) {
+            // handle error (note: snapshot.error has type [Object?])
+            final error = snapshot.error!;
+            return alarm(context, error.toString());
+          } else {
+            // uh, oh, what goes here?
+            return checkout(context, ref);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget checkout(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
+    final cart = ref.watch(cartProvider);
+    final receipt = ref.watch(receiptProvider);
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60), //height of appbar
+        child: Builder(builder: (BuildContext context) {
+          return AppBar(
+            centerTitle: true,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            title: Text(
+              'Thank You {$auth.username}',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: Theme.of(context).colorScheme.background),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.menu,
+                color: Theme.of(context).colorScheme.background,
               ),
-              leading: IconButton(
-                icon: Icon(
-                  Icons.menu,
-                  color: Theme.of(context).colorScheme.background,
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+            actions: [
+              badge.Badge(
+                badgeContent: Text(
+                  cart.getCounter().toString(),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.background,
+                      fontWeight: FontWeight.bold),
                 ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
+                position: const badge.BadgePosition(start: 30, bottom: 30),
+                child: Container(
+                  margin: const EdgeInsets.only(top: 5, right: 5),
+                  alignment: Alignment.topRight,
+                  child: const CartMenuWidget(isCheckout: true),
+                ),
               ),
-              actions: [
-                badge.Badge(
-                  badgeContent: Text(
-                    cart.getCounter().toString(),
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.background,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  position: const badge.BadgePosition(start: 30, bottom: 30),
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 5, right: 5),
-                    alignment: Alignment.topRight,
-                    child: const CartMenuWidget(isCheckout: true),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ),
-        drawer: const menu.MenuBar(),
-        body: Screenshot(
-          controller: screenshotController,
-          // child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SafeArea(
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 40, top: 10),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              // onLongPress: () {
-                              // devtools.log("tGGG");
-                              // receipt.toggleIt();
-                              // }, //TODO show mpre details
-                              onTap: () => receipt.toggleIt(),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .background,
-                                    border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      width: 5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: QrImage(
-                                  eyeStyle: const QrEyeStyle(
-                                      color: Colors.black,
-                                      eyeShape: QrEyeShape.square),
-                                  dataModuleStyle: const QrDataModuleStyle(
-                                      dataModuleShape: QrDataModuleShape.square,
-                                      color: Colors.black),
-                                  data: receipt.text ?? "Null",
-                                  version: QrVersions.auto,
-                                  size: 300.0,
-                                ),
+            ],
+          );
+        }),
+      ),
+      drawer: const menu.MenuBar(),
+      body: Screenshot(
+        controller: screenshotController,
+        // child: SingleChildScrollView(
+        child: Column(
+          children: [
+            SafeArea(
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40, top: 10),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            // onLongPress: () {
+                            // devtools.log("tGGG");
+                            // receipt.toggleIt();
+                            // }, //TODO show mpre details
+                            onTap: () => receipt.toggleIt(),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).colorScheme.background,
+                                  border: Border.all(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                    width: 5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: QrImage(
+                                eyeStyle: const QrEyeStyle(
+                                    color: Colors.black,
+                                    eyeShape: QrEyeShape.square),
+                                dataModuleStyle: const QrDataModuleStyle(
+                                    dataModuleShape: QrDataModuleShape.square,
+                                    color: Colors.black),
+                                data: receipt.text ?? "Null",
+                                version: QrVersions.auto,
+                                size: 300.0,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 5, bottom: 5),
-                              child: AnimatedOpacity(
-                                opacity: (receipt.isToggle()) ? 1.00 : 0.00,
-                                duration: const Duration(milliseconds: 300),
-                                child: Text(
-                                  receipt.text ?? "Null",
-                                  style: TextStyle(
-                                      color: Colors.blueGrey.shade800,
-                                      fontSize: 20.0),
-                                ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 5, bottom: 5),
+                            child: AnimatedOpacity(
+                              opacity: (receipt.isToggle()) ? 1.00 : 0.00,
+                              duration: const Duration(milliseconds: 300),
+                              child: Text(
+                                receipt.text ?? "Null",
+                                style: TextStyle(
+                                    color: Colors.blueGrey.shade800,
+                                    fontSize: 20.0),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SafeArea(
-                child: Consumer(builder:
-                    (BuildContext context, WidgetRef ref, Widget? child) {
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cart.getCounter(),
-                    itemBuilder: (context, index) {
-                      return Card(
-                        elevation: 5.0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              SizedBox(
-                                width: 150,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(
-                                      height: 5.0,
-                                    ),
-                                    RichText(
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Name: ',
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text:
-                                                    '${cart.getItems()[index].name}\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                    RichText(
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Quantity: ',
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text: '1\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                    RichText(
-                                      maxLines: 1,
-                                      text: TextSpan(
-                                          text: 'Price: ' r"SAR",
-                                          style: TextStyle(
-                                              color: Colors.blueGrey.shade800,
-                                              fontSize: 16.0),
-                                          children: [
-                                            TextSpan(
-                                                text:
-                                                    '${cart.getItems()[index].price}\n',
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // IconButton(
-                              //   onPressed: () {
-                              //     GoRouter.of(context).push(
-                              //         '/prod_detail/${cart.getItems()[index].name}');
-                              //   },
-                              //   icon: const Icon(Icons.more_vert),
-                              // ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }),
-              ),
-              Column(
-                children: [
-                  ReusableWidget(
-                    title: 'Sub-Total',
-                    value: r'SAR' +
-                        (cart.getTotalPrice()?.toStringAsFixed(2) ?? '0'),
                   ),
                 ],
               ),
-            ],
-          ),
-          // ),
-        ),
-        bottomNavigationBar: Container(
-          height: 60,
-          color: Theme.of(context).colorScheme.primary,
-          child: SafeArea(
-            child: InkWell(
-              onLongPress: () => context.goNamed(cartRoute),
-              onTap: () async => _getPDF(),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Column(
-                  children: <Widget>[
-                    Icon(
-                      Icons.share,
-                      color: Theme.of(context).colorScheme.background,
-                      size: 30,
-                    ),
-                    Text(
-                      'Share Receipt',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.background,
-                          ),
-                    ),
-                  ],
+            ),
+            Column(
+              children: [
+                ReusableWidget(
+                  title: 'Sub-Total',
+                  value: r'SAR' +
+                      (cart.getTotalPrice()?.toStringAsFixed(2) ?? '0'),
                 ),
+              ],
+            ),
+          ],
+        ),
+        // ),
+      ),
+      bottomNavigationBar: Container(
+        height: 60,
+        color: Theme.of(context).colorScheme.primary,
+        child: SafeArea(
+          child: InkWell(
+            onLongPress: () => context.goNamed(cartRoute),
+            onTap: () async => _getPDF(),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Column(
+                children: <Widget>[
+                  Icon(
+                    Icons.share,
+                    color: Theme.of(context).colorScheme.background,
+                    size: 30,
+                  ),
+                  Text(
+                    'Share Receipt',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.background,
+                        ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -342,5 +276,48 @@ class CheckoutPage extends ConsumerWidget {
         Fluttertoast.showToast(msg: "Sharing Failed");
       }
     }
+  }
+
+  Widget error(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Image.asset('assets/images/disconnected.png'),
+            const SizedBox(height: 20),
+            Text(
+              'Some error occurred - welp!',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget alarm(BuildContext context, String message) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Image.asset('assets/images/lock.png'),
+            const SizedBox(height: 20),
+            Text(
+              'AWAITING ADMINISTRATOR',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
