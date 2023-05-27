@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import '../constants/routes.dart';
 import '../widgets/all_widgets.dart';
+import 'dart:async';
 import 'dart:developer' as devtools show log;
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -35,6 +36,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    const timeoutDuration = Duration(seconds: 5);
     final auth = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -66,34 +68,45 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     try {
                       devtools.log("email $email");
                       devtools.log("pass $passwd");
-                      bool isLoggedIn =
-                          await auth.login(context, email, passwd);
-                      if (!isLoggedIn) {
+                      showLoadingDialog(context);
+                      final loginFuture = auth.login(context, email, passwd);
+                      final loginResult = await Future.any([
+                        loginFuture,
+                        Future.delayed(timeoutDuration).then((_) {
+                          throw TimeoutException(
+                              'The authentication process took too long.');
+                        }),
+                      ]);
+                      if (loginResult) {
+                        context.goNamed(connectRoute);
+                      } else {
                         showAlertMassage(context, "Failed to log in");
-                        return;
+                        // return;
                       }
-                      context.goNamed(connectRoute);
-                      // } on Exception catch (e) {
-                    } catch (e) {
-                      // switch (e) {
-                      //   case 'User-not-found':
-                      //     devtools.log('User-not-found');
-                      //     showAlertMassage(context, "User not found");
-                      //     break;
-                      //   case 'Email-not-found':
-                      //     devtools.log('Email-not-found');
-                      //     showAlertMassage(context, "Email not found");
-                      //     break;
-                      //   case 'Wrong-cred':
-                      //     devtools.log('Wrong-cred');
-                      //     showAlertMassage(context, "Wrong Credentials");
-                      //     break;
-                      //   default:
-                      devtools.log('Error: $e');
-                      showAlertMassage(context, "$e");
-                      //     break;
-                      // }
+                    } on TimeoutException catch (e) {
+                      showAlertMassage(context, e.toString());
+                    } on Exception catch (e) {
+                      String error = e.toString();
+                      switch (error) {
+                        case 'User-not-found':
+                          devtools.log('User-not-found');
+                          showAlertMassage(context, "User not found");
+                          break;
+                        case 'Email-not-found':
+                          devtools.log('Email-not-found');
+                          showAlertMassage(context, "Email not found");
+                          break;
+                        case 'Wrong-cred':
+                          devtools.log('Wrong-cred');
+                          showAlertMassage(context, "Wrong Credentials");
+                          break;
+                        default:
+                          devtools.log('Error: $e');
+                          showAlertMassage(context, "$e");
+                          break;
+                      }
                     }
+                    context.pop();
                   },
                   text: 'Log In',
                   textStyle: Theme.of(context).textTheme.titleMedium,

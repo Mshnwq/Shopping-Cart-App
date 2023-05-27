@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 import 'package:mqtt_client/mqtt_server_client.dart';
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -16,6 +15,7 @@ class MQTT extends ChangeNotifier {
   final String _brokerUrl = env.brokerURL;
   late String _clientId;
   late String _topic;
+  // late mqtt.MqttClient _client;
   late MqttServerClient _client;
   int _pongCount = 0; // Pong counter
   late mqtt.MqttConnectionState _connectionState;
@@ -49,6 +49,7 @@ class MQTT extends ChangeNotifier {
     /// of 1883 is used.
     /// If you want to use websockets rather than TCP see below.
     // devtools.log('Client $clientId');
+    // _client = mqtt.MqttClient(_brokerUrl, _clientId);
     _client = MqttServerClient(_brokerUrl, _clientId);
 
     /// Set logging on if needed, defaults to off
@@ -78,7 +79,7 @@ class MQTT extends ChangeNotifier {
     /// rejects the subscribe request.
     _client.onSubscribed = onSubscribed;
     _client.onUnsubscribed = onUnsubscribed;
-    // _client.onSubscribedFail = onSubscribed;
+    _client.onSubscribeFail = onSubscribeFail;
 
     /// Set a ping received callback if needed, called whenever a ping response(pong) is received from the broker.
     _client.pongCallback = pong;
@@ -165,29 +166,25 @@ class MQTT extends ChangeNotifier {
 
         // devtools.log('topic is <${messages[0].topic}>, payload is <$payload>');
         try {
-          // devtools.log('DECODING RESPONSE');
           var res = jsonDecode(payload);
+          // devtools.log('DECODING RESPONSE: $res');
+          // devtools.log('DECODING RESPONSE: ${res['mqtt_type']}');
           if (res['mqtt_type'] == "response_add_item") {
             // add message to stream
-            // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
           }
           if (res['mqtt_type'] == "response_remove_item") {
             // add message to stream
-            // devtools.log('ADDING TO STREAM');
             _itemMessageController.add(payload);
           }
           if (res['mqtt_type'] == "scale_confirmation") {
             // add message to stream
-            // devtools.log('ADDING TO STREAM');
             _scaleMessageController.add(payload);
           }
-          if (res['mqtt_type'] == "update_status") {
-            if (res['sttatus'].toString() == "5") {
-              // add message to stream
-              devtools.log('ADDING ALARM TO STREAM');
-              _alarmMessageController.add(payload);
-            }
+          if (res['mqtt_type'] == "update_mode") {
+            // if (res['mqtt_type'] == "update_status") {
+            // add message to stream
+            _alarmMessageController.add(payload);
           }
         } on FormatException catch (e) {
           devtools.log('Format $e');
@@ -206,6 +203,11 @@ class MQTT extends ChangeNotifier {
   /// The subscribed callback
   void onSubscribed(String topic) {
     devtools.log('Subscription confirmed for topic $topic');
+  }
+
+  /// The subscribe fail callback
+  void onSubscribeFail(String topic) {
+    devtools.log('Subscription failed for topic $topic');
   }
 
   /// The unsubscribed callback

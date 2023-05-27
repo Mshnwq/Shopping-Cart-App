@@ -8,7 +8,9 @@ void main() {
   // Ensure initialization of WidgetsBinding,
   // which is required to use platform channels to call the native code.
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    const ProviderScope(child: MyApp()),
+  );
   // await Firebase.initializeApp(
   //   options: DefaultFirebaseOptions.currentPlatform,
   // );

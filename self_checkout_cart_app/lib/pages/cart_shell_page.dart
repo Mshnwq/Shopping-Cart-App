@@ -75,11 +75,15 @@ class CartShellPage extends ConsumerWidget {
           if (snapshot.hasData) {
             devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
-            devtools.log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-            return alarm(context, snapshot.hasData.toString());
+            if (jsonDecode(snapshot.data!)['mode'].toString() == '5') {
+              devtools
+                  .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
+              return alarm(context, snapshot.hasData.toString());
+            } else {
+              return cartShell(context, ref);
+            }
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             // handle data
-            return error(context);
             return cartShell(context, ref);
           } else if (snapshot.hasError) {
             // handle error (note: snapshot.error has type [Object?])
@@ -87,6 +91,7 @@ class CartShellPage extends ConsumerWidget {
             return alarm(context, error.toString());
           } else {
             // uh, oh, what goes here?
+            return error(context);
             return cartShell(context, ref);
           }
         },

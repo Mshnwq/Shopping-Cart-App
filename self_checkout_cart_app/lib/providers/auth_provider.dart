@@ -59,11 +59,12 @@ class Auth with ChangeNotifier {
         notifyListeners();
         return true;
       }
-      return false;
+      // return false;
+      throw Exception(res.body);
     } catch (e) {
-      showAlertMassage(context, "$e");
-      // throw Exception(e); // TODO: Implement internet error
-      return false;
+      // showAlertMassage(context, "$e");
+      throw Exception(e); // TODO: Implement internet error
+      // return false;
       // } finally {
       // showAlertMassage(context, "$e");
     }
