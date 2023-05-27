@@ -137,6 +137,8 @@ class CheckPoint():
         # construct JSON
         checkPointInfoDict = dict()
         checkPointInfoDict["gate_id"] = self.__GATE_ID
+        if (len(self.cartsList) == 0):
+            return
         checkPointInfoDict["carts"] = self.cartsList
 
         # Serializing json  
@@ -145,19 +147,19 @@ class CheckPoint():
 
         # TODO request link
         # Attempt Post Rquest
-        # try:
-            # r = requests.post(f'http://192.168.55.66:1111/api/v1/cart/checkpoint/{checkPointInfoDict["carts"]}', timeout=1)
-        # except:
-            # print(f"Status Code: , Response:")
-            # pass
-        # if r.status_code == 200:
-            # print(f"Status Code: {r.status_code}, Response: {r.json()}")
-            # self.logsAppendSignal.emit("Success")
-            # self.sendingRequestSignal.emit(0)
-        # else:
-            # print(f"Status Code: {r.status_code}, Response: {r.json()}")
-            # self.logsAppendSignal.emit("Failed")
-            # self.sendingRequestSignal.emit(2)
+        try:
+            r = requests.post(f'http://192.168.239.66:1111/api/v1/cart/checkpoint/{checkPointInfoDict["carts"][0]["key"]}')
+            if r.status_code == 200:
+                print(f"Status Code: {r.status_code}, Response: {r.json()}")
+                self.logsAppendSignal.emit("Success")
+                self.sendingRequestSignal.emit(0)
+            else:
+                print(f"Status Code: {r.status_code}, Response: {r.json()}")
+                self.logsAppendSignal.emit("Failed")
+                self.sendingRequestSignal.emit(2)
+        except:
+            print(f"Status Code: , Response:")
+        pass
     
     def control(self, polling_time):
         '''
