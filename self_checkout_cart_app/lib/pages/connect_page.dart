@@ -105,8 +105,8 @@ class ConnectPage extends ConsumerWidget {
                       }
                     } else {
                       devtools.log("code: before");
-                      cart.setID('test');
-                      mqtt.establish(auth.user_id, 'test');
+                      // cart.setID('test');
+                      // mqtt.establish(auth.user_id, 'test');
                       devtools.log("code: after");
                       context.goNamed(cartRoute);
                     }

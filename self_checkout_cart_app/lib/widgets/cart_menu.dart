@@ -25,17 +25,20 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
-      icon: const Icon(Icons.shopping_cart),
+      icon: Icon(
+        Icons.shopping_cart,
+        color: Theme.of(context).colorScheme.background,
+      ),
       itemBuilder: (context) {
         if (!widget.isCheckout) {
           return [
             PopupMenuItem(
               value: _MenuValues.checkout,
               child: Row(
-                children: const [
+                children: [
                   Icon(
                     Icons.shopping_cart_checkout,
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(
                     width: 10,
@@ -47,10 +50,10 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
             PopupMenuItem(
               value: _MenuValues.print,
               child: Row(
-                children: const [
+                children: [
                   Icon(
                     Icons.print,
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(
                     width: 10,
@@ -80,10 +83,10 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
             PopupMenuItem(
               value: _MenuValues.print,
               child: Row(
-                children: const [
+                children: [
                   Icon(
                     Icons.print,
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   SizedBox(
                     width: 10,

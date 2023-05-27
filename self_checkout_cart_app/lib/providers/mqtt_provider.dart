@@ -26,8 +26,8 @@ class MQTT extends ChangeNotifier {
   late StreamController<String> _alarmMessageController;
   Stream<String> get onAlarmMessage => _alarmMessageController.stream;
 
-  late StreamController<String> scaleMessageController;
-  Stream<String> get onScaleMessage => scaleMessageController.stream;
+  late StreamController<String> _scaleMessageController;
+  Stream<String> get onScaleMessage => _scaleMessageController.stream;
 
   String get clientId => _clientId;
   String get topic => _topic;
@@ -63,6 +63,7 @@ class MQTT extends ChangeNotifier {
     /// The connection timeout period can be set if needed, the default is 5 seconds.
     _client.connectTimeoutPeriod = 2000; // milliseconds
     _client.autoReconnect = true;
+    // _client.resubscribeOnAutoReconnect = false;
 
     /// Add the unsolicited disconnection callback
     _client.onDisconnected = onDisconnected;
@@ -76,6 +77,8 @@ class MQTT extends ChangeNotifier {
     /// can fail either because you have tried to subscribe to an invalid topic or the broker
     /// rejects the subscribe request.
     _client.onSubscribed = onSubscribed;
+    _client.onUnsubscribed = onUnsubscribed;
+    // _client.onSubscribedFail = onSubscribed;
 
     /// Set a ping received callback if needed, called whenever a ping response(pong) is received from the broker.
     _client.pongCallback = pong;
@@ -88,7 +91,7 @@ class MQTT extends ChangeNotifier {
         .withClientIdentifier(_clientId)
         .withWillTopic('will-topic')
         .withWillMessage('Connection closed abnormally')
-        .withWillQos(mqtt.MqttQos.atLeastOnce);
+        .withWillQos(mqtt.MqttQos.exactlyOnce);
     _client.connectionMessage = connMessage;
     devtools.log('Mosquitto client connecting....');
 
@@ -103,7 +106,7 @@ class MQTT extends ChangeNotifier {
       // create message stream controllers
       _itemMessageController = StreamController<String>.broadcast();
       _alarmMessageController = StreamController<String>.broadcast();
-      scaleMessageController = StreamController<String>.broadcast();
+      _scaleMessageController = StreamController<String>.broadcast();
       return true;
     } on mqtt.NoConnectionException catch (e) {
       // Raised by the client when connection fails.
@@ -131,7 +134,7 @@ class MQTT extends ChangeNotifier {
       _client.disconnect();
       _itemMessageController.close();
       _alarmMessageController.close();
-      scaleMessageController.close();
+      _scaleMessageController.close();
     } else {
       devtools.log('Already disconnected');
     }
@@ -141,7 +144,7 @@ class MQTT extends ChangeNotifier {
   Future<void> publish(String message) async {
     devtools.log('PUBLISHING $message');
     // int id = _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
-    _client.publishMessage(_topic, mqtt.MqttQos.atLeastOnce,
+    _client.publishMessage(_topic, mqtt.MqttQos.exactlyOnce,
         mqtt.MqttClientPayloadBuilder().addString(message).payload!);
     // devtools.log('it got id $id');
   }
@@ -150,7 +153,8 @@ class MQTT extends ChangeNotifier {
   Future<void> subscribe() async {
     if (_connectionState == mqtt.MqttConnectionState.connected) {
       _client.subscribe(_topic, mqtt.MqttQos.exactlyOnce);
-      // devtools.log('SUBSCRIPED to $_topic');
+      devtools.log('SUBSCRIPED to $_topic');
+
       /// listen to subscribed topic
       _client.updates!
           .listen((List<mqtt.MqttReceivedMessage<mqtt.MqttMessage>> messages) {
@@ -176,11 +180,11 @@ class MQTT extends ChangeNotifier {
           if (res['mqtt_type'] == "scale_confirmation") {
             // add message to stream
             // devtools.log('ADDING TO STREAM');
-            scaleMessageController.add(payload);
+            _scaleMessageController.add(payload);
           }
           if (res['mqtt_type'] == "update_status") {
             // add message to stream
-            // devtools.log('ADDING ALARM TO STREAM');
+            devtools.log('ADDING ALARM TO STREAM');
             _alarmMessageController.add(payload);
           }
         } on FormatException catch (e) {
@@ -190,6 +194,7 @@ class MQTT extends ChangeNotifier {
         }
       });
     } else {
+      // _client.subscribe(_topic, mqtt.MqttQos.exactlyOnce);
       devtools.log('NOT SUBSCRIBED to $_topic');
     }
   }
@@ -199,6 +204,11 @@ class MQTT extends ChangeNotifier {
   /// The subscribed callback
   void onSubscribed(String topic) {
     devtools.log('Subscription confirmed for topic $topic');
+  }
+
+  /// The unsubscribed callback
+  void onUnsubscribed(String? topic) {
+    devtools.log('Unsubscription confirmed for topic $topic');
   }
 
   /// The successful connect callback

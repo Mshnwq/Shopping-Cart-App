@@ -70,9 +70,10 @@ class CartShellPage extends ConsumerWidget {
         return false;
       },
       child: StreamBuilder<String>(
-        // stream: mqtt.onAlarmMessage,
+        stream: mqtt.onAlarmMessage,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
             if (json.decode(snapshot.data!)['status'].toString() == '5') {
               devtools

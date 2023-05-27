@@ -91,7 +91,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                       var publishBody = <String, String>{
                         'mqtt_type': 'request_${action}_item',
                         'sender': mqtt.clientId,
-                        'item_barcode': '1231231',
+                        'item_barcode': '123',
                         // 'item_barcode': barCode.toString(),
                         'timestamp': timestamp.toString()
                       };
@@ -147,7 +147,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                               '/api/v1/item/$action',
                               body: <String, String>{
                                 // 'barcode': barCode.toString(),
-                                'barcode': '1231231',
+                                'barcode': '123',
                                 'process_id': timestamp.toString(),
                               },
                             );
@@ -294,7 +294,7 @@ class BarcodeScannerPage extends ConsumerWidget {
               top: 100,
               child: Container(
                 decoration: BoxDecoration(
-                    color: const Color.fromARGB(85, 94, 238, 101),
+                    color: const Color(0x552ECC71),
                     borderRadius: BorderRadius.circular(20)),
                 width: 300,
                 height: 40,

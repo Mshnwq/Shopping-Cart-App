@@ -132,7 +132,7 @@ class QRScannerPage extends ConsumerWidget {
             top: 100,
             child: Container(
               decoration: BoxDecoration(
-                  color: Color.fromARGB(85, 94, 238, 101),
+                  color: const Color(0x552ECC71),
                   borderRadius: BorderRadius.circular(20)),
               width: 300,
               height: 40,

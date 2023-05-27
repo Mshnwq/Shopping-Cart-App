@@ -67,28 +67,44 @@ class CheckoutPage extends ConsumerWidget {
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60), //height of appbar
-          child: AppBar(
-            centerTitle: true,
-            backgroundColor: Theme.of(context).backgroundColor,
-            title: Text('Thank You {$auth.username}',
-                style: TextStyle(fontSize: 20)),
-            actions: [
-              badge.Badge(
-                badgeContent: Text(
-                  cart.getCounter().toString(),
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.background,
-                      fontWeight: FontWeight.bold),
-                ),
-                position: const badge.BadgePosition(start: 30, bottom: 30),
-                child: Container(
-                  margin: const EdgeInsets.only(top: 5, right: 5),
-                  alignment: Alignment.topRight,
-                  child: const CartMenuWidget(isCheckout: true),
-                ),
+          child: Builder(builder: (BuildContext context) {
+            return AppBar(
+              centerTitle: true,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              title: Text(
+                'Thank You {$auth.username}',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: Theme.of(context).colorScheme.background),
               ),
-            ],
-          ),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.menu,
+                  color: Theme.of(context).colorScheme.background,
+                ),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+              actions: [
+                badge.Badge(
+                  badgeContent: Text(
+                    cart.getCounter().toString(),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.background,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  position: const badge.BadgePosition(start: 30, bottom: 30),
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 5, right: 5),
+                    alignment: Alignment.topRight,
+                    child: const CartMenuWidget(isCheckout: true),
+                  ),
+                ),
+              ],
+            );
+          }),
         ),
         drawer: const menu.MenuBar(),
         body: Screenshot(
@@ -260,7 +276,7 @@ class CheckoutPage extends ConsumerWidget {
         ),
         bottomNavigationBar: Container(
           height: 60,
-          color: Theme.of(context).backgroundColor,
+          color: Theme.of(context).colorScheme.primary,
           child: SafeArea(
             child: InkWell(
               onLongPress: () => context.goNamed(cartRoute),
@@ -271,10 +287,15 @@ class CheckoutPage extends ConsumerWidget {
                   children: <Widget>[
                     Icon(
                       Icons.share,
-                      color: Theme.of(context).indicatorColor,
+                      color: Theme.of(context).colorScheme.background,
                       size: 30,
                     ),
-                    const Text('Share Receipt'),
+                    Text(
+                      'Share Receipt',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.background,
+                          ),
+                    ),
                   ],
                 ),
               ),

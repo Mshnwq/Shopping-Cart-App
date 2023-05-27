@@ -43,12 +43,12 @@ class _BottomNavigationWidgetState
         BottomNavigationBarItem(
           activeIcon: Icon(
             Icons.receipt_long,
-            color: Theme.of(context).focusColor,
+            color: Theme.of(context).colorScheme.primary,
             size: 35,
           ),
           icon: Icon(
             Icons.receipt_long,
-            color: Theme.of(context).indicatorColor,
+            color: Theme.of(context).colorScheme.secondary,
             size: 30,
           ),
           label: 'Cart',
@@ -56,12 +56,12 @@ class _BottomNavigationWidgetState
         BottomNavigationBarItem(
           activeIcon: Icon(
             Icons.find_in_page_outlined,
-            color: Theme.of(context).focusColor,
+            color: Theme.of(context).colorScheme.primary,
             size: 35,
           ),
           icon: Icon(
             Icons.find_in_page_outlined,
-            color: Theme.of(context).indicatorColor,
+            color: Theme.of(context).colorScheme.secondary,
             size: 30,
           ),
           label: 'Products',
@@ -69,12 +69,12 @@ class _BottomNavigationWidgetState
         BottomNavigationBarItem(
           activeIcon: Icon(
             Icons.live_help_outlined,
-            color: Theme.of(context).focusColor,
+            color: Theme.of(context).colorScheme.primary,
             size: 35,
           ),
           icon: Icon(
             Icons.live_help_outlined,
-            color: Theme.of(context).indicatorColor,
+            color: Theme.of(context).colorScheme.secondary,
             size: 30,
           ),
           label: 'Guide',
@@ -82,12 +82,12 @@ class _BottomNavigationWidgetState
         BottomNavigationBarItem(
           activeIcon: Icon(
             Icons.shopping_cart_checkout,
-            color: Theme.of(context).focusColor,
+            color: Theme.of(context).colorScheme.primary,
             size: 35,
           ),
           icon: Icon(
             Icons.shopping_cart_checkout,
-            color: Theme.of(context).indicatorColor,
+            color: Theme.of(context).colorScheme.secondary,
             size: 30,
           ),
           label: 'Checkout',
