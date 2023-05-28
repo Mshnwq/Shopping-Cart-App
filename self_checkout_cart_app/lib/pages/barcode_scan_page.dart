@@ -91,8 +91,8 @@ class BarcodeScannerPage extends ConsumerWidget {
                       var publishBody = <String, String>{
                         'mqtt_type': 'request_${action}_item',
                         'sender': mqtt.clientId,
-                        'item_barcode': '123',
-                        // 'item_barcode': barCode.toString(),
+                        // 'item_barcode': '123',
+                        'item_barcode': barCode.toString(),
                         'timestamp': timestamp.toString()
                       };
                       try {
@@ -112,22 +112,47 @@ class BarcodeScannerPage extends ConsumerWidget {
                           scale_completer.complete(message);
                           devtools.log("scale waiting done");
                         });
+                        StreamSubscription itemSubscription =
+                            mqtt.onItemMessage.listen((message) {
+                          item_completer.complete(message);
+                          devtools.log("item waiting done");
+                        });
+                        final mqttResponseScale = json.decode(
+                          await Future.any([
+                            scale_completer.future,
+                            item_completer.future,
+                          ]),
+                        );
                         // Wait for the scale completer to complete
-                        final mqttResponseScale =
-                            json.decode(await scale_completer.future);
+                        // final mqttResponse =
+                        // json.decode(await scale_completer.future);
                         // Handle the message as desired
                         scaleSubscription.cancel();
+                        itemSubscription.cancel();
                         context.pop();
                         devtools.log("scale completed done");
                         // devtools.log("RESPONSE: $mqttResponse");
+                        if (mqttResponseScale['status'] == 'item_not_found') {
+                          bool isRetry = await showCustomBoolDialog(
+                            context,
+                            "Item Not Found",
+                            "This item is not in our database try your luck with another item",
+                            "Ok",
+                          );
+                          if (isRetry) {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          } else {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
+                          }
+                        }
                         if (mqttResponseScale['status'] == 'pass') {
                           // Wait for the penet completer to complete
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                          showCustomLoadingDialog(
+                            context,
+                            "Scale Success!",
+                            "Move the item with one hand to storage",
                           );
                           StreamSubscription subscription =
                               mqtt.onItemMessage.listen((message) {
@@ -146,8 +171,8 @@ class BarcodeScannerPage extends ConsumerWidget {
                             http.Response httpRes = await auth.postAuthReq(
                               '/api/v1/item/$action',
                               body: <String, String>{
-                                // 'barcode': barCode.toString(),
-                                'barcode': '123',
+                                'barcode': barCode.toString(),
+                                // 'barcode': '123',
                                 'process_id': timestamp.toString(),
                               },
                             );
@@ -298,10 +323,12 @@ class BarcodeScannerPage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20)),
                 width: 300,
                 height: 40,
-                child: const Center(
+                child: Center(
                   child: Text(
                     "Scan a product barcode",
-                    style: TextStyle(),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.background,
+                        ),
                   ),
                 ),
               ),

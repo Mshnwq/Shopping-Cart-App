@@ -183,7 +183,9 @@ class MQTT extends ChangeNotifier {
           }
           if (res['mqtt_type'] == "scale_confirmation") {
             // add message to stream
-            _scaleMessageController.add(payload);
+            if (res['status'] == 'pass') {
+              _scaleMessageController.add(payload);
+            }
           }
           if (res['mqtt_type'] == "penetration_data") {
             // add message to stream

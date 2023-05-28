@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import '../widgets/all_widgets.dart';
@@ -137,52 +139,94 @@ void showLoadingDialog(BuildContext context) {
 }
 
 void showCustomLoadingDialog(BuildContext context, String title, String body,
-    {Duration? duration}) {
+    {int? durationInSeconds, double? boxSize}) {
+  StreamController<int> countdownController = StreamController<int>();
+  int remainingTime = durationInSeconds ?? 0;
+  bool showCountdown = durationInSeconds != null;
+  double dialogSize = boxSize ?? 250.0;
+
+  if (showCountdown) {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      if (remainingTime > 0) {
+        remainingTime--;
+        countdownController.add(remainingTime);
+      } else {
+        timer.cancel();
+        countdownController.close();
+        // Navigator.of(context).pop();
+      }
+    });
+  }
+
   showDialog(
     barrierDismissible: false,
     context: context,
     builder: (context) {
-      Duration remainingTime = duration ?? Duration.zero;
-      bool showCountdown = duration != null;
-
-      if (showCountdown) {
-        Future.delayed(Duration(seconds: 1), () {
-          if (remainingTime.inSeconds > 0) {
-            remainingTime -= Duration(seconds: 1);
-          }
-        }).then((_) {
-          if (remainingTime.inSeconds <= 0) {
-            Navigator.of(context).pop();
-          }
-        });
-      }
-
       return WillPopScope(
         // Prevent the user from popping the loading dialog
         onWillPop: () async => false,
         child: Dialog(
           child: Container(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
+            width: dialogSize,
+            height: dialogSize,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.secondary,
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      ?.copyWith(color: Theme.of(context).colorScheme.primary),
                 ),
-                SizedBox(height: 16.0),
-                Text(title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary)),
-                SizedBox(height: 8.0),
-                Text(body,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary)),
-                if (showCountdown) SizedBox(height: 8.0),
-                if (showCountdown)
-                  Text(
-                    'Time remaining: ${remainingTime.inSeconds} seconds',
-                    style: TextStyle(fontSize: 16.0),
+                SizedBox(height: dialogSize / 6),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Center(
+                      child: SizedBox(
+                        height: 80.0,
+                        width: 80.0,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 10.0,
+                          // valueColor: AlwaysStoppedAnimation<Color>(
+                          // Theme.of(context).colorScheme.secondary,
+                          // ),
+                        ),
+                      ),
+                    ),
+                    if (showCountdown)
+                      StreamBuilder<int>(
+                        stream: countdownController.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Text(
+                              '${snapshot.data}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(color: Colors.red),
+                            );
+                          } else {
+                            return Container();
+                          }
+                        },
+                      ),
+                  ],
+                ),
+                SizedBox(height: dialogSize / 8),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      body,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyText2?.copyWith(
+                          color: Theme.of(context).colorScheme.primary),
+                    ),
                   ),
+                ),
               ],
             ),
           ),

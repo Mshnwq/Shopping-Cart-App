@@ -123,17 +123,17 @@ class CartPage extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: RefreshIndicator(
         onRefresh: () async {
-          // await Future.delayed(const Duration(milliseconds: 420));
-          // http.Response httpRes = await auth.getAuthReq(
-          //   '/api/v1/item/items',
-          // );
-          if (true) {
-            // devtools.log("items ${httpRes.statusCode}");
-            // if (httpRes.statusCode == 200) {
-            // if (httpRes.body != null) {
-            // devtools.log("items ${httpRes.body}");
-            cart.clearItems();
-            String receiptBodyJson = '''{
+          await Future.delayed(const Duration(milliseconds: 420));
+          http.Response httpRes = await auth.getAuthReq(
+            '/api/v1/item/items',
+          );
+          // if (true) {
+          devtools.log("items ${httpRes.statusCode}");
+          if (httpRes.statusCode == 200) {
+            if (httpRes.body != null) {
+              devtools.log("items ${httpRes.body}");
+              cart.clearItems();
+              String receiptBodyJson = '''{
                 "bill": {
                   "status": "unpaid",
                   "created_at": "2023-03-31T21:14:45.539142",
@@ -160,29 +160,29 @@ class CartPage extends ConsumerWidget {
                   }
                 ]
               }''';
-            var items = json.decode(receiptBodyJson)['items'];
-            // var items = json.decode(httpRes.body)['items'];
-            // devtools.log("$items");
-            for (int i = 0; i < items.length; i++) {
-              // extract item info
-              Map itemMap = items[i];
-              String itemId = itemMap.keys.first;
-              Map itemDetails = itemMap.values.first;
-              // create item object
-              Item item = Item(
-                barcode: itemId,
-                name: itemDetails['en_name'],
-                unit: 'Kg',
-                price: itemDetails['unit_price'],
-                count: itemDetails['count'],
-                // image: "http://${env.baseURL}${itemDetails['img_path']}",
-                image:
-                    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-              );
-              // add to cart
-              cart.addItem(item);
+              // var items = json.decode(receiptBodyJson)['items'];
+              var items = json.decode(httpRes.body)['items'];
+              // devtools.log("$items");
+              for (int i = 0; i < items.length; i++) {
+                // extract item info
+                Map itemMap = items[i];
+                String itemId = itemMap.keys.first;
+                Map itemDetails = itemMap.values.first;
+                // create item object
+                Item item = Item(
+                  barcode: itemId,
+                  name: itemDetails['en_name'],
+                  unit: 'Kg',
+                  price: itemDetails['unit_price'],
+                  count: itemDetails['count'],
+                  // image: "http://${env.baseURL}${itemDetails['img_path']}",
+                  image:
+                      'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+                );
+                // add to cart
+                cart.addItem(item);
+              }
             }
-            // }
             devtools.log("refreshing");
           } else {
             devtools.log("Refresh Failed");
@@ -390,125 +390,142 @@ class CartPage extends ConsumerWidget {
                                             'timestamp': DateTime.now()
                                                 .millisecondsSinceEpoch
                                           };
-                                          try {
-                                            // Publish the request
-                                            mqtt.publish(
-                                                json.encode(publishBody));
+                                          // Publish the request
+                                          mqtt.publish(
+                                              json.encode(publishBody));
+                                          // Wait for the scale response message
+                                          showCustomLoadingDialog(
+                                            context,
+                                            'Move item to scale area!',
+                                            'Please keep only one hand in the cart',
+                                          );
+                                          StreamSubscription penetSubscription =
+                                              mqtt.onPenetMessage
+                                                  .listen((message) {
+                                            penet_completer.complete(message);
+                                            devtools.log("penet waiting done");
+                                          });
+                                          // Wait for the penet completer to complete
+                                          final mqttResponsePenet = json.decode(
+                                              await penet_completer.future);
+                                          // Handle the message as desired
+                                          penetSubscription.cancel();
+                                          context.pop();
+                                          devtools.log("penet completed done");
+                                          // devtools.log("RESPONSE: $mqttResponse");
+                                          if (mqttResponsePenet['status']
+                                                  .toString() ==
+                                              '0') {
+                                            // Delay
                                             showCustomLoadingDialog(
                                               context,
-                                              'Move item to scale!',
+                                              'Place item on scale!',
                                               'Please keep only one hand in the cart',
+                                              durationInSeconds: 5,
                                             );
-                                            // Wait for the scale response message
-                                            StreamSubscription
-                                                penetSubscription = mqtt
-                                                    .onPenetMessage
+                                            var timestamp;
+                                            Future.delayed(
+                                              Duration(seconds: 5),
+                                            ).then(
+                                              (_) {
+                                                timestamp = DateTime.now()
+                                                    .millisecondsSinceEpoch;
+                                                var publishBody =
+                                                    <String, dynamic>{
+                                                  'mqtt_type':
+                                                      'request_remove_item',
+                                                  'sender': mqtt.clientId,
+                                                  'barcode': cart
+                                                      .getItems()[index]
+                                                      .barcode,
+                                                  'timestamp': timestamp
+                                                };
+                                                // Publish the request
+                                                mqtt.publish(
+                                                    json.encode(publishBody));
+                                                context.pop();
+                                                showLoadingDialog(context);
+                                              },
+                                            );
+                                            // Wait for the item completer to complete
+                                            StreamSubscription subscription =
+                                                mqtt.onItemMessage
                                                     .listen((message) {
-                                              penet_completer.complete(message);
-                                              devtools
-                                                  .log("penet waiting done");
+                                              item_completer.complete(message);
+                                              devtools.log("item waiting done");
                                             });
-                                            // Wait for the scale completer to complete
-                                            final mqttResponsePenet = json
-                                                .decode(await penet_completer
+                                            final mqttResponseItem =
+                                                json.decode(await item_completer
                                                     .future);
                                             // Handle the message as desired
-                                            penetSubscription.cancel();
+                                            subscription.cancel();
                                             context.pop();
-                                            await Future.delayed(
-                                                Duration(seconds: 2));
-                                            devtools
-                                                .log("penet completed done");
-                                            // devtools.log("RESPONSE: $mqttResponse");
-                                            if (mqttResponsePenet['status']
-                                                    .toString() ==
-                                                '0') {
-                                              // Delay
+                                            devtools.log("item completed done");
+                                            // on item success
+                                            if (mqttResponseItem['status'] ==
+                                                'success') {
+                                              // devtools.log("HERE_11");
+                                              Completer<void> completer1 =
+                                                  Completer<void>();
                                               showCustomLoadingDialog(
                                                 context,
-                                                'Move item to scale!',
+                                                'Remove item from scale!',
                                                 'Please keep only one hand in the cart',
-                                                duration: Duration(seconds: 5),
+                                                durationInSeconds: 5,
                                               );
-                                              var timestamp = DateTime.now()
-                                                  .millisecondsSinceEpoch;
-
-                                              var publishBody =
-                                                  <String, dynamic>{
-                                                'mqtt_type':
-                                                    'request_remove_item',
-                                                'sender': mqtt.clientId,
-                                                'barcode': cart
-                                                    .getItems()[index]
-                                                    .barcode,
-                                                'timestamp': timestamp
-                                              };
-                                              // Publish the request
-                                              mqtt.publish(
-                                                  json.encode(publishBody));
-                                              // Wait for the item completer to complete
-                                              showDialog(
-                                                context: context,
-                                                barrierDismissible: false,
-                                                builder: (context) =>
-                                                    const Center(
-                                                  child:
-                                                      CircularProgressIndicator(),
-                                                ),
+                                              Future.delayed(
+                                                Duration(seconds: 5),
+                                              ).then(
+                                                (_) {
+                                                  cart.setCartState("active");
+                                                  context.pop();
+                                                  completer1.complete();
+                                                  showLoadingDialog(context);
+                                                },
                                               );
-                                              StreamSubscription subscription =
-                                                  mqtt.onItemMessage
-                                                      .listen((message) {
-                                                item_completer
-                                                    .complete(message);
-                                                devtools
-                                                    .log("item waiting done");
-                                              });
-                                              final mqttResponsePenet = json
-                                                  .decode(await item_completer
-                                                      .future);
-                                              // Handle the message as desired
-                                              subscription.cancel();
-                                              context.pop();
-                                              devtools
-                                                  .log("item completed done");
-                                              // on penetration success
-                                              if (mqttResponsePenet['status'] ==
-                                                  'success') {
-                                                // devtools.log("HERE_11");
-                                                showCustomLoadingDialog(
-                                                  context,
-                                                  'Remove item from scale!',
-                                                  'Please keep only one hand in the cart',
-                                                  duration:
-                                                      Duration(seconds: 5),
-                                                );
-                                                cart.setCartState("active");
-                                                await Future.delayed(
-                                                    Duration(seconds: 2));
-
-                                                http.Response httpRes =
-                                                    await auth.postAuthReq(
-                                                  '/api/v1/item/remove',
-                                                  body: <String, String>{
-                                                    'barcode': cart
-                                                        .getItems()[index]
-                                                        .barcode,
-                                                    'process_id':
-                                                        timestamp.toString(),
+                                              Future.wait([completer1.future])
+                                                  .then((_) {
+                                                Completer<void> completer2 =
+                                                    Completer<void>();
+                                                Future.delayed(
+                                                  Duration(seconds: 3),
+                                                ).then(
+                                                  (_) async {
+                                                    try {
+                                                      http.Response httpRes =
+                                                          await auth
+                                                              .postAuthReq(
+                                                        '/api/v1/item/remove',
+                                                        body: <String, String>{
+                                                          'barcode': cart
+                                                              .getItems()[index]
+                                                              .barcode,
+                                                          'process_id':
+                                                              timestamp
+                                                                  .toString(),
+                                                        },
+                                                      );
+                                                      devtools.log(
+                                                          "code: ${httpRes.statusCode}");
+                                                      // if success, add remove item from cart
+                                                      if (httpRes.statusCode ==
+                                                          200) {
+                                                        cart.removeItem(cart
+                                                            .getItems()[index]);
+                                                      }
+                                                    } catch (e) {
+                                                      devtools.log(
+                                                          "${e.toString()}");
+                                                    }
+                                                    completer2.complete();
                                                   },
                                                 );
-                                                devtools.log(
-                                                    "code: ${httpRes.statusCode}");
-                                                // if success, add remove item from cart
-                                                if (httpRes.statusCode == 200) {
-                                                  cart.removeItem(
-                                                      cart.getItems()[index]);
-                                                }
-                                              }
+                                                Future.wait([completer2.future])
+                                                    .then((_) {
+                                                  context.pop();
+                                                });
+                                              });
                                             }
-                                          } catch (e) {
-                                            devtools.log("${e.toString()}");
                                           }
                                         }
                                       },

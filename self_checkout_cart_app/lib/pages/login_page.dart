@@ -123,12 +123,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                 ),
-                // TextButton(
-                //   onPressed: () => context.goNamed(logoRoute),
-                //   child: Text(
-                //     'Back',
-                //   ),
-                // ),
               ],
             ),
           ),
