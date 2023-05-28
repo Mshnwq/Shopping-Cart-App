@@ -29,6 +29,9 @@ class MQTT extends ChangeNotifier {
   late StreamController<String> _scaleMessageController;
   Stream<String> get onScaleMessage => _scaleMessageController.stream;
 
+  late StreamController<String> _penetMessageController;
+  Stream<String> get onPenetMessage => _penetMessageController.stream;
+
   String get clientId => _clientId;
   String get topic => _topic;
 
@@ -108,6 +111,7 @@ class MQTT extends ChangeNotifier {
       _itemMessageController = StreamController<String>.broadcast();
       _alarmMessageController = StreamController<String>.broadcast();
       _scaleMessageController = StreamController<String>.broadcast();
+      _penetMessageController = StreamController<String>.broadcast();
       return true;
     } on mqtt.NoConnectionException catch (e) {
       // Raised by the client when connection fails.
@@ -181,8 +185,12 @@ class MQTT extends ChangeNotifier {
             // add message to stream
             _scaleMessageController.add(payload);
           }
-          if (res['mqtt_type'] == "update_mode") {
-            // if (res['mqtt_type'] == "update_status") {
+          if (res['mqtt_type'] == "penetration_data") {
+            // add message to stream
+            _penetMessageController.add(payload);
+          }
+          // if (res['mqtt_type'] == "update_mode") {
+          if (res['mqtt_type'] == "update_status") {
             // add message to stream
             _alarmMessageController.add(payload);
           }

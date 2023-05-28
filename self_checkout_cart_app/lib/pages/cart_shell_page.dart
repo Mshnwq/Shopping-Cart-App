@@ -75,7 +75,7 @@ class CartShellPage extends ConsumerWidget {
           if (snapshot.hasData) {
             devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
-            if (jsonDecode(snapshot.data!)['mode'].toString() == '5') {
+            if (jsonDecode(snapshot.data!)['status'].toString() == '5') {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
               return alarm(context, snapshot.hasData.toString());

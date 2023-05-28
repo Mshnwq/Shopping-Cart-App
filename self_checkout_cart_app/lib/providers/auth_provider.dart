@@ -62,11 +62,7 @@ class Auth with ChangeNotifier {
       // return false;
       throw Exception(res.body);
     } catch (e) {
-      // showAlertMassage(context, "$e");
-      throw Exception(e); // TODO: Implement internet error
-      // return false;
-      // } finally {
-      // showAlertMassage(context, "$e");
+      throw Exception(e);
     }
   }
 
@@ -96,13 +92,12 @@ class Auth with ChangeNotifier {
         notifyListeners();
         return true;
       }
-      return false;
+      throw Exception(res.body);
+      // return false;
     } catch (e) {
-      showAlertMassage(context, "$e");
-      // throw Exception(e); // TODO: Implement internet error
-      return false;
-      // } finally {
       // showAlertMassage(context, "$e");
+      throw Exception(e); // TODO: Implement internet error
+      // return false;
     }
   }
 
@@ -236,7 +231,8 @@ class Auth with ChangeNotifier {
       http.Response checkedRes = await checkToken(res);
       return checkedRes;
     } catch (e) {
-      throw Exception(e);
+      // devtools.log('THROWING');
+      throw Exception(e.toString());
     }
   }
 
@@ -252,8 +248,8 @@ class Auth with ChangeNotifier {
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
     try {
       http.Response res = await getReq(route, header: authHeader);
-      devtools.log("Hell ${res.body}");
-      devtools.log("Hell ${res.statusCode}");
+      // devtools.log("Hell ${res.body}");
+      // devtools.log("Hell ${res.statusCode}");
       http.Response checkedRes = await checkToken(res);
       return checkedRes;
     } catch (e) {

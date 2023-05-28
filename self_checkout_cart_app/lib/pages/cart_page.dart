@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:self_checkout_cart_app/providers/mqtt_provider.dart';
 import '../models/item_model.dart';
 import '../widgets/all_widgets.dart';
 import 'package:flutter/material.dart';
@@ -85,6 +88,9 @@ class CartPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
+    final mqtt = ref.watch(mqttProvider);
+    final penet_completer = Completer<String>();
+    final item_completer = Completer<String>();
     return Scaffold(
       floatingActionButton: InkWell(
         splashColor: Colors.lightGreen,
@@ -206,116 +212,315 @@ class CartPage extends ConsumerWidget {
                           itemCount: cart.getCounter(),
                           itemBuilder: (context, index) {
                             return Card(
-                              elevation: 5.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Image(
-                                      height: 80,
-                                      width: 80,
-                                      image: NetworkImage(
-                                          cart.getItems()[index].image),
-                                      // MemoryImage(cart.getItems()[index].image),
+                              borderOnForeground: true,
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              shadowColor: Color.fromARGB(255, 255, 255, 255),
+                              surfaceTintColor:
+                                  Color.fromARGB(255, 255, 255, 255),
+                              // surfaceTintColor: Color(0xFF2ECC71),
+                              // elevation: 1.0,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Image(
+                                    height: 80,
+                                    width: 80,
+                                    image: NetworkImage(
+                                        cart.getItems()[index].image),
+                                    // MemoryImage(cart.getItems()[index].image),
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(
+                                          height: 5.0,
+                                        ),
+                                        RichText(
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          text: TextSpan(
+                                            text: 'Name: ',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
+                                                ),
+                                            children: [
+                                              TextSpan(
+                                                text:
+                                                    '${cart.getItems()[index].name}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        RichText(
+                                          maxLines: 1,
+                                          text: TextSpan(
+                                            text: 'Count: ',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
+                                                ),
+                                            children: [
+                                              TextSpan(
+                                                text:
+                                                    '${cart.getItems()[index].count}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        RichText(
+                                          maxLines: 1,
+                                          text: TextSpan(
+                                            text: 'Price: ',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelLarge
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
+                                                ),
+                                            children: [
+                                              TextSpan(
+                                                text:
+                                                    '${cart.getItems()[index].price}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                    ),
+                                              ),
+                                              WidgetSpan(
+                                                child: Transform.translate(
+                                                  offset: const Offset(1.0,
+                                                      -4.0), // Adjust the vertical position as needed
+                                                  child: Text(
+                                                    'SAR',
+                                                    style: TextStyle(
+                                                      fontSize: 10.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(
-                                      width: 130,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(
-                                            height: 5.0,
-                                          ),
-                                          RichText(
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            text: TextSpan(
-                                                text: 'Name: ',
-                                                style: TextStyle(
-                                                    color: Colors
-                                                        .blueGrey.shade800,
-                                                    fontSize: 16.0),
-                                                children: [
-                                                  TextSpan(
-                                                      text:
-                                                          '${cart.getItems()[index].name}\n',
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ]),
-                                          ),
-                                          RichText(
-                                            maxLines: 1,
-                                            text: TextSpan(
-                                                text: 'Count: ',
-                                                style: TextStyle(
-                                                    color: Colors
-                                                        .blueGrey.shade800,
-                                                    fontSize: 16.0),
-                                                children: [
-                                                  TextSpan(
-                                                      text:
-                                                          '${cart.getItems()[index].count}\n',
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ]),
-                                          ),
-                                          RichText(
-                                            maxLines: 1,
-                                            text: TextSpan(
-                                                text: 'Price: ' r"SAR",
-                                                style: TextStyle(
-                                                    color: Colors
-                                                        .blueGrey.shade800,
-                                                    fontSize: 16.0),
-                                                children: [
-                                                  TextSpan(
-                                                      text:
-                                                          '${cart.getItems()[index].price}\n',
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ]),
-                                          ),
-                                        ],
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      GoRouter.of(context).push(
+                                          '/prod_detail/${cart.getItems()[index].name}');
+                                    },
+                                    icon: Icon(
+                                      Icons.more_vert,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onLongPress: () => {
+                                      cart.removeItem(cart.getItems()[index])
+                                    },
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        // cart.setCartState("weighing");
+                                        // context.pushNamed(
+                                        //   barcodeRoute,
+                                        //   extra: {
+                                        //     'action': 'remove',
+                                        //     'index': '$index',
+                                        //     'barcodeToRead':
+                                        //         cart.getItems()[index].barcode,
+                                        //   },
+                                        // );
+                                        final removeItem =
+                                            await showCustomBoolDialog(
+                                          context,
+                                          "Item removement",
+                                          "Are you sure, you want to remove ${cart.getItems()[index].name}",
+                                          "Yes",
+                                        );
+                                        if (removeItem) {
+                                          var publishBody = <String, dynamic>{
+                                            'mqtt_type':
+                                                'request_start_remove_item',
+                                            'sender': mqtt.clientId,
+                                            'barcode':
+                                                cart.getItems()[index].barcode,
+                                            'timestamp': DateTime.now()
+                                                .millisecondsSinceEpoch
+                                          };
+                                          try {
+                                            // Publish the request
+                                            mqtt.publish(
+                                                json.encode(publishBody));
+                                            showCustomLoadingDialog(
+                                              context,
+                                              'Move item to scale!',
+                                              'Please keep only one hand in the cart',
+                                            );
+                                            // Wait for the scale response message
+                                            StreamSubscription
+                                                penetSubscription = mqtt
+                                                    .onPenetMessage
+                                                    .listen((message) {
+                                              penet_completer.complete(message);
+                                              devtools
+                                                  .log("penet waiting done");
+                                            });
+                                            // Wait for the scale completer to complete
+                                            final mqttResponsePenet = json
+                                                .decode(await penet_completer
+                                                    .future);
+                                            // Handle the message as desired
+                                            penetSubscription.cancel();
+                                            context.pop();
+                                            await Future.delayed(
+                                                Duration(seconds: 2));
+                                            devtools
+                                                .log("penet completed done");
+                                            // devtools.log("RESPONSE: $mqttResponse");
+                                            if (mqttResponsePenet['status']
+                                                    .toString() ==
+                                                '0') {
+                                              // Delay
+                                              showCustomLoadingDialog(
+                                                context,
+                                                'Move item to scale!',
+                                                'Please keep only one hand in the cart',
+                                                duration: Duration(seconds: 5),
+                                              );
+                                              var timestamp = DateTime.now()
+                                                  .millisecondsSinceEpoch;
+
+                                              var publishBody =
+                                                  <String, dynamic>{
+                                                'mqtt_type':
+                                                    'request_remove_item',
+                                                'sender': mqtt.clientId,
+                                                'barcode': cart
+                                                    .getItems()[index]
+                                                    .barcode,
+                                                'timestamp': timestamp
+                                              };
+                                              // Publish the request
+                                              mqtt.publish(
+                                                  json.encode(publishBody));
+                                              // Wait for the item completer to complete
+                                              showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (context) =>
+                                                    const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              );
+                                              StreamSubscription subscription =
+                                                  mqtt.onItemMessage
+                                                      .listen((message) {
+                                                item_completer
+                                                    .complete(message);
+                                                devtools
+                                                    .log("item waiting done");
+                                              });
+                                              final mqttResponsePenet = json
+                                                  .decode(await item_completer
+                                                      .future);
+                                              // Handle the message as desired
+                                              subscription.cancel();
+                                              context.pop();
+                                              devtools
+                                                  .log("item completed done");
+                                              // on penetration success
+                                              if (mqttResponsePenet['status'] ==
+                                                  'success') {
+                                                // devtools.log("HERE_11");
+                                                showCustomLoadingDialog(
+                                                  context,
+                                                  'Remove item from scale!',
+                                                  'Please keep only one hand in the cart',
+                                                  duration:
+                                                      Duration(seconds: 5),
+                                                );
+                                                cart.setCartState("active");
+                                                await Future.delayed(
+                                                    Duration(seconds: 2));
+
+                                                http.Response httpRes =
+                                                    await auth.postAuthReq(
+                                                  '/api/v1/item/remove',
+                                                  body: <String, String>{
+                                                    'barcode': cart
+                                                        .getItems()[index]
+                                                        .barcode,
+                                                    'process_id':
+                                                        timestamp.toString(),
+                                                  },
+                                                );
+                                                devtools.log(
+                                                    "code: ${httpRes.statusCode}");
+                                                // if success, add remove item from cart
+                                                if (httpRes.statusCode == 200) {
+                                                  cart.removeItem(
+                                                      cart.getItems()[index]);
+                                                }
+                                              }
+                                            }
+                                          } catch (e) {
+                                            devtools.log("${e.toString()}");
+                                          }
+                                        }
+                                      },
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                       ),
                                     ),
-                                    IconButton(
-                                      onPressed: () {
-                                        GoRouter.of(context).push(
-                                            '/prod_detail/${cart.getItems()[index].name}');
-                                      },
-                                      icon: const Icon(Icons.more_vert),
-                                    ),
-                                    InkWell(
-                                      onLongPress: () => {
-                                        cart.removeItem(cart.getItems()[index])
-                                      },
-                                      child: IconButton(
-                                        onPressed: () {
-                                          // cart.removeItem(cart.getItems()[index]);
-                                          cart.setCartState("weighing");
-                                          context.pushNamed(
-                                            barcodeRoute,
-                                            extra: {
-                                              'action': 'remove',
-                                              'index': '$index',
-                                              'barcodeToRead': cart
-                                                  .getItems()[index]
-                                                  .barcode,
-                                            },
-                                          );
-                                        },
-                                        icon: const Icon(Icons.delete),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             );
                           },
@@ -357,11 +562,15 @@ class ReusableWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.subtitle1,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
           ),
           Text(
             value.toString(),
-            style: Theme.of(context).textTheme.subtitle2,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
           ),
         ],
       ),

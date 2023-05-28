@@ -11,6 +11,7 @@ import '../constants/routes.dart';
 // import '../services/socket.dart';
 import '../widgets/all_widgets.dart';
 import 'dart:developer' as devtools;
+import 'dart:async';
 
 // QR code scanner imports
 import '../services/qrcode_scanner.dart';
@@ -28,6 +29,7 @@ class QRScannerPage extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
+    const timeoutDuration = Duration(seconds: 3);
 
     return Scaffold(
       floatingActionButton: Column(
@@ -50,33 +52,42 @@ class QRScannerPage extends ConsumerWidget {
                 final connectCart = await customDialog(
                   context: context,
                   title: 'Confirm QR',
-                  message: 'connecting to cart $qrCode',
+                  message: 'connecting to cart ${qrCode.substring(8, 13)}',
                   buttons: [
                     const ButtonArgs(
                       text: 'Confirm',
                       value: true,
                     ),
-                    ButtonArgs(
+                    const ButtonArgs(
                       text: 'Cancel',
                       value: false,
-                      onPressed: () {
-                        _canScan = true;
-                        GoRouter.of(context).pop();
-                      },
                     ),
                   ],
                 );
                 if (connectCart) {
                   var httpBody = <String, String>{
-                    'qrcode': qrCode.toString(),
+                    'qrcode': qrCode.toString().substring(8, 13),
                   };
+                  String? errorMessage; // Variable to store the error message
                   // devtools.log("qrcode: ${qrCode.toString()}");
                   try {
-                    http.Response res = await auth.postAuthReq(
-                      '/api/v1/cart/connect',
-                      body: httpBody,
+                    showCustomLoadingDialog(
+                      context,
+                      'Connecting...',
+                      'Please Wait',
                     );
-                    // devtools.log("code: ${res.statusCode}");
+                    final res = await Future.any([
+                      auth.postAuthReq(
+                        '/api/v1/cart/connect',
+                        body: httpBody,
+                      ),
+                      Future.delayed(timeoutDuration).then((_) {
+                        throw TimeoutException(
+                            'The authentication process took too long.');
+                      }),
+                    ]);
+                    devtools.log("res: $res");
+                    // devtools.log("code: ${res[0].statusCode}");
                     // if success, create cart
                     if (res.statusCode == 200) {
                       devtools.log("code: ${res.body}");
@@ -89,18 +100,52 @@ class QRScannerPage extends ConsumerWidget {
                       } else {
                         devtools.log("failed MQTT");
                       }
-                    } else {
-                      showAlertMassage(
-                        context,
-                        res.statusCode.toString(),
-                      );
                     }
-                  } catch (e) {
-                    devtools.log("$e");
+                  } on TimeoutException catch (e) {
+                    errorMessage = e.toString();
+                  } on Exception catch (e) {
+                    String error = e.toString();
+                    switch (error) {
+                      case 'Cart-not-found':
+                        devtools.log('Cart-not-found');
+                        errorMessage = "User not found";
+                        break;
+                      case 'Cart-in-use':
+                        devtools.log('Cart-in-use');
+                        errorMessage = "Email not found";
+                        break;
+                      default:
+                        devtools.log('Error: $error');
+                        errorMessage = "$error";
+                        break;
+                    }
+                  } finally {
+                    context.pop();
+                    if (errorMessage != null) {
+                      final retryCart = await customDialog(
+                        context: context,
+                        title: 'Error!',
+                        message: errorMessage,
+                        buttons: const [
+                          ButtonArgs(
+                            text: 'Retry',
+                            value: true,
+                          ),
+                          ButtonArgs(
+                            text: 'Cancel',
+                            value: false,
+                          ),
+                        ],
+                      );
+                      if (retryCart) {
+                        _canScan = true;
+                      } else {
+                        context.pop();
+                      }
+                    }
                   }
                 } else {
                   _canScan = true;
-                  GoRouter.of(context).pop();
                 }
               }
             },

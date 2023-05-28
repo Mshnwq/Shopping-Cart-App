@@ -116,33 +116,6 @@ void showAlertMassage(context, String message, {Action? onOk, Action? then}) {
   );
 }
 
-Future<bool> showQRDialog(BuildContext context, String id) {
-  return showDialog<bool>(
-    // conditional bool if phone return tap
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Confirm QR'),
-        content: Text('Connecting to Cart $id'),
-        actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('Confirm'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text('Cancel'),
-          )
-        ],
-      );
-    },
-  ).then((value) => value ?? false);
-}
-
 void showLoadingDialog(BuildContext context) {
   SchedulerBinding.instance.addPostFrameCallback(
     (_) => showDialog(
@@ -160,6 +133,62 @@ void showLoadingDialog(BuildContext context) {
         );
       },
     ),
+  );
+}
+
+void showCustomLoadingDialog(BuildContext context, String title, String body,
+    {Duration? duration}) {
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) {
+      Duration remainingTime = duration ?? Duration.zero;
+      bool showCountdown = duration != null;
+
+      if (showCountdown) {
+        Future.delayed(Duration(seconds: 1), () {
+          if (remainingTime.inSeconds > 0) {
+            remainingTime -= Duration(seconds: 1);
+          }
+        }).then((_) {
+          if (remainingTime.inSeconds <= 0) {
+            Navigator.of(context).pop();
+          }
+        });
+      }
+
+      return WillPopScope(
+        // Prevent the user from popping the loading dialog
+        onWillPop: () async => false,
+        child: Dialog(
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                SizedBox(height: 16.0),
+                Text(title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary)),
+                SizedBox(height: 8.0),
+                Text(body,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary)),
+                if (showCountdown) SizedBox(height: 8.0),
+                if (showCountdown)
+                  Text(
+                    'Time remaining: ${remainingTime.inSeconds} seconds',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
 

@@ -69,9 +69,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       devtools.log("email $email");
                       devtools.log("pass $passwd");
                       showLoadingDialog(context);
-                      final loginFuture = auth.login(context, email, passwd);
                       final loginResult = await Future.any([
-                        loginFuture,
+                        auth.login(context, email, passwd),
                         Future.delayed(timeoutDuration).then((_) {
                           throw TimeoutException(
                               'The authentication process took too long.');
@@ -105,8 +104,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           showAlertMassage(context, "$e");
                           break;
                       }
+                    } finally {
+                      context.pop();
                     }
-                    context.pop();
                   },
                   text: 'Log In',
                   textStyle: Theme.of(context).textTheme.titleMedium,
