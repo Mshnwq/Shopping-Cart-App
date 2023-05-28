@@ -173,6 +173,7 @@ class Auth with ChangeNotifier {
     devtools.log('POST PATH');
     devtools.log(env.baseURL);
     devtools.log(route);
+    devtools.log(body.toString());
     return http.post(
       Uri.http(env.baseURL, route),
       body: jsonEncode(body),

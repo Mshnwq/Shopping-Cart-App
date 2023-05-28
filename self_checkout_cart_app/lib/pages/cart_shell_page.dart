@@ -78,7 +78,8 @@ class CartShellPage extends ConsumerWidget {
             if (jsonDecode(snapshot.data!)['status'].toString() == '5') {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-              context.goNamed(cartRoute);
+              // context.goNamed(cartRoute);
+              context.pop();
               return alarm(context, snapshot.hasData.toString());
             } else {
               return cartShell(context, ref);

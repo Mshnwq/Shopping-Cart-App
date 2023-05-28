@@ -68,22 +68,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     try {
                       devtools.log("email $email");
                       devtools.log("pass $passwd");
+                      // showCustomLoadingDialog(
+                      //   context,
+                      //   'Place item to scale!',
+                      //   'Please keep only one hand in the cart',
+                      //   durationInSeconds: 5,
+                      //   boxSize: 275,
+                      // );
                       showLoadingDialog(context);
+                      bool completed = false;
                       final loginResult = await Future.any([
                         auth.login(context, email, passwd),
                         Future.delayed(timeoutDuration).then((_) {
-                          throw TimeoutException(
-                              'The authentication process took too long.');
+                          if (!completed) {
+                            throw TimeoutException(
+                                'The authentication process took too long.');
+                          }
                         }),
-                      ]);
+                      ]).then((_) {
+                        devtools.log('$_');
+                        completed = true;
+                        return _!;
+                      });
                       if (loginResult) {
                         context.goNamed(connectRoute);
                       } else {
                         showAlertMassage(context, "Failed to log in");
-                        // return;
+                        return;
                       }
                     } on TimeoutException catch (e) {
                       showAlertMassage(context, e.toString());
+                      // context.pop();
                     } on Exception catch (e) {
                       String error = e.toString();
                       switch (error) {

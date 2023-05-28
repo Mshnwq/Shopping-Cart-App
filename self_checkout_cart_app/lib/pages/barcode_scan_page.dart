@@ -117,15 +117,25 @@ class BarcodeScannerPage extends ConsumerWidget {
                           item_completer.complete(message);
                           devtools.log("item waiting done");
                         });
-                        final mqttResponseScale = json.decode(
-                          await Future.any([
-                            scale_completer.future,
-                            item_completer.future,
-                          ]),
-                        );
+
+                        bool completed = false;
+                        final mqttResponseScale = await Future.any([
+                          scale_completer.future,
+                          item_completer.future,
+                          Future.delayed(
+                            const Duration(seconds: 5),
+                          ).then((_) {
+                            if (!completed) {
+                              throw TimeoutException(
+                                  'The process took too long.');
+                            }
+                          }),
+                        ]).then((response) {
+                          completed = true;
+                          return json.decode(response!);
+                        });
                         // Wait for the scale completer to complete
-                        // final mqttResponse =
-                        // json.decode(await scale_completer.future);
+
                         // Handle the message as desired
                         scaleSubscription.cancel();
                         itemSubscription.cancel();
@@ -159,8 +169,21 @@ class BarcodeScannerPage extends ConsumerWidget {
                             item_completer.complete(message);
                             devtools.log("item waiting done");
                           });
-                          final mqttResponsePenet =
-                              json.decode(await item_completer.future);
+                          bool completed = false;
+                          final mqttResponsePenet = await Future.any([
+                            item_completer.future,
+                            Future.delayed(
+                              const Duration(seconds: 16),
+                            ).then((_) {
+                              if (!completed) {
+                                throw TimeoutException(
+                                    'The process took too long.');
+                              }
+                            }),
+                          ]).then((response) {
+                            completed = true;
+                            return json.decode(response!);
+                          });
                           // Handle the message as desired
                           subscription.cancel();
                           context.pop();
@@ -184,15 +207,6 @@ class BarcodeScannerPage extends ConsumerWidget {
                               if (action == 'add') {
                                 var product = json.decode(httpRes.body);
                                 devtools.log("$product");
-                                // var blob = json.decode(imageRes.body)['img_link'];
-                                // Uint8List productImage;
-                                // if (blob != null) {
-                                // Only decode if blob is not null to prevent crashes
-                                // productImage = base64.decode(blob);
-                                // } else {
-                                // TODO Empty
-                                // productImage = base64.decode(blob);
-                                // }
                                 Item item = Item(
                                     barcode: barCode.toString(),
                                     name: product['en_name'],
@@ -280,7 +294,21 @@ class BarcodeScannerPage extends ConsumerWidget {
                             context.goNamed(cartRoute);
                           }
                         }
-                      } catch (e) {
+                      } on TimeoutException catch (e) {
+                        bool isRetry = await showCustomBoolDialog(
+                          context,
+                          "Time out",
+                          "$e",
+                          "Retry",
+                        );
+                        if (isRetry) {
+                          cart.setCartState("active");
+                          GoRouter.of(context).pop();
+                        } else {
+                          cart.setCartState("active");
+                          GoRouter.of(context).pop();
+                        }
+                      } on Exception catch (e) {
                         devtools.log("$e");
                         bool isRetry = await showCustomBoolDialog(
                           context,
