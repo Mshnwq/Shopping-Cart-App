@@ -5,6 +5,7 @@ class CustomTextField extends StatefulWidget {
   final String hintText;
   final bool enableToggle;
   final bool isEmail;
+  final String? errorText;
 
   const CustomTextField({
     Key? key,
@@ -12,6 +13,7 @@ class CustomTextField extends StatefulWidget {
     required this.hintText,
     this.enableToggle = false,
     this.isEmail = false,
+    this.errorText,
   }) : super(key: key);
 
   @override
@@ -46,6 +48,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               border: InputBorder.none,
               contentPadding:
                   EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              errorText: widget.errorText,
             ),
           ),
           widget.enableToggle

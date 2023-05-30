@@ -19,8 +19,8 @@ class ConnectPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cart = ref.watch(cartProvider);
-    final mqtt = ref.watch(mqttProvider);
+    // final cart = ref.watch(cartProvider);
+    // final mqtt = ref.watch(mqttProvider);
     final auth = ref.watch(authProvider);
     return WillPopScope(
       onWillPop: () async {
@@ -88,36 +88,36 @@ class ConnectPage extends ConsumerWidget {
               InkWell(
                 onLongPress: () async {
                   // TODO remove shortcut
-                  var httpBody = <String, String>{
-                    'qrcode': '123',
-                  };
-                  try {
-                    http.Response res = await auth
-                        .postAuthReq('/api/v1/cart/connect', body: httpBody);
-                    devtools.log("code: ${res.statusCode}");
-                    // if success, create cart
-                    if (res.statusCode == 200) {
-                      devtools.log("code: ${res.body}");
-                      final body = jsonDecode(res.body) as Map<String, dynamic>;
-                      cart.setID(body['id'].toString());
-                      final mqttSuccess = await mqtt.establish(
-                          auth.user_id, body['token'].toString());
-                      // final mqttSuccess = true;
-                      if (mqttSuccess) {
-                        context.goNamed(cartRoute);
-                      } else {
-                        devtools.log("failed MQTT");
-                      }
-                    } else {
-                      devtools.log("code: before");
-                      // cart.setID('test');
-                      // mqtt.establish(auth.user_id, 'test');
-                      devtools.log("code: after");
-                      // context.goNamed(cartRoute);
-                    }
-                  } catch (e) {
-                    devtools.log("$e");
-                  }
+                  // var httpBody = <String, String>{
+                  //   'qrcode': '123',
+                  // };
+                  // try {
+                  //   http.Response res = await auth
+                  //       .postAuthReq('/api/v1/cart/connect', body: httpBody);
+                  //   devtools.log("code: ${res.statusCode}");
+                  //   // if success, create cart
+                  //   if (res.statusCode == 200) {
+                  //     devtools.log("code: ${res.body}");
+                  //     final body = jsonDecode(res.body) as Map<String, dynamic>;
+                  //     cart.setID(body['id'].toString());
+                  //     final mqttSuccess = await mqtt.establish(
+                  //         auth.user_id, body['token'].toString());
+                  //     // final mqttSuccess = true;
+                  //     if (mqttSuccess) {
+                  //       context.goNamed(cartRoute);
+                  //     } else {
+                  //       devtools.log("failed MQTT");
+                  //     }
+                  //   } else {
+                  //     devtools.log("code: before");
+                  //     // cart.setID('test');
+                  //     // mqtt.establish(auth.user_id, 'test');
+                  //     devtools.log("code: after");
+                  //     // context.goNamed(cartRoute);
+                  //   }
+                  // } catch (e) {
+                  //   devtools.log("$e");
+                  // }
                 },
                 child: CustomSecondaryButton(
                   onPressed: () => context.goNamed(qrScanRoute),

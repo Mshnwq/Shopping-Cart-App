@@ -70,7 +70,6 @@ class QRScannerPage extends ConsumerWidget {
                     'qrcode': '123',
                   };
                   String? errorMessage; // Variable to store the error message
-                  // devtools.log("qrcode: ${qrCode.toString()}");
                   try {
                     showCustomLoadingDialog(
                       context,

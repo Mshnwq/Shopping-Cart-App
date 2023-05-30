@@ -18,11 +18,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // controller objects that connect between button and text field
   late final TextEditingController _email;
   late final TextEditingController _passwd;
+  late bool isEmailMissing;
+  late bool isPasswordMissing;
 
   @override
   void initState() {
     _email = TextEditingController();
     _passwd = TextEditingController();
+    isEmailMissing = false;
+    isPasswordMissing = false;
     super.initState();
     ref.read(authProvider);
   }
@@ -52,12 +56,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 CustomTextField(
                   controller: _email,
                   hintText: 'Enter Email or Username',
+                  errorText: isEmailMissing ? 'Email is required' : null,
                 ),
                 const SizedBox(height: 10),
                 CustomTextField(
                   controller: _passwd,
                   hintText: 'Enter Password',
                   enableToggle: true,
+                  errorText: isPasswordMissing ? 'Password is required' : null,
                 ),
                 const SizedBox(height: 20),
                 CustomPrimaryButton(
@@ -65,9 +71,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     final String email = _email.text;
                     final String passwd = _passwd.text;
 
-                    if (email.isEmpty || passwd.isEmpty) {
+                    isEmailMissing = email.isEmpty;
+                    isPasswordMissing = passwd.isEmpty;
+
+                    if (isEmailMissing || isPasswordMissing) {
                       showAlertMassage(
-                          context, "Please enter email and password");
+                        context,
+                        "Please enter fill all entries.",
+                      );
+                      setState(() {}); // Trigger a rebuild to update the UI
                       return;
                     }
 
