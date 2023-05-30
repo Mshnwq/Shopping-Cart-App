@@ -68,7 +68,8 @@ class CheckoutPage extends ConsumerWidget {
             devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
             devtools.log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-            return alarm(context, snapshot.hasData.toString());
+            return checkout(context, ref);
+            // return alarm(context, snapshot.hasData.toString());
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             // handle data
             return error(context);

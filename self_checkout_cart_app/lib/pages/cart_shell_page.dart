@@ -79,7 +79,7 @@ class CartShellPage extends ConsumerWidget {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
               // context.goNamed(cartRoute);
-              context.pop();
+              // context.pop();
               return alarm(context, snapshot.hasData.toString());
             } else {
               return cartShell(context, ref);

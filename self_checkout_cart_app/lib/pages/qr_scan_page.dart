@@ -66,7 +66,8 @@ class QRScannerPage extends ConsumerWidget {
                 );
                 if (connectCart) {
                   var httpBody = <String, String>{
-                    'qrcode': qrCode.toString().substring(8, 13),
+                    // 'qrcode': qrCode.toString().substring(8, 13),
+                    'qrcode': '123',
                   };
                   String? errorMessage; // Variable to store the error message
                   // devtools.log("qrcode: ${qrCode.toString()}");

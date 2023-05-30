@@ -440,12 +440,12 @@ class CartPage extends ConsumerWidget {
                                                   context,
                                                   'Place item on scale!',
                                                   'Please keep only one hand in the cart',
-                                                  durationInSeconds: 5,
+                                                  durationInSeconds: 3,
                                                   boxSize: 275,
                                                 );
                                                 var timestamp;
                                                 Future.delayed(
-                                                  Duration(seconds: 5),
+                                                  Duration(seconds: 3),
                                                 ).then((_) {
                                                   timestamp = DateTime.now()
                                                       .millisecondsSinceEpoch;
@@ -505,11 +505,11 @@ class CartPage extends ConsumerWidget {
                                                         context,
                                                         'Remove item from scale!',
                                                         'Please keep only one hand in the cart',
-                                                        durationInSeconds: 5,
+                                                        durationInSeconds: 3,
                                                       );
                                                       Future.delayed(
                                                         const Duration(
-                                                            seconds: 5),
+                                                            seconds: 3),
                                                       ).then(
                                                         (_) {
                                                           context.pop();
@@ -519,7 +519,7 @@ class CartPage extends ConsumerWidget {
                                                               "active");
                                                           Future.delayed(
                                                             const Duration(
-                                                                seconds: 3),
+                                                                seconds: 1),
                                                           ).then(
                                                             (_) async {
                                                               context.pop();

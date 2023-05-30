@@ -36,7 +36,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const timeoutDuration = Duration(seconds: 5);
     final auth = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -65,21 +64,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onPressed: () async {
                     final String email = _email.text;
                     final String passwd = _passwd.text;
+
+                    if (email.isEmpty || passwd.isEmpty) {
+                      showAlertMassage(
+                          context, "Please enter email and password");
+                      return;
+                    }
+
                     try {
                       devtools.log("email $email");
                       devtools.log("pass $passwd");
-                      // showCustomLoadingDialog(
-                      //   context,
-                      //   'Place item to scale!',
-                      //   'Please keep only one hand in the cart',
-                      //   durationInSeconds: 5,
-                      //   boxSize: 275,
-                      // );
                       showLoadingDialog(context);
                       bool completed = false;
                       final loginResult = await Future.any([
                         auth.login(context, email, passwd),
-                        Future.delayed(timeoutDuration).then((_) {
+                        Future.delayed(Duration(seconds: 5)).then((_) {
                           if (!completed) {
                             throw TimeoutException(
                                 'The authentication process took too long.');
@@ -98,7 +97,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       }
                     } on TimeoutException catch (e) {
                       showAlertMassage(context, e.toString());
-                      // context.pop();
                     } on Exception catch (e) {
                       String error = e.toString();
                       switch (error) {

@@ -151,7 +151,8 @@ class BarcodeScannerPage extends ConsumerWidget {
                           );
                           if (isRetry) {
                             cart.setCartState("active");
-                            context.goNamed(cartRoute);
+                            // context.goNamed(cartRoute);
+                            context.pop();
                           } else {
                             cart.setCartState("active");
                             context.goNamed(cartRoute);
@@ -173,7 +174,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                           final mqttResponsePenet = await Future.any([
                             item_completer.future,
                             Future.delayed(
-                              const Duration(seconds: 16),
+                              const Duration(seconds: 15),
                             ).then((_) {
                               if (!completed) {
                                 throw TimeoutException(
@@ -203,7 +204,6 @@ class BarcodeScannerPage extends ConsumerWidget {
                             devtools.log("code: ${httpRes.statusCode}");
                             // if success, add item to cart and exit refresh page
                             if (httpRes.statusCode == 200) {
-                              // if (true) {
                               if (action == 'add') {
                                 var product = json.decode(httpRes.body);
                                 devtools.log("$product");
@@ -215,7 +215,6 @@ class BarcodeScannerPage extends ConsumerWidget {
                                     count: 1,
                                     image:
                                         "http://${env.baseURL}${product['img_path']}");
-                                // image: productImage);
                                 cart.addItem(item);
                               } else {
                                 // if case is remove
