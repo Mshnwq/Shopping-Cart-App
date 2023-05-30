@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -116,13 +118,35 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   final email = _email.text;
                   final passwd = _passwd.text;
                   final passwdConf = _passwdConf.text;
+                  if (email.isEmpty ||
+                      passwd.isEmpty ||
+                      username.isEmpty ||
+                      passwdConf.isEmpty) {
+                    showAlertMassage(context, "Please Fill all entries");
+                    return;
+                  }
                   try {
                     if (passwdConf == passwd) {
-                      bool isSuccess =
-                          await auth.register(context, username, email, passwd);
-                      // bool isSuccess = true; // TODO email message
+                      showLoadingDialog(context);
+                      bool completed = false;
+                      final isSuccess = await Future.any([
+                        auth.register(context, username, email, passwd),
+                        Future.delayed(Duration(seconds: 5)).then((_) {
+                          if (!completed) {
+                            throw TimeoutException(
+                                'The authentication process took too long.');
+                          }
+                        }),
+                      ]).then((_) {
+                        devtools.log('$_');
+                        completed = true;
+                        return _!;
+                      });
                       if (isSuccess) {
                         context.goNamed(connectRoute);
+                      } else {
+                        showAlertMassage(context, "Failed to register");
+                        return;
                       }
                     } else {
                       throw const PassWordMismatchException();
@@ -130,24 +154,26 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   } on PassWordMismatchException {
                     showAlertMassage(context, "Passwords don't match");
                   } catch (e) {
-                    // switch (e) {
-                    // case 'User-found':
-                    // devtools.log('Error: $e');
-                    // showAlertMassage(context, "User name in use");
-                    // break;
-                    // case 'Email-found':
-                    // devtools.log('Error: $e');
-                    // showAlertMassage(context, "Email in use");
-                    // break;
-                    // case 'Invalid-Email':
-                    // devtools.log('Error: $e');
-                    // showAlertMassage(context, "Invalid Email");
-                    // break;
-                    // default:
-                    devtools.log('Error: $e');
-                    showAlertMassage(context, "$e");
-                    // break;
-                    // }
+                    switch (e) {
+                      case 'User-found':
+                        devtools.log('Error: $e');
+                        showAlertMassage(context, "User name in use");
+                        break;
+                      case 'Email-found':
+                        devtools.log('Error: $e');
+                        showAlertMassage(context, "Email in use");
+                        break;
+                      case 'Invalid-Email':
+                        devtools.log('Error: $e');
+                        showAlertMassage(context, "Invalid Email");
+                        break;
+                      default:
+                        devtools.log('Error: $e');
+                        showAlertMassage(context, "$e");
+                        break;
+                    }
+                  } finally {
+                    context.pop();
                   }
                 },
                 text: 'Register',

@@ -53,17 +53,16 @@ class Auth with ChangeNotifier {
         user_id = body['user']['id'].toString();
         String? authType = body[env.tokenType];
         _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
-        _secureStorage
-            .setRefreshToken("$authType ${body[env.refreshToken]}"); // TODO 401
+        _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
         _isLoggedIn = true;
         notifyListeners();
         return true;
       }
-      // return false;
       throw Exception(res.body);
     } catch (e) {
       throw Exception(e);
     }
+    return false;
   }
 
   /// using [http]
@@ -71,11 +70,11 @@ class Auth with ChangeNotifier {
       BuildContext context, String username, String email, String pass) async {
     var body = <String, String>{
       'username': username,
-      "full_name": "string",
+      "full_name": "Test",
       'email': email,
       "role": '0',
       "phone_num": "966501386297",
-      'hashed_password': pass,
+      'password': pass,
       "birthdate": "2000-03-02"
     };
     try {
@@ -84,21 +83,18 @@ class Auth with ChangeNotifier {
       devtools.log("${res.body}");
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
-        // showAlertMassage(context, res.statusCode.toString());
         String? authType = body[env.tokenType];
         _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
         _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
-        // _isLoggedIn = true;
+        _isLoggedIn = true;
         notifyListeners();
         return true;
       }
       throw Exception(res.body);
-      // return false;
     } catch (e) {
-      // showAlertMassage(context, "$e");
-      throw Exception(e); // TODO: Implement internet error
-      // return false;
+      throw Exception(e);
     }
+    return false;
   }
 
   String _extractAccessToken(http.Response res) {
