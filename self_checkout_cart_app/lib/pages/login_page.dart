@@ -75,11 +75,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     isPasswordMissing = passwd.isEmpty;
 
                     if (isEmailMissing || isPasswordMissing) {
-                      showAlertMassage(
-                        context,
-                        "Please enter fill all entries.",
-                      );
-                      setState(() {}); // Trigger a rebuild to update the UI
+                      // showAlertMassage(
+                      // context,
+                      // "Please enter fill all entries.",
+                      // );
+                      // setState(() {}); // Trigger a rebuild to update the UI
+                      showSuccessDialog(context, 'Success');
+                      await Future.delayed(const Duration(milliseconds: 5000));
+                      context.pop();
                       return;
                     }
 
@@ -97,7 +100,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           }
                         }),
                       ]).then((_) {
-                        devtools.log('$_');
+                        // devtools.log('$_');
                         completed = true;
                         return _!;
                       });

@@ -54,15 +54,14 @@ Future<bool> showCustomBoolDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('${title}'),
-        content: Text('${content}'),
+        title: Text(title),
+        content: Text(content),
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(true);
             },
-            // style: appTheme.getButtonStyle,
-            child: Text('${buttonText}'),
+            child: Text(buttonText),
           ),
           ElevatedButton(
             onPressed: () {
@@ -102,18 +101,12 @@ void showAlertMassage(context, String message, {Action? onOk, Action? then}) {
                   if (onOk != null) onOk();
                   Navigator.pop(context, 'OK');
                 },
-                text: "ok",
+                text: "OK",
               ),
             ),
           ],
         ),
       ),
-      // ).then(
-      //   (value) {
-      //     if (then == null) return;
-      //     then();
-      //   },
-      // ),
     ).then((value) => value ?? false),
   );
 }
@@ -146,7 +139,7 @@ void showCustomLoadingDialog(BuildContext context, String title, String body,
   double dialogSize = boxSize ?? 250.0;
 
   if (showCountdown) {
-    Timer.periodic(Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingTime > 0) {
         remainingTime--;
         countdownController.add(remainingTime);
@@ -236,112 +229,220 @@ void showCustomLoadingDialog(BuildContext context, String title, String body,
   );
 }
 
-typedef ActionBool = void Function(bool a);
-void showAuthenticationDialog(BuildContext context, {ActionBool? then}) {
-  // var local = AppLocalizations.of(context)!;
-  final TextEditingController controller = TextEditingController();
-  SchedulerBinding.instance.addPostFrameCallback(
-    (_) {
-      showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) => Center(
-          child: Material(
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-            // color: appTheme.cardColor,
-            child: WillPopScope(
-              onWillPop: () async => true,
-              child: Container(
-                width: 259,
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(23),
-                  // color: appTheme.cardColor,
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned(
-                      left: 20,
-                      top: 20,
-                      child: GestureDetector(
-                        child: const Icon(Icons.keyboard_arrow_left_rounded),
-                        onTap: () {
-                          Navigator.pop(context, true);
-                        },
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          'Logging in',
-                          // local.authDialogTitle,
-                          style: TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 150,
-                          child: TextField(
-                            controller: controller,
-                            enabled: true,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            cursorColor: Colors.white,
-                            decoration: InputDecoration(
-                              // hintText: local.authDialogInputFieldPlaceholder,
-                              hintText: 'Please Wait',
-                              disabledBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.red)),
-                              enabledBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey)),
-                              focusedBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white)),
-                              border: const UnderlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 120,
-                          height: 45,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                              color: Color(0xFFd9d9d9)),
-                          child: TextButton(
-                            style: ButtonStyle(
-                              overlayColor:
-                                  MaterialStateProperty.all(Colors.black12),
-                            ),
-                            onPressed: () {
-                              // logInManager.login(
-                              // context.read<User>(), controller.text);
-                              // return true;
-                              devtools.log("aaaaa");
-                            },
-                            child: Text(
-                              // local.authCustomDialogButtonText,
-                              'ssss',
-                              style: TextStyle(color: Colors.black87),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+void showSuccessDialog(BuildContext context, String message) {
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) {
+      return WillPopScope(
+        // to prevent user from popping the loading dialog
+        onWillPop: () async => false,
+        child: AnimationOverlay(
+          subtext: message,
         ),
-      ).then(
-        (value) {
-          if (then == null) return;
-          then(value ?? true);
-        },
       );
     },
   );
 }
+
+class AnimationOverlay extends StatefulWidget {
+  const AnimationOverlay({Key? key, required this.subtext}) : super(key: key);
+  final String subtext;
+
+  @override
+  State<StatefulWidget> createState() => AnimationOverlayState();
+}
+
+class AnimationOverlayState extends State<AnimationOverlay>
+    with TickerProviderStateMixin {
+  late AnimationController scaleController = AnimationController(
+      duration: const Duration(milliseconds: 600), vsync: this);
+  late Animation<double> scaleAnimation =
+      CurvedAnimation(parent: scaleController, curve: Curves.elasticOut);
+  late AnimationController checkController = AnimationController(
+      duration: const Duration(milliseconds: 400), vsync: this);
+  late Animation<double> checkAnimation =
+      CurvedAnimation(parent: checkController, curve: Curves.linear);
+
+  @override
+  void initState() {
+    super.initState();
+    scaleController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        checkController.forward();
+      }
+    });
+    scaleController.forward();
+  }
+
+  @override
+  void dispose() {
+    scaleController.dispose();
+    checkController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double circleSize = 140;
+    double iconSize = 108;
+    return Stack(
+      children: [
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 8),
+              ScaleTransition(
+                scale: scaleAnimation,
+                child: Container(
+                  height: circleSize,
+                  width: circleSize,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                widget.subtext,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.background,
+                    ),
+              ),
+            ],
+          ),
+        ),
+        SizeTransition(
+          sizeFactor: checkAnimation,
+          axis: Axis.horizontal,
+          axisAlignment: -1,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check,
+                  color: Theme.of(context).colorScheme.background,
+                  size: iconSize,
+                ),
+                SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// typedef ActionBool = void Function(bool a);
+// void showAuthenticationDialog(BuildContext context, {ActionBool? then}) {
+//   // var local = AppLocalizations.of(context)!;
+//   final TextEditingController controller = TextEditingController();
+//   SchedulerBinding.instance.addPostFrameCallback(
+//     (_) {
+//       showDialog<bool>(
+//         context: context,
+//         builder: (BuildContext context) => Center(
+//           child: Material(
+//             elevation: 2,
+//             shape:
+//                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+//             // color: appTheme.cardColor,
+//             child: WillPopScope(
+//               onWillPop: () async => true,
+//               child: Container(
+//                 width: 259,
+//                 height: 200,
+//                 decoration: BoxDecoration(
+//                   borderRadius: BorderRadius.circular(23),
+//                   // color: appTheme.cardColor,
+//                 ),
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     Positioned(
+//                       left: 20,
+//                       top: 20,
+//                       child: GestureDetector(
+//                         child: const Icon(Icons.keyboard_arrow_left_rounded),
+//                         onTap: () {
+//                           Navigator.pop(context, true);
+//                         },
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                       children: [
+//                         Text(
+//                           'Logging in',
+//                           // local.authDialogTitle,
+//                           style: TextStyle(
+//                             fontSize: 20,
+//                           ),
+//                         ),
+//                         SizedBox(
+//                           width: 150,
+//                           child: TextField(
+//                             controller: controller,
+//                             enabled: true,
+//                             keyboardType: TextInputType.number,
+//                             textAlign: TextAlign.center,
+//                             cursorColor: Colors.white,
+//                             decoration: InputDecoration(
+//                               // hintText: local.authDialogInputFieldPlaceholder,
+//                               hintText: 'Please Wait',
+//                               disabledBorder: const UnderlineInputBorder(
+//                                   borderSide: BorderSide(color: Colors.red)),
+//                               enabledBorder: const UnderlineInputBorder(
+//                                   borderSide: BorderSide(color: Colors.grey)),
+//                               focusedBorder: const UnderlineInputBorder(
+//                                   borderSide: BorderSide(color: Colors.white)),
+//                               border: const UnderlineInputBorder(),
+//                             ),
+//                           ),
+//                         ),
+//                         Container(
+//                           width: 120,
+//                           height: 45,
+//                           decoration: const BoxDecoration(
+//                               borderRadius:
+//                                   BorderRadius.all(Radius.circular(8.0)),
+//                               color: Color(0xFFd9d9d9)),
+//                           child: TextButton(
+//                             style: ButtonStyle(
+//                               overlayColor:
+//                                   MaterialStateProperty.all(Colors.black12),
+//                             ),
+//                             onPressed: () {
+//                               // logInManager.login(
+//                               // context.read<User>(), controller.text);
+//                               // return true;
+//                               devtools.log("aaaaa");
+//                             },
+//                             child: Text(
+//                               // local.authCustomDialogButtonText,
+//                               'ssss',
+//                               style: TextStyle(color: Colors.black87),
+//                             ),
+//                           ),
+//                         )
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ).then(
+//         (value) {
+//           if (then == null) return;
+//           then(value ?? true);
+//         },
+//       );
+//     },
+//   );
+// }
