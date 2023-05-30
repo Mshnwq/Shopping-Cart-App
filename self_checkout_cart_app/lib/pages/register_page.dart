@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,6 +133,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           return _!;
                         });
                         if (isSuccess) {
+                          showSuccessDialog(context, 'Success');
+                          await Future.delayed(
+                              const Duration(milliseconds: 1500));
                           context.goNamed(connectRoute);
                         } else {
                           showAlertMassage(context, "Failed to register");
@@ -143,24 +147,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     } on PassWordMismatchException {
                       showAlertMassage(context, "Passwords don't match");
                     } catch (e) {
-                      switch (e) {
-                        case 'User-found':
-                          devtools.log('Error: $e');
-                          showAlertMassage(context, "User name in use");
-                          break;
-                        case 'Email-found':
-                          devtools.log('Error: $e');
-                          showAlertMassage(context, "Email in use");
-                          break;
-                        case 'Invalid-Email':
-                          devtools.log('Error: $e');
-                          showAlertMassage(context, "Invalid Email");
-                          break;
-                        default:
-                          devtools.log('Error: $e');
-                          showAlertMassage(context, "$e");
-                          break;
-                      }
+                      String error = json
+                          .decode(
+                            e.toString().substring('Exception:'.length),
+                          )['detail']
+                          .toString();
+                      devtools.log(error);
+                      showAlertMassage(context, error);
                     } finally {
                       context.pop();
                     }

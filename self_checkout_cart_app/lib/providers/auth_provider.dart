@@ -41,28 +41,22 @@ class Auth with ChangeNotifier {
       'username': email,
       'password': pass,
     };
-    try {
-      // devtools.log("body ${httpBody.toString()}");
-      http.Response res = await loginReq(_loginRoute, body: httpBody);
-      devtools.log("${res.statusCode}");
-      devtools.log("${res.body}");
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        // showAlertMassage(context, res.statusCode.toString());
-        username = body['user']['username'];
-        user_id = body['user']['id'].toString();
-        String? authType = body[env.tokenType];
-        _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
-        _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
-        _isLoggedIn = true;
-        notifyListeners();
-        return true;
-      }
-      throw Exception(res.body);
-    } catch (e) {
-      throw Exception(e);
+    devtools.log("body ${httpBody.toString()}");
+    http.Response res = await loginReq(_loginRoute, body: httpBody);
+    devtools.log("${res.statusCode}");
+    devtools.log("${res.body}");
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      username = body['user']['username'];
+      user_id = body['user']['id'].toString();
+      String? authType = body[env.tokenType];
+      _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
+      _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
+      _isLoggedIn = true;
+      notifyListeners();
+      return true;
     }
-    return false;
+    throw Exception(res.body);
   }
 
   /// using [http]
@@ -77,23 +71,19 @@ class Auth with ChangeNotifier {
       'password': pass,
       "birthdate": "2000-03-02"
     };
-    try {
-      http.Response res = await postReq(_registerRoute, body: body);
-      devtools.log("${res.statusCode}");
-      devtools.log("${res.body}");
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        String? authType = body[env.tokenType];
-        _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
-        _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
-        _isLoggedIn = true;
-        notifyListeners();
-        return true;
-      }
-      throw Exception(res.body);
-    } catch (e) {
-      throw Exception(e);
+    http.Response res = await postReq(_registerRoute, body: body);
+    devtools.log("${res.statusCode}");
+    devtools.log("${res.body}");
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      String? authType = body[env.tokenType];
+      _secureStorage.setAccessToken("$authType ${body[env.accessToken]}");
+      _secureStorage.setRefreshToken("$authType ${body[env.refreshToken]}");
+      _isLoggedIn = true;
+      notifyListeners();
+      return true;
     }
+    throw Exception(res.body);
     return false;
   }
 
@@ -144,7 +134,8 @@ class Auth with ChangeNotifier {
         }
       }
     } else {
-      throw Exception('${res.statusCode.toString()} ${res.body.toString()}');
+      devtools.log(res.statusCode.toString());
+      throw Exception(res.body.toString());
     }
     // logout(); // TODO
     throw Exception("Session Expired");
@@ -212,7 +203,6 @@ class Auth with ChangeNotifier {
       uri,
       headers: headers,
       body: jsonBody,
-      // body: body,
       encoding: encoding,
     );
     devtools.log(response.body);
@@ -223,35 +213,26 @@ class Auth with ChangeNotifier {
       {Map<String, dynamic>? body, Map<String, dynamic>? header}) async {
     String? token = await _secureStorage.getAccessToken();
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
-    try {
-      http.Response res = await postReq(route, body: body, header: authHeader);
-      http.Response checkedRes = await checkToken(res);
-      return checkedRes;
-    } catch (e) {
-      // devtools.log('THROWING');
-      throw Exception(e.toString());
-    }
+    // try {
+    http.Response res = await postReq(route, body: body, header: authHeader);
+    http.Response checkedRes = await checkToken(res);
+    return checkedRes;
+    // } catch (e) {
+    // throw Exception(e);
+    // }
   }
 
-  Future<http.Response> getAuthReq(String route, {Map<String, dynamic>? header})
-  // async {
-  // Map<String, String> authHeader = {
-  //   HttpHeaders.authorizationHeader:
-  //       await _secureStorage.getAccessToken() ?? "",
-  //   ...?header
-  // };
-  async {
+  Future<http.Response> getAuthReq(String route,
+      {Map<String, dynamic>? header}) async {
     String? token = await _secureStorage.getAccessToken();
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
-    try {
-      http.Response res = await getReq(route, header: authHeader);
-      // devtools.log("Hell ${res.body}");
-      // devtools.log("Hell ${res.statusCode}");
-      http.Response checkedRes = await checkToken(res);
-      return checkedRes;
-    } catch (e) {
-      throw Exception(e);
-    }
+    // try {
+    http.Response res = await getReq(route, header: authHeader);
+    http.Response checkedRes = await checkToken(res);
+    return checkedRes;
+    // } catch (e) {
+    // throw Exception(e);
+    // }
   }
 
   void logout() {

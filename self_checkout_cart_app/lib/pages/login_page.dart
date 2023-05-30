@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
@@ -75,14 +77,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     isPasswordMissing = passwd.isEmpty;
 
                     if (isEmailMissing || isPasswordMissing) {
-                      // showAlertMassage(
-                      // context,
-                      // "Please enter fill all entries.",
-                      // );
-                      // setState(() {}); // Trigger a rebuild to update the UI
-                      showSuccessDialog(context, 'Success');
-                      await Future.delayed(const Duration(milliseconds: 5000));
-                      context.pop();
+                      showAlertMassage(
+                        context,
+                        "Please enter fill all entries.",
+                      );
+                      setState(() {}); // Trigger a rebuild to update the UI
                       return;
                     }
 
@@ -105,6 +104,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         return _!;
                       });
                       if (loginResult) {
+                        showSuccessDialog(context, 'Success');
+                        await Future.delayed(
+                            const Duration(milliseconds: 1500));
                         context.goNamed(connectRoute);
                       } else {
                         showAlertMassage(context, "Failed to log in");
@@ -113,25 +115,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     } on TimeoutException catch (e) {
                       showAlertMassage(context, e.toString());
                     } on Exception catch (e) {
-                      String error = e.toString();
-                      switch (error) {
-                        case 'User-not-found':
-                          devtools.log('User-not-found');
-                          showAlertMassage(context, "User not found");
-                          break;
-                        case 'Email-not-found':
-                          devtools.log('Email-not-found');
-                          showAlertMassage(context, "Email not found");
-                          break;
-                        case 'Wrong-cred':
-                          devtools.log('Wrong-cred');
-                          showAlertMassage(context, "Wrong Credentials");
-                          break;
-                        default:
-                          devtools.log('Error: $e');
-                          showAlertMassage(context, "$e");
-                          break;
-                      }
+                      String error = json
+                          .decode(
+                            e.toString().substring('Exception:'.length),
+                          )['detail']
+                          .toString();
+                      devtools.log(error);
+                      showAlertMassage(context, error);
                     } finally {
                       context.pop();
                     }

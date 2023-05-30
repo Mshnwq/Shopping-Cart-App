@@ -292,7 +292,7 @@ class AnimationOverlayState extends State<AnimationOverlay>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               ScaleTransition(
                 scale: scaleAnimation,
                 child: Container(
@@ -304,7 +304,7 @@ class AnimationOverlayState extends State<AnimationOverlay>
                   ),
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 widget.subtext,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -327,7 +327,7 @@ class AnimationOverlayState extends State<AnimationOverlay>
                   color: Theme.of(context).colorScheme.background,
                   size: iconSize,
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 24),
               ],
             ),
           ),

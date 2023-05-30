@@ -29,7 +29,6 @@ class QRScannerPage extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
     final auth = ref.watch(authProvider);
     final mqtt = ref.watch(mqttProvider);
-    const timeoutDuration = Duration(seconds: 3);
 
     return Scaffold(
       floatingActionButton: Column(
@@ -52,7 +51,8 @@ class QRScannerPage extends ConsumerWidget {
                 final connectCart = await customDialog(
                   context: context,
                   title: 'Confirm QR',
-                  message: 'connecting to cart ${qrCode.substring(8, 13)}',
+                  // message: 'connecting to cart ${qrCode.substring(8, 13)}',
+                  message: 'connecting to cart $qrCode',
                   buttons: [
                     const ButtonArgs(
                       text: 'Confirm',
@@ -81,13 +81,12 @@ class QRScannerPage extends ConsumerWidget {
                         '/api/v1/cart/connect',
                         body: httpBody,
                       ),
-                      Future.delayed(timeoutDuration).then((_) {
+                      Future.delayed(const Duration(seconds: 6)).then((_) {
                         throw TimeoutException(
                             'The authentication process took too long.');
                       }),
                     ]);
                     devtools.log("res: $res");
-                    // devtools.log("code: ${res[0].statusCode}");
                     // if success, create cart
                     if (res.statusCode == 200) {
                       devtools.log("code: ${res.body}");
@@ -96,29 +95,40 @@ class QRScannerPage extends ConsumerWidget {
                       final mqttSuccess = await mqtt.establish(
                           auth.user_id, body['token'].toString());
                       if (mqttSuccess) {
+                        showSuccessDialog(context, 'Success');
+                        await Future.delayed(
+                            const Duration(milliseconds: 1500));
                         context.goNamed(cartRoute);
                       } else {
-                        devtools.log("failed MQTT");
+                        showAlertMassage(context, "Failed MQTT");
+                        return;
                       }
+                    } else {
+                      showAlertMassage(context, "Failed HTTP");
+                      return;
                     }
                   } on TimeoutException catch (e) {
                     errorMessage = e.toString();
                   } on Exception catch (e) {
-                    String error = e.toString();
-                    switch (error) {
-                      case 'Cart-not-found':
-                        devtools.log('Cart-not-found');
-                        errorMessage = "User not found";
-                        break;
-                      case 'Cart-in-use':
-                        devtools.log('Cart-in-use');
-                        errorMessage = "Email not found";
-                        break;
-                      default:
-                        devtools.log('Error: $error');
-                        errorMessage = "$error";
-                        break;
-                    }
+                    String error = json
+                        .decode(
+                          e.toString().substring('Exception:'.length),
+                        )['detail']
+                        .toString();
+                    devtools.log(error);
+                    // switch (error) {
+                    //   case 'Cart was not found':
+                    //     errorMessage =
+                    //         "Invalid Cart QR code,\n make sure you scan a valid QR code";
+                    //     break;
+                    //   case 'Cart-in-use':
+                    //     errorMessage = "Cart not found";
+                    //     break;
+                    //   default:
+                    //     // devtools.log('Error: $error');
+                    errorMessage = "$error";
+                    // break;
+                    // }
                   } finally {
                     context.pop();
                     if (errorMessage != null) {
