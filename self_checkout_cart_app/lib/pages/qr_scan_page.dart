@@ -5,10 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:self_checkout_cart_app/pages/all_pages.dart';
 import '../providers/mqtt_provider.dart';
 import '../providers/auth_provider.dart';
+import '../models/custom_exceptions.dart';
 import '../providers/cart_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/routes.dart';
-// import '../services/socket.dart';
 import '../widgets/all_widgets.dart';
 import 'dart:developer' as devtools;
 import 'dart:async';
@@ -95,40 +95,35 @@ class QRScannerPage extends ConsumerWidget {
                       final mqttSuccess = await mqtt.establish(
                           auth.user_id, body['token'].toString());
                       if (mqttSuccess) {
-                        showSuccessDialog(context, 'Success');
+                        showSuccessDialog(context, 'Connect Success');
                         await Future.delayed(
                             const Duration(milliseconds: 1500));
                         context.goNamed(cartRoute);
                       } else {
-                        showAlertMassage(context, "Failed MQTT");
-                        return;
+                        throw MQTTException("Failed MQTT");
                       }
                     } else {
-                      showAlertMassage(context, "Failed HTTP");
-                      return;
+                      throw HTTPException("Failed HTTP");
                     }
                   } on TimeoutException catch (e) {
                     errorMessage = e.toString();
+                  } on HTTPException catch (e) {
+                    errorMessage = e.toString();
+                  } on MQTTException catch (e) {
+                    errorMessage = e.toString();
                   } on Exception catch (e) {
-                    String error = json
-                        .decode(
-                          e.toString().substring('Exception:'.length),
-                        )['detail']
-                        .toString();
-                    devtools.log(error);
-                    // switch (error) {
-                    //   case 'Cart was not found':
-                    //     errorMessage =
-                    //         "Invalid Cart QR code,\n make sure you scan a valid QR code";
-                    //     break;
-                    //   case 'Cart-in-use':
-                    //     errorMessage = "Cart not found";
-                    //     break;
-                    //   default:
-                    //     // devtools.log('Error: $error');
-                    errorMessage = "$error";
-                    // break;
-                    // }
+                    try {
+                      String error = json
+                          .decode(
+                            e.toString().substring('Exception:'.length),
+                          )['detail']
+                          .toString();
+                      devtools.log(error);
+                      errorMessage = error;
+                    } on Exception catch (e2) {
+                      devtools.log(e2.toString());
+                      errorMessage = e2.toString();
+                    }
                   } finally {
                     context.pop();
                     if (errorMessage != null) {

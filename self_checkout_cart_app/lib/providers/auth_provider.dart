@@ -24,15 +24,6 @@ class Auth with ChangeNotifier {
   late String user_id = 'test';
   late String username = 'test';
 
-  // static final Auth _auth = Auth._internal();
-
-  // Auth._internal();
-  // factory Auth() {
-  //   return _auth;
-  // }
-
-  // final API _api = API();
-
   final SecureStorage _secureStorage = SecureStorage();
   SecureStorage get secureStorage => _secureStorage;
 
@@ -59,7 +50,6 @@ class Auth with ChangeNotifier {
     throw Exception(res.body);
   }
 
-  /// using [http]
   Future<bool> register(
       BuildContext context, String username, String email, String pass) async {
     var body = <String, String>{
@@ -137,9 +127,8 @@ class Auth with ChangeNotifier {
       devtools.log(res.statusCode.toString());
       throw Exception(res.body.toString());
     }
-    // logout(); // TODO
+    logout();
     throw Exception("Session Expired");
-    // return null;
   }
 
   Future<bool> checkIfLoggedIn() async {
@@ -213,26 +202,18 @@ class Auth with ChangeNotifier {
       {Map<String, dynamic>? body, Map<String, dynamic>? header}) async {
     String? token = await _secureStorage.getAccessToken();
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
-    // try {
     http.Response res = await postReq(route, body: body, header: authHeader);
     http.Response checkedRes = await checkToken(res);
     return checkedRes;
-    // } catch (e) {
-    // throw Exception(e);
-    // }
   }
 
   Future<http.Response> getAuthReq(String route,
       {Map<String, dynamic>? header}) async {
     String? token = await _secureStorage.getAccessToken();
     Map<String, dynamic> authHeader = {"Authorization": token, ...?header};
-    // try {
     http.Response res = await getReq(route, header: authHeader);
     http.Response checkedRes = await checkToken(res);
     return checkedRes;
-    // } catch (e) {
-    // throw Exception(e);
-    // }
   }
 
   void logout() {

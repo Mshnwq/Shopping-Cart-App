@@ -104,7 +104,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         return _!;
                       });
                       if (loginResult) {
-                        showSuccessDialog(context, 'Success');
+                        showSuccessDialog(context, 'Login Success');
                         await Future.delayed(
                             const Duration(milliseconds: 1500));
                         context.goNamed(connectRoute);
@@ -115,13 +115,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     } on TimeoutException catch (e) {
                       showAlertMassage(context, e.toString());
                     } on Exception catch (e) {
-                      String error = json
-                          .decode(
-                            e.toString().substring('Exception:'.length),
-                          )['detail']
-                          .toString();
-                      devtools.log(error);
-                      showAlertMassage(context, error);
+                      try {
+                        String error = json
+                            .decode(
+                              e.toString().substring('Exception:'.length),
+                            )['detail']
+                            .toString();
+                        devtools.log(error);
+                        showAlertMassage(context, error);
+                      } on Exception catch (e2) {
+                        devtools.log(e2.toString());
+                        showAlertMassage(context, e2.toString());
+                      }
                     } finally {
                       context.pop();
                     }

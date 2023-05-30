@@ -253,6 +253,7 @@ class MQTT extends ChangeNotifier {
   @override
   void dispose() {
     devtools.log('Disconnecting MQTT');
+    disconnect();
     super.dispose();
   }
 }

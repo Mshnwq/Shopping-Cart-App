@@ -128,12 +128,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             }
                           }),
                         ]).then((_) {
-                          devtools.log('$_');
+                          // devtools.log('$_');
                           completed = true;
                           return _!;
                         });
                         if (isSuccess) {
-                          showSuccessDialog(context, 'Success');
+                          showSuccessDialog(context, 'Registration Success');
                           await Future.delayed(
                               const Duration(milliseconds: 1500));
                           context.goNamed(connectRoute);
@@ -147,13 +147,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     } on PassWordMismatchException {
                       showAlertMassage(context, "Passwords don't match");
                     } catch (e) {
-                      String error = json
-                          .decode(
-                            e.toString().substring('Exception:'.length),
-                          )['detail']
-                          .toString();
-                      devtools.log(error);
-                      showAlertMassage(context, error);
+                      try {
+                        String error = json
+                            .decode(
+                              e.toString().substring('Exception:'.length),
+                            )['detail']
+                            .toString();
+                        devtools.log(error);
+                        showAlertMassage(context, error);
+                      } on Exception catch (e2) {
+                        devtools.log(e2.toString());
+                        showAlertMassage(context, e2.toString());
+                      }
                     } finally {
                       context.pop();
                     }
@@ -166,15 +171,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   child: Text(
                     'Log in',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.background,
                         ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.goNamed(logoRoute),
-                  child: Text(
-                    'Back',
-                    // style: appTheme.getButtonTextStyle,
                   ),
                 ),
               ],

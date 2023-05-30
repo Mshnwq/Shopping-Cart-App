@@ -59,7 +59,6 @@ class CartShellPage extends ConsumerWidget {
                 '/api/v1/cart/disconnect',
               );
               if (res.statusCode == 200) {
-                mqtt.disconnect();
                 context.goNamed(connectRoute);
               }
             } catch (e) {
