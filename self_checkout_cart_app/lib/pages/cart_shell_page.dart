@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:badges/badges.dart' as badge;
@@ -12,6 +13,7 @@ import 'package:self_checkout_cart_app/widgets/all_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:developer' as devtools;
 import 'package:http/http.dart' as http;
+import '../route/endpoint_navigate.dart';
 
 class CartShellPage extends ConsumerWidget {
   CartShellPage({required this.child, Key? key}) : super(key: key);
@@ -54,16 +56,13 @@ class CartShellPage extends ConsumerWidget {
             ],
           );
           if (shouldDisconnect) {
-            try {
-              http.Response res = await auth.postAuthReq(
-                '/api/v1/cart/disconnect',
-              );
-              if (res.statusCode == 200) {
-                context.goNamed(connectRoute);
-              }
-            } catch (e) {
-              devtools.log("$e");
-            }
+            await EndpointAndNavigate(
+              context,
+              () => auth.postAuthReq('/api/v1/cart/disconnect'),
+              (context) => context.goNamed(connectRoute),
+              "Failed to disconnect cart",
+              timeoutDuration: 3,
+            );
           }
         }
         return false;
@@ -77,8 +76,6 @@ class CartShellPage extends ConsumerWidget {
             if (jsonDecode(snapshot.data!)['status'].toString() == '5') {
               devtools
                   .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-              // context.goNamed(cartRoute);
-              // context.pop();
               return alarm(context, snapshot.hasData.toString());
             } else {
               return cartShell(context, ref);

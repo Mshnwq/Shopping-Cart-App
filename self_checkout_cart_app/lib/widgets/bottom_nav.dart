@@ -7,6 +7,7 @@ import '../providers/cart_provider.dart';
 import '../providers/receipt_provider.dart';
 import '../providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
+import '../route/endpoint_navigate.dart';
 import '../constants/routes.dart';
 import 'all_widgets.dart';
 import 'dart:developer' as devtools show log;
@@ -114,40 +115,23 @@ class _BottomNavigationWidgetState
         ],
       );
       if (shouldCheckout) {
-        try {
-          http.Response httpRes =
-              await ref.watch(authProvider).getAuthReq('api/v1/bill/secret');
-          if (httpRes.statusCode == 200) {
-            // if (true) {
-            final body = json.decode(httpRes.body);
-            ref.watch(receiptProvider).setText(body.toString());
-            // ref.watch(receiptProvider).setText('cred5f6g7f67d445f6g');
-            ref.watch(cartProvider).setCartState('checkout');
-            context.goNamed(checkoutRoute);
-          } else {
-            throw Exception(httpRes.statusCode.toString());
-            // throw Exception('oops');
-          }
-        } catch (e) {
-          bool isRetry = await customDialog(
-            context: context,
-            title: "Server error",
-            message: "$e",
-            buttons: [
-              const ButtonArgs(
-                text: 'Retry',
-                value: true,
-              ),
-            ],
-          );
-          if (isRetry) {
+        await EndpointAndNavigate(
+          context,
+          () => ref.watch(authProvider).getAuthReq('api/v1/bill/secret'),
+          (context) => context.goNamed(checkoutRoute),
+          "Failed to checkout cart",
+          timeoutDuration: 3,
+          successCallback: (res) async {
+            String body = json.decode(res!.body).toString();
+            ref.watch(receiptProvider).setText(body);
+            ref.watch(cartProvider).setCartState("checkout");
+            showSuccessDialog(context, "Checkout Success");
+            await Future.delayed(const Duration(milliseconds: 1500));
+          },
+          errorCallback: () {
             ref.watch(cartProvider).setCartState("active");
-            context.goNamed(cartRoute);
-          } else {
-            ref.watch(cartProvider).setCartState("active");
-            context.goNamed(cartRoute);
-          }
-        }
+          },
+        );
       }
     } else {
       ref.read(dashboardControllerProvider.notifier).setPosition(index);

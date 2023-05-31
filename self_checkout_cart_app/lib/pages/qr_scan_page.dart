@@ -95,7 +95,7 @@ class QRScannerPage extends ConsumerWidget {
                       final mqttSuccess = await mqtt.establish(
                           auth.user_id, body['token'].toString());
                       if (mqttSuccess) {
-                        showSuccessDialog(context, 'Connect Success');
+                        showSuccessDialog(context, 'Cart Connect Success');
                         await Future.delayed(
                             const Duration(milliseconds: 1500));
                         context.goNamed(cartRoute);

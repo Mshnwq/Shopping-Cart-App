@@ -121,7 +121,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         bool completed = false;
                         final isSuccess = await Future.any([
                           auth.register(context, user, email, passwd),
-                          Future.delayed(Duration(seconds: 5)).then((_) {
+                          Future.delayed(const Duration(seconds: 5)).then((_) {
                             if (!completed) {
                               throw TimeoutException(
                                   'The authentication process took too long.');

@@ -1,15 +1,15 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/all_widgets.dart';
 import '../constants/routes.dart';
 import '../providers/cart_provider.dart';
-import '../providers/mqtt_provider.dart';
 import '../providers/receipt_provider.dart';
 import '../providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
+import '../route/endpoint_navigate.dart';
+import 'dart:developer' as devtools;
 
 enum _MenuValues { disconnect, checkout, print }
 
@@ -24,6 +24,10 @@ class CartMenuWidget extends ConsumerStatefulWidget {
 class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
   @override
   Widget build(BuildContext context) {
+    final cart = ref.watch(cartProvider);
+    final auth = ref.watch(authProvider);
+    final recp = ref.watch(receiptProvider);
+
     return PopupMenuButton(
       icon: Icon(
         Icons.shopping_cart,
@@ -40,10 +44,10 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                     Icons.shopping_cart_checkout,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
-                  Text("Checkout")
+                  const Text("Checkout")
                 ],
               ),
             ),
@@ -55,10 +59,10 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                     Icons.print,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
-                  Text("Print")
+                  const Text("Print")
                 ],
               ),
             ),
@@ -88,10 +92,10 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                     Icons.print,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
-                  Text("Print")
+                  const Text("Print")
                 ],
               ),
             ),
@@ -131,39 +135,24 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                 ),
               ],
             );
-            if (await shouldCheckout) {
-              try {
-                http.Response httpRes = await ref
-                    .watch(authProvider)
-                    .getAuthReq('api/v1/bill/secret');
-                if (httpRes.statusCode == 200) {
-                  final body = json.decode(httpRes.body);
-                  ref.watch(receiptProvider).setText(body.toString());
-                  ref.watch(cartProvider).setCartState('checkout');
-                  context.goNamed(checkoutRoute);
-                } else {
-                  throw Exception(httpRes.statusCode.toString());
-                }
-              } catch (e) {
-                bool isRetry = await customDialog(
-                  context: context,
-                  title: "Server error",
-                  message: "$e",
-                  buttons: [
-                    const ButtonArgs(
-                      text: 'Retry',
-                      value: true,
-                    ),
-                  ],
-                );
-                if (isRetry) {
-                  ref.watch(cartProvider).setCartState("active");
-                  context.goNamed(cartRoute);
-                } else {
-                  ref.watch(cartProvider).setCartState("active");
-                  context.goNamed(cartRoute);
-                }
-              }
+            if (shouldCheckout) {
+              await EndpointAndNavigate(
+                context,
+                () => auth.getAuthReq('api/v1/bill/secret'),
+                (context) => context.goNamed(checkoutRoute),
+                "Failed to disconnect cart",
+                timeoutDuration: 3,
+                successCallback: (res) async {
+                  String body = json.decode(res!.body).toString();
+                  recp.setText(body);
+                  ref.watch(cartProvider).setCartState("checkout");
+                  showSuccessDialog(context, "Checkout Success");
+                  await Future.delayed(const Duration(milliseconds: 1500));
+                },
+                errorCallback: () {
+                  cart.setCartState("active");
+                },
+              );
             }
             break;
           case _MenuValues.print:
@@ -177,7 +166,7 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
               context: context,
               title: 'Disconnect Cart?',
               message: 'Are you Sure you want to disconnect this cart?',
-              buttons: [
+              buttons: const [
                 ButtonArgs(
                   text: 'Disconnect',
                   value: true,
@@ -188,9 +177,14 @@ class _CartMenuWidgetState extends ConsumerState<CartMenuWidget> {
                 ),
               ],
             );
-            if (await shouldDisconnect) {
-              ref.read(mqttProvider).disconnect();
-              context.goNamed(connectRoute);
+            if (shouldDisconnect) {
+              await EndpointAndNavigate(
+                context,
+                () => auth.postAuthReq('/api/v1/cart/disconnect'),
+                (context) => context.goNamed(connectRoute),
+                "Failed to disconnect cart",
+                timeoutDuration: 3,
+              );
             }
         }
       },

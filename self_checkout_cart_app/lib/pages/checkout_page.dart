@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart' as badge;
 // import 'package:flutter/rendering.dart';
 import 'package:screenshot/screenshot.dart';
@@ -36,6 +38,7 @@ class CheckoutPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    final cart = ref.watch(cartProvider);
     final mqtt = ref.watch(mqttProvider);
 
     return WillPopScope(
@@ -65,19 +68,20 @@ class CheckoutPage extends ConsumerWidget {
         stream: mqtt.onAlarmMessage,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            devtools.log('AWAITING ${snapshot.data.toString()}');
             // handle loading
-            devtools.log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
-            return checkout(context, ref);
-            // return alarm(context, snapshot.hasData.toString());
+            if (jsonDecode(snapshot.data!)['status'].toString() == '5') {
+              devtools
+                  .log('AWAITING ADMINISTRATOR ${snapshot.data.toString()}');
+              return alarm(context, snapshot.hasData.toString());
+            } else {
+              return checkout(context, ref);
+            }
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             // handle data
-            return error(context);
             return checkout(context, ref);
           } else if (snapshot.hasError) {
             // handle error (note: snapshot.error has type [Object?])
-            final error = snapshot.error!;
-            return alarm(context, error.toString());
+            return error(context, snapshot.error.toString());
           } else {
             // uh, oh, what goes here?
             return checkout(context, ref);
@@ -279,7 +283,7 @@ class CheckoutPage extends ConsumerWidget {
     }
   }
 
-  Widget error(BuildContext context) {
+  Widget error(BuildContext context, String message) {
     return Scaffold(
       body: Center(
         child: Column(
@@ -289,7 +293,7 @@ class CheckoutPage extends ConsumerWidget {
             Image.asset('assets/images/disconnected.png'),
             const SizedBox(height: 20),
             Text(
-              'Some error occurred - welp!',
+              'Some error occurred - welp!\n $message',
               style: Theme.of(context).textTheme.subtitle1,
             ),
           ],
