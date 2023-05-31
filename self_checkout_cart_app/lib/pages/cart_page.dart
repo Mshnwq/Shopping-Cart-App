@@ -123,17 +123,17 @@ class CartPage extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: RefreshIndicator(
         onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 420));
-          http.Response httpRes = await auth.getAuthReq(
-            '/api/v1/item/items',
-          );
-          // if (true) {
-          devtools.log("items ${httpRes.statusCode}");
-          if (httpRes.statusCode == 200) {
-            if (httpRes.body != null) {
-              devtools.log("items ${httpRes.body}");
-              cart.clearItems();
-              String receiptBodyJson = '''{
+          // await Future.delayed(const Duration(milliseconds: 420));
+          // http.Response httpRes = await auth.getAuthReq(
+          //   '/api/v1/item/items',
+          // );
+          if (true) {
+            // devtools.log("items ${httpRes.statusCode}");
+            // if (httpRes.statusCode == 200) {
+            // if (httpRes.body != null) {
+            // devtools.log("items ${httpRes.body}");
+            cart.clearItems();
+            String receiptBodyJson = '''{
                 "bill": {
                   "status": "unpaid",
                   "created_at": "2023-03-31T21:14:45.539142",
@@ -143,7 +143,7 @@ class CartPage extends ConsumerWidget {
                 },
                 "items": [
                   {
-                    "1231231": {
+                    "123": {
                       "ar_name": "\\u062a\\u0628\\u063a",
                       "en_name": "snus",
                       "count": 3,
@@ -160,28 +160,28 @@ class CartPage extends ConsumerWidget {
                   }
                 ]
               }''';
-              // var items = json.decode(receiptBodyJson)['items'];
-              var items = json.decode(httpRes.body)['items'];
-              // devtools.log("$items");
-              for (int i = 0; i < items.length; i++) {
-                // extract item info
-                Map itemMap = items[i];
-                String itemId = itemMap.keys.first;
-                Map itemDetails = itemMap.values.first;
-                // create item object
-                Item item = Item(
-                  barcode: itemId,
-                  name: itemDetails['en_name'],
-                  unit: 'Kg',
-                  price: itemDetails['unit_price'],
-                  count: itemDetails['count'],
-                  image: "http://${env.baseURL}${itemDetails['img_path']}",
-                  // image:
-                  // 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-                );
-                // add to cart
-                cart.addItem(item);
-              }
+            var items = json.decode(receiptBodyJson)['items'];
+            // var items = json.decode(httpRes.body)['items'];
+            // devtools.log("$items");
+            for (int i = 0; i < items.length; i++) {
+              // extract item info
+              Map itemMap = items[i];
+              String itemId = itemMap.keys.first;
+              Map itemDetails = itemMap.values.first;
+              // create item object
+              Item item = Item(
+                barcode: itemId,
+                name: itemDetails['en_name'],
+                unit: 'Kg',
+                price: itemDetails['unit_price'],
+                count: itemDetails['count'],
+                // image: "http://${env.baseURL}${itemDetails['img_path']}",
+                image:
+                    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+              );
+              // add to cart
+              cart.addItem(item);
+              // }
             }
             devtools.log("refreshing");
           } else {
@@ -361,232 +361,27 @@ class CartPage extends ConsumerWidget {
                                     onLongPress: () => {
                                       cart.removeItem(cart.getItems()[index])
                                     },
-                                    child: IconButton(
-                                      onPressed: () async {
-                                        // cart.setCartState("weighing");
-                                        // context.pushNamed(
-                                        //   barcodeRoute,
-                                        //   extra: {
-                                        //     'action': 'remove',
-                                        //     'index': '$index',
-                                        //     'barcodeToRead':
-                                        //         cart.getItems()[index].barcode,
-                                        //   },
-                                        // );
-                                        final removeItem =
-                                            await showCustomBoolDialog(
-                                          context,
-                                          "Item removement",
-                                          "Are you sure, you want to remove ${cart.getItems()[index].name}",
-                                          "Yes",
-                                        );
-                                        if (removeItem) {
-                                          var publishBody = <String, dynamic>{
-                                            'mqtt_type':
-                                                'request_start_remove_item',
-                                            'sender': mqtt.clientId,
-                                            'item_barcode':
-                                                cart.getItems()[index].barcode,
-                                            'timestamp': DateTime.now()
-                                                .millisecondsSinceEpoch
-                                          };
-
-                                          try {
-                                            // Publish the request
-                                            mqtt.publish(
-                                                json.encode(publishBody));
-                                            // Wait for the scale response message
-                                            showCustomLoadingDialog(
-                                              context,
-                                              'Move item to scale area!',
-                                              'Please keep only one hand in the cart',
-                                              boxSize: 275,
-                                            );
-                                            StreamSubscription
-                                                penetSubscription = mqtt
-                                                    .onPenetMessage
-                                                    .listen((message) {
-                                              penet_completer.complete(message);
-                                              devtools.log("penet waiting");
-                                            });
-                                            // Wait for the penet completer to complete
-                                            bool completed_move = false;
-                                            Future.any([
-                                              penet_completer.future,
-                                              Future.delayed(
-                                                const Duration(seconds: 25),
-                                              ).then((_) {
-                                                if (!completed_move) {
-                                                  throw TimeoutException(
-                                                      'The process took too long penet.');
-                                                }
-                                              }),
-                                            ]).then((response) {
-                                              final mqttResponsePenet =
-                                                  json.decode(response!);
-                                              // Handle the message as desired
-                                              penetSubscription.cancel();
-                                              completed_move = true;
-                                              context.pop();
-                                              devtools
-                                                  .log("penet completed done");
-                                              devtools.log(
-                                                  "RESPONSE: $mqttResponsePenet");
-                                              if (mqttResponsePenet['status']
-                                                      .toString() ==
-                                                  '0') {
-                                                // Delay
-                                                showCustomLoadingDialog(
-                                                  context,
-                                                  'Place item on scale!',
-                                                  'Please keep only one hand in the cart',
-                                                  durationInSeconds: 3,
-                                                  boxSize: 275,
-                                                );
-                                                var timestamp;
-                                                Future.delayed(
-                                                  Duration(seconds: 3),
-                                                ).then((_) {
-                                                  timestamp = DateTime.now()
-                                                      .millisecondsSinceEpoch;
-                                                  var publishBody =
-                                                      <String, dynamic>{
-                                                    'mqtt_type':
-                                                        'request_remove_item',
-                                                    'sender': mqtt.clientId,
-                                                    'item_barcode': cart
-                                                        .getItems()[index]
-                                                        .barcode,
-                                                    'timestamp': timestamp
-                                                  };
-                                                  // Publish the request
-                                                  mqtt.publish(
-                                                      json.encode(publishBody));
-                                                  context.pop();
-                                                  showLoadingDialog(context);
-                                                  // Wait for the item completer to complete
-                                                  StreamSubscription
-                                                      itemSubscription = mqtt
-                                                          .onItemMessage
-                                                          .listen((message) {
-                                                    item_completer
-                                                        .complete(message);
-                                                    devtools
-                                                        .log("item waiting");
-                                                  });
-                                                  bool completed_item = false;
-                                                  Future.any([
-                                                    item_completer.future,
-                                                    Future.delayed(
-                                                      const Duration(
-                                                          seconds: 7),
-                                                    ).then((_) {
-                                                      if (!completed_item) {
-                                                        throw TimeoutException(
-                                                            'The process took too long.');
-                                                      }
-                                                    }),
-                                                  ]).then((response) {
-                                                    final mqttResponseItem =
-                                                        json.decode(response!);
-                                                    // Handle the message as desired
-                                                    itemSubscription.cancel();
-                                                    completed_item = true;
-                                                    context.pop();
-                                                    devtools.log(
-                                                        "item completed done");
-                                                    devtools.log(
-                                                        "RESPONSE: $mqttResponseItem");
-                                                    // on item success
-                                                    if (mqttResponseItem[
-                                                            'status'] ==
-                                                        'success') {
-                                                      showCustomLoadingDialog(
-                                                        context,
-                                                        'Remove item from scale!',
-                                                        'Please keep only one hand in the cart',
-                                                        durationInSeconds: 3,
-                                                      );
-                                                      Future.delayed(
-                                                        const Duration(
-                                                            seconds: 3),
-                                                      ).then(
-                                                        (_) {
-                                                          context.pop();
-                                                          showLoadingDialog(
-                                                              context);
-                                                          cart.setCartState(
-                                                              "active");
-                                                          Future.delayed(
-                                                            const Duration(
-                                                                seconds: 1),
-                                                          ).then(
-                                                            (_) async {
-                                                              context.pop();
-                                                              http.Response
-                                                                  httpRes =
-                                                                  await auth
-                                                                      .postAuthReq(
-                                                                '/api/v1/item/remove',
-                                                                body: <String,
-                                                                    String>{
-                                                                  'barcode': cart
-                                                                      .getItems()[
-                                                                          index]
-                                                                      .barcode,
-                                                                  'process_id':
-                                                                      timestamp
-                                                                          .toString(),
-                                                                },
-                                                              );
-                                                              devtools.log(
-                                                                  "code: ${httpRes.statusCode}");
-                                                              // if success, add remove item from cart
-                                                              if (httpRes
-                                                                      .statusCode ==
-                                                                  200) {
-                                                                cart.removeItem(
-                                                                    cart.getItems()[
-                                                                        index]);
-                                                              } else {
-                                                                showAlertMassage(
-                                                                  context,
-                                                                  httpRes
-                                                                      .toString(),
-                                                                );
-                                                              }
-                                                            },
-                                                          );
-                                                          context.pop();
-                                                        },
-                                                      );
-                                                    }
-                                                  });
-                                                });
-                                              }
-                                            });
-                                          } on TimeoutException catch (e) {
-                                            // cart.setCartState('active');
-                                            showAlertMassage(
-                                              context,
-                                              '$e',
-                                            );
-                                            // context.goNamed(cartRoute);
-                                          } catch (e) {
-                                            // cart.setCartState('active');
-                                            showAlertMassage(
-                                              context,
-                                              e.toString(),
-                                            );
-                                          }
-                                        }
-                                      },
-                                      icon: Icon(
-                                        Icons.delete,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
-                                      ),
+                                    child: RemoveIconButton(
+                                      context, ref, index,
+                                      // child: IconButton(
+                                      // onPressed: () async {
+                                      // cart.setCartState("weighing");
+                                      // context.pushNamed(
+                                      //   barcodeRoute,
+                                      //   extra: {
+                                      //     'action': 'remove',
+                                      //     'index': '$index',
+                                      //     'barcodeToRead':
+                                      //         cart.getItems()[index].barcode,
+                                      //   },
+                                      // );
+                                      // },
+                                      // icon: Icon(
+                                      //   Icons.delete,
+                                      //   color: Theme.of(context)
+                                      //       .colorScheme
+                                      //       .secondary,
+                                      // ),
                                     ),
                                   ),
                                 ],
@@ -616,185 +411,233 @@ class CartPage extends ConsumerWidget {
     );
   }
 
-  // Widget buildIconButton(BuildContext context, WidgetRef ref, int index) {
-  //   final mqtt = ref.watch(mqttProvider);
-  //   final auth = ref.watch(authProvider);
-  //   final cart = ref.watch(cartProvider);
-  //   final penet_completer = Completer<String>();
-  //   final item_completer = Completer<String>();
-  //   return IconButton(
-  //     icon: Icon(
-  //       Icons.more_vert,
-  //       color: Theme.of(context).colorScheme.secondary,
-  //     ),
-  //     onPressed: () async {
-  //       // cart.setCartState("weighing");
-  //       // context.pushNamed(
-  //       //   barcodeRoute,
-  //       //   extra: {
-  //       //     'action': 'remove',
-  //       //     'index': '$index',
-  //       //     'barcodeToRead':
-  //       //         cart.getItems()[index].barcode,
-  //       //   },
-  //       // );
-  //       final removeItem = await showCustomBoolDialog(
-  //         context,
-  //         "Item removement",
-  //         "Are you sure, you want to remove ${cart.getItems()[index].name}",
-  //         "Yes",
-  //       );
-  //       if (removeItem) {
-  //         var publishBody = <String, dynamic>{
-  //           'mqtt_type': 'request_start_remove_item',
-  //           'sender': mqtt.clientId,
-  //           'item_barcode': cart.getItems()[index].barcode,
-  //           'timestamp': DateTime.now().millisecondsSinceEpoch
-  //         };
-
-  //         try {
-  //           // Publish the request
-  //           mqtt.publish(json.encode(publishBody));
-  //           // Wait for the scale response message
-  //           showCustomLoadingDialog(
-  //             context,
-  //             'Move item to scale area!',
-  //             'Please keep only one hand in the cart',
-  //             boxSize: 275,
-  //           );
-  //           StreamSubscription penetSubscription =
-  //               mqtt.onPenetMessage.listen((message) {
-  //             penet_completer.complete(message);
-  //             devtools.log("penet waiting");
-  //           });
-  //           // Wait for the penet completer to complete
-  //           bool completed_move = false;
-  //           Future.any([
-  //             penet_completer.future,
-  //             Future.delayed(
-  //               const Duration(seconds: 25),
-  //             ).then((_) {
-  //               if (!completed_move) {
-  //                 throw TimeoutException('The process took too long penet.');
-  //               }
-  //             }),
-  //           ]).then((response) {
-  //             final mqttResponsePenet = json.decode(response!);
-  //             // Handle the message as desired
-  //             penetSubscription.cancel();
-  //             completed_move = true;
-  //             context.pop();
-  //             devtools.log("penet completed done");
-  //             devtools.log("RESPONSE: $mqttResponsePenet");
-  //             if (mqttResponsePenet['status'].toString() == '0') {
-  //               // Delay
-  //               showCustomLoadingDialog(
-  //                 context,
-  //                 'Place item on scale!',
-  //                 'Please keep only one hand in the cart',
-  //                 durationInSeconds: 5,
-  //                 boxSize: 275,
-  //               );
-  //               var timestamp;
-  //               Future.delayed(
-  //                 Duration(seconds: 5),
-  //               ).then((_) {
-  //                 timestamp = DateTime.now().millisecondsSinceEpoch;
-  //                 var publishBody = <String, dynamic>{
-  //                   'mqtt_type': 'request_remove_item',
-  //                   'sender': mqtt.clientId,
-  //                   'item_barcode': cart.getItems()[index].barcode,
-  //                   'timestamp': timestamp
-  //                 };
-  //                 // Publish the request
-  //                 mqtt.publish(json.encode(publishBody));
-  //                 context.pop();
-  //                 showLoadingDialog(context);
-  //                 // Wait for the item completer to complete
-  //                 StreamSubscription itemSubscription =
-  //                     mqtt.onItemMessage.listen((message) {
-  //                   item_completer.complete(message);
-  //                   devtools.log("item waiting");
-  //                 });
-  //                 bool completed_item = false;
-  //                 Future.any([
-  //                   item_completer.future,
-  //                   Future.delayed(
-  //                     const Duration(seconds: 7),
-  //                   ).then((_) {
-  //                     if (!completed_item) {
-  //                       throw TimeoutException('The process took too long.');
-  //                     }
-  //                   }),
-  //                 ]).then((response) {
-  //                   final mqttResponseItem = json.decode(response!);
-  //                   // Handle the message as desired
-  //                   itemSubscription.cancel();
-  //                   completed_item = true;
-  //                   context.pop();
-  //                   devtools.log("item completed done");
-  //                   devtools.log("RESPONSE: $mqttResponseItem");
-  //                   // on item success
-  //                   if (mqttResponseItem['status'] == 'success') {
-  //                     showCustomLoadingDialog(
-  //                       context,
-  //                       'Remove item from scale!',
-  //                       'Please keep only one hand in the cart',
-  //                       durationInSeconds: 5,
-  //                     );
-  //                     Future.delayed(
-  //                       const Duration(seconds: 5),
-  //                     ).then(
-  //                       (_) {
-  //                         context.pop();
-  //                         showLoadingDialog(
-  //                             // cart.setCartState(
-  //                             // "active");
-  //                             context);
-  //                         Future.delayed(
-  //                           const Duration(seconds: 3),
-  //                         ).then(
-  //                           (_) async {
-  //                             http.Response httpRes = await auth.postAuthReq(
-  //                               '/api/v1/item/remove',
-  //                               body: <String, String>{
-  //                                 'barcode': cart.getItems()[index].barcode,
-  //                                 'process_id': timestamp.toString(),
-  //                               },
-  //                             );
-  //                             devtools.log("code: ${httpRes.statusCode}");
-  //                             // if success, add remove item from cart
-  //                             if (httpRes.statusCode == 200) {
-  //                               cart.removeItem(cart.getItems()[index]);
-  //                             }
-  //                           },
-  //                         );
-  //                         context.pop();
-  //                       },
-  //                     );
-  //                   }
-  //                 });
-  //               });
-  //             }
-  //           });
-  //         } on TimeoutException catch (e) {
-  //           // cart.setCartState('active');
-  //           showAlertMassage(
-  //             context,
-  //             '$e',
-  //           );
-  //           // context.goNamed(cartRoute);
-  //         } catch (e) {
-  //           // cart.setCartState('active');
-  //           showAlertMassage(
-  //             context,
-  //             e.toString(),
-  //           );
-  //         }
-  //       }
-  //     },
-  //   );
-  // }
+  Widget RemoveIconButton(BuildContext context, WidgetRef ref, int index) {
+    final mqtt = ref.watch(mqttProvider);
+    final auth = ref.watch(authProvider);
+    final cart = ref.watch(cartProvider);
+    final penet_completer = Completer<String>();
+    final item_completer = Completer<String>();
+    return IconButton(
+      icon: Icon(
+        Icons.delete_forever,
+        color: Theme.of(context).colorScheme.secondary,
+      ),
+      onPressed: () async {
+        final removeItem = await customDialog(
+          context: context,
+          title: 'Item removement!',
+          message:
+              "Are you sure, you want to remove ${cart.getItems()[index].name}",
+          buttons: const [
+            ButtonArgs(
+              text: 'Confirm',
+              value: true,
+            ),
+            ButtonArgs(
+              text: 'Cancel',
+              value: false,
+            ),
+          ],
+        );
+        if (removeItem) {
+          var publishBody = <String, dynamic>{
+            'mqtt_type': 'request_start_remove_item',
+            'sender': mqtt.clientId,
+            'item_barcode': cart.getItems()[index].barcode,
+            'timestamp': DateTime.now().millisecondsSinceEpoch
+          };
+          try {
+            // Publish the request
+            mqtt.publish(json.encode(publishBody));
+            // Wait for the scale response message
+            showCustomLoadingDialog(
+              context,
+              'Move item to scale area!',
+              'Please keep only one hand in the cart',
+              boxSize: 275,
+            );
+            StreamSubscription penetSubscription =
+                mqtt.onPenetMessage.listen((message) {
+              penet_completer.complete(message);
+            });
+            // Wait for the penet completer to complete
+            bool completed_move = false;
+            final mqttResponsePenet = await Future.any([
+              penet_completer.future,
+              Future.delayed(
+                const Duration(seconds: 15),
+              ).then((_) {
+                if (!completed_move) {
+                  throw TimeoutException('The process took too long penet.');
+                }
+              }),
+            ]).then((response) {
+              // Handle the message as desired
+              penetSubscription.cancel();
+              completed_move = true;
+              context.pop();
+              return jsonDecode(response!);
+            });
+            // on move success
+            if (mqttResponsePenet['status'].toString() == '0') {
+              showSuccessDialog(context, "Move Success");
+              await Future.delayed(const Duration(milliseconds: 1500));
+              context.pop();
+              // Delay for scale
+              showCustomLoadingDialog(
+                context,
+                'Place item on scale!',
+                'Please keep only one hand in the cart',
+                durationInSeconds: 5,
+                boxSize: 275,
+              );
+              var timestamp;
+              await Future.delayed(
+                const Duration(seconds: 5),
+              ).then((_) {
+                timestamp = DateTime.now().millisecondsSinceEpoch;
+                var publishBody = <String, dynamic>{
+                  'mqtt_type': 'request_remove_item',
+                  'sender': mqtt.clientId,
+                  'item_barcode': cart.getItems()[index].barcode,
+                  'timestamp': timestamp
+                };
+                // Publish the request
+                mqtt.publish(json.encode(publishBody));
+                context.pop();
+              });
+              showLoadingDialog(context);
+              StreamSubscription itemSubscription =
+                  mqtt.onItemMessage.listen((message) {
+                item_completer.complete(message);
+              });
+              // Wait for the item completer to complete
+              bool completed_item = false;
+              final mqttResponseItem = await Future.any([
+                item_completer.future,
+                Future.delayed(
+                  const Duration(seconds: 6),
+                ).then((_) {
+                  if (!completed_item) {
+                    throw TimeoutException('The process took too long.');
+                  }
+                }),
+              ]).then((response) {
+                // Handle the message as desired
+                itemSubscription.cancel();
+                completed_item = true;
+                context.pop();
+                return jsonDecode(response!);
+              });
+              // on item success
+              if (mqttResponseItem['status'] == 'success') {
+                showSuccessDialog(context, "Scale Success");
+                await Future.delayed(const Duration(milliseconds: 1500));
+                context.pop();
+                // delay for remove
+                showCustomLoadingDialog(
+                  context,
+                  'Remove item from scale!',
+                  'Please keep only one hand in the cart',
+                  durationInSeconds: 5,
+                  boxSize: 275,
+                );
+                await Future.delayed(
+                  const Duration(seconds: 5),
+                ).then((_) {
+                  context.pop();
+                });
+                showLoadingDialog(context);
+                await Future.delayed(
+                  const Duration(seconds: 3),
+                ).then((_) async {
+                  cart.setCartState("active");
+                });
+                http.Response httpRes = await auth.postAuthReq(
+                  '/api/v1/item/remove',
+                  body: <String, String>{
+                    'barcode': cart.getItems()[index].barcode,
+                    'process_id': timestamp.toString(),
+                  },
+                );
+                context.pop();
+                devtools.log("code: ${httpRes.statusCode}");
+                // if success, remove item from cart
+                if (httpRes.statusCode == 200) {
+                  showSuccessDialog(context, "Remove Item Success");
+                  await Future.delayed(const Duration(milliseconds: 1500));
+                  context.pop();
+                  cart.removeItem(cart.getItems()[index]);
+                } else {
+                  showAlertMassage(
+                    context,
+                    "Failed to remove item",
+                  );
+                }
+              } else if (mqttResponseItem['status'] == 'scale_fail') {
+                customDialog(
+                  context: context,
+                  title: "Scale Fail",
+                  message: "Make sure item is placed correctly on scale",
+                  buttons: const [
+                    ButtonArgs(
+                      text: 'Retry',
+                      value: true,
+                    ),
+                    // ButtonArgs(
+                    //   text: 'Cancel',
+                    //   value: false,
+                    // ),
+                    //TODO
+                  ],
+                );
+                return;
+              } else {
+                showAlertMassage(
+                  context,
+                  mqttResponseItem['status'],
+                );
+                return;
+              }
+            } else {
+              showAlertMassage(
+                context,
+                'Tempering Detected!',
+              );
+              return;
+            }
+          } on TimeoutException catch (e) {
+            cart.setCartState('active');
+            context.pop();
+            showAlertMassage(
+              context,
+              e.toString(),
+            );
+            return;
+          } on Exception catch (e) {
+            cart.setCartState('active');
+            context.pop();
+            try {
+              devtools.log(e.toString());
+              String error = json
+                  .decode(
+                    e.toString().substring('Exception:'.length),
+                  )['detail']
+                  .toString();
+              // devtools.log(error);
+              showAlertMassage(context, error);
+            } on Exception catch (e2) {
+              devtools.log(e2.toString());
+              showAlertMassage(context, e2.toString());
+            }
+            return;
+          }
+        } else {
+          return;
+        }
+      },
+    );
+  }
 }
 
 class ReusableWidget extends StatelessWidget {

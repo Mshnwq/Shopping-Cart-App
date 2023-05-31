@@ -92,7 +92,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       bool completed = false;
                       final loginResult = await Future.any([
                         auth.login(context, email, passwd),
-                        Future.delayed(Duration(seconds: 5)).then((_) {
+                        Future.delayed(const Duration(seconds: 5)).then((_) {
                           if (!completed) {
                             throw TimeoutException(
                                 'The authentication process took too long.');

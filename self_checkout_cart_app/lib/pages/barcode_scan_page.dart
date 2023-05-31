@@ -143,20 +143,28 @@ class BarcodeScannerPage extends ConsumerWidget {
                         devtools.log("scale completed done");
                         // devtools.log("RESPONSE: $mqttResponse");
                         if (mqttResponseScale['status'] == 'item_not_found') {
-                          bool isRetry = await showCustomBoolDialog(
-                            context,
-                            "Item Not Found",
-                            "This item is not in our database try your luck with another item",
-                            "Ok",
+                          // context.pop();
+                          final isRetry = await customDialog(
+                            context: context,
+                            title: 'Item not Found!',
+                            message:
+                                "This item is not in our database try your luck with another item",
+                            buttons: const [
+                              ButtonArgs(
+                                text: 'Retry',
+                                value: true,
+                              ),
+                              ButtonArgs(
+                                text: 'Cancel',
+                                value: false,
+                              ),
+                            ],
                           );
                           if (isRetry) {
-                            cart.setCartState("active");
-                            // context.goNamed(cartRoute);
-                            context.pop();
-                          } else {
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
+                            _canScan = true;
                           }
+                          cart.setCartState("active");
+                          context.goNamed(cartRoute);
                         }
                         if (mqttResponseScale['status'] == 'pass') {
                           // Wait for the penet completer to complete
