@@ -31,7 +31,8 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
-
+// TODO: to fix build context in Barcode scan !
+// https://www.acodeblog.com/post/2022/5/29/flutter-showdialog-without-context-using-the-navigatorkey
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routeInformationParser: router.routeInformationParser,

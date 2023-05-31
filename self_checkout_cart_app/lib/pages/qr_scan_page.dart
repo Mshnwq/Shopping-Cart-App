@@ -52,7 +52,8 @@ class QRScannerPage extends ConsumerWidget {
                   context: context,
                   title: 'Confirm QR',
                   // message: 'connecting to cart ${qrCode.substring(8, 13)}',
-                  message: 'connecting to cart $qrCode',
+                  // message: 'connecting to cart $qrCode',
+                  message: 'connecting to cart 123',
                   buttons: [
                     const ButtonArgs(
                       text: 'Confirm',
@@ -67,6 +68,7 @@ class QRScannerPage extends ConsumerWidget {
                 if (connectCart) {
                   var httpBody = <String, String>{
                     // 'qrcode': qrCode.toString().substring(8, 13),
+                    // 'qrcode': qrCode.toString(),
                     'qrcode': '123',
                   };
                   String? errorMessage; // Variable to store the error message

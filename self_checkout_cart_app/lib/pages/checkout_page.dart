@@ -153,10 +153,6 @@ class CheckoutPage extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           GestureDetector(
-                            // onLongPress: () {
-                            // devtools.log("tGGG");
-                            // receipt.toggleIt();
-                            // }, //TODO show mpre details
                             onTap: () => receipt.toggleIt(),
                             child: Container(
                               decoration: BoxDecoration(
@@ -169,12 +165,16 @@ class CheckoutPage extends ConsumerWidget {
                                   ),
                                   borderRadius: BorderRadius.circular(5)),
                               child: QrImage(
-                                eyeStyle: const QrEyeStyle(
-                                    color: Colors.black,
-                                    eyeShape: QrEyeShape.square),
-                                dataModuleStyle: const QrDataModuleStyle(
-                                    dataModuleShape: QrDataModuleShape.square,
-                                    color: Colors.black),
+                                eyeStyle: QrEyeStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  eyeShape: QrEyeShape.square,
+                                ),
+                                dataModuleStyle: QrDataModuleStyle(
+                                  dataModuleShape: QrDataModuleShape.square,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
                                 data: receipt.text ?? "Null",
                                 version: QrVersions.auto,
                                 size: 300.0,
@@ -200,7 +200,8 @@ class CheckoutPage extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
+            ), // TODO: list
+            const SizedBox(height: 140),
             Column(
               children: [
                 ReusableWidget(
@@ -212,7 +213,6 @@ class CheckoutPage extends ConsumerWidget {
             ),
           ],
         ),
-        // ),
       ),
       bottomNavigationBar: Container(
         height: 60,

@@ -123,17 +123,17 @@ class CartPage extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: RefreshIndicator(
         onRefresh: () async {
-          // await Future.delayed(const Duration(milliseconds: 420));
-          // http.Response httpRes = await auth.getAuthReq(
-          //   '/api/v1/item/items',
-          // );
-          if (true) {
-            // devtools.log("items ${httpRes.statusCode}");
-            // if (httpRes.statusCode == 200) {
-            // if (httpRes.body != null) {
-            // devtools.log("items ${httpRes.body}");
-            cart.clearItems();
-            String receiptBodyJson = '''{
+          await Future.delayed(const Duration(milliseconds: 420));
+          http.Response httpRes = await auth.getAuthReq(
+            '/api/v1/item/items',
+          );
+          // if (true) {
+          devtools.log("items ${httpRes.statusCode}");
+          if (httpRes.statusCode == 200) {
+            if (httpRes.body != null) {
+              devtools.log("items ${httpRes.body}");
+              cart.clearItems();
+              String receiptBodyJson = '''{
                 "bill": {
                   "status": "unpaid",
                   "created_at": "2023-03-31T21:14:45.539142",
@@ -160,28 +160,28 @@ class CartPage extends ConsumerWidget {
                   }
                 ]
               }''';
-            var items = json.decode(receiptBodyJson)['items'];
-            // var items = json.decode(httpRes.body)['items'];
-            // devtools.log("$items");
-            for (int i = 0; i < items.length; i++) {
-              // extract item info
-              Map itemMap = items[i];
-              String itemId = itemMap.keys.first;
-              Map itemDetails = itemMap.values.first;
-              // create item object
-              Item item = Item(
-                barcode: itemId,
-                name: itemDetails['en_name'],
-                unit: 'Kg',
-                price: itemDetails['unit_price'],
-                count: itemDetails['count'],
-                // image: "http://${env.baseURL}${itemDetails['img_path']}",
-                image:
-                    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
-              );
-              // add to cart
-              cart.addItem(item);
-              // }
+              // var items = json.decode(receiptBodyJson)['items'];
+              var items = json.decode(httpRes.body)['items'];
+              devtools.log("$items");
+              for (int i = 0; i < items.length; i++) {
+                // extract item info
+                Map itemMap = items[i];
+                String itemId = itemMap.keys.first;
+                Map itemDetails = itemMap.values.first;
+                // create item object
+                Item item = Item(
+                  barcode: itemId,
+                  name: itemDetails['en_name'],
+                  unit: 'Kg',
+                  price: itemDetails['unit_price'],
+                  count: itemDetails['count'],
+                  image: "http://${env.baseURL}${itemDetails['img_path']}",
+                  // image:
+                  // 'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+                );
+                // add to cart
+                cart.addItem(item);
+              }
             }
             devtools.log("refreshing");
           } else {
@@ -256,7 +256,7 @@ class CartPage extends ConsumerWidget {
                                             children: [
                                               TextSpan(
                                                 text:
-                                                    '${cart.getItems()[index].name}',
+                                                    cart.getItems()[index].name,
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .bodyMedium
@@ -361,7 +361,7 @@ class CartPage extends ConsumerWidget {
                                     onLongPress: () => {
                                       cart.removeItem(cart.getItems()[index])
                                     },
-                                    child: RemoveIconButton(
+                                    child: removeIconButton(
                                       context, ref, index,
                                       // child: IconButton(
                                       // onPressed: () async {
@@ -411,7 +411,7 @@ class CartPage extends ConsumerWidget {
     );
   }
 
-  Widget RemoveIconButton(BuildContext context, WidgetRef ref, int index) {
+  Widget removeIconButton(BuildContext context, WidgetRef ref, int index) {
     final mqtt = ref.watch(mqttProvider);
     final auth = ref.watch(authProvider);
     final cart = ref.watch(cartProvider);

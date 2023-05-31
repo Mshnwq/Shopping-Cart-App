@@ -79,11 +79,21 @@ class BarcodeScannerPage extends ConsumerWidget {
                     isValidBarcode = barcodeToRead == barCode;
                   }
                   if (isValidBarcode) {
-                    final addToCart = await showCustomBoolDialog(
-                      context,
-                      "Place item on scale",
-                      barCode.toString(),
-                      "Add it",
+                    final addToCart = await customDialog(
+                      context: context,
+                      title: 'Place item on scale!',
+                      message:
+                          "Are you sure, you want to add ${barCode.toString()}",
+                      buttons: const [
+                        ButtonArgs(
+                          text: 'Add it!',
+                          value: true,
+                        ),
+                        ButtonArgs(
+                          text: 'Cancel',
+                          value: false,
+                        ),
+                      ],
                     );
                     if (addToCart) {
                       var timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -91,33 +101,24 @@ class BarcodeScannerPage extends ConsumerWidget {
                       var publishBody = <String, String>{
                         'mqtt_type': 'request_${action}_item',
                         'sender': mqtt.clientId,
-                        // 'item_barcode': '123',
-                        'item_barcode': barCode.toString(),
+                        'item_barcode': '123',
+                        // 'item_barcode': barCode.toString(),
                         'timestamp': timestamp.toString()
                       };
                       try {
                         // Publish the request
                         mqtt.publish(json.encode(publishBody));
-                        // Wait for the scale response message
-                        devtools.log("subscribing scale");
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
+                        // Listen for response message
+                        showLoadingDialog(context);
                         StreamSubscription scaleSubscription =
                             mqtt.onScaleMessage.listen((message) {
                           scale_completer.complete(message);
-                          devtools.log("scale waiting done");
                         });
                         StreamSubscription itemSubscription =
                             mqtt.onItemMessage.listen((message) {
                           item_completer.complete(message);
-                          devtools.log("item waiting done");
                         });
-
+                        // Wait for the scale completer to complete
                         bool completed = false;
                         final mqttResponseScale = await Future.any([
                           scale_completer.future,
@@ -132,18 +133,153 @@ class BarcodeScannerPage extends ConsumerWidget {
                           }),
                         ]).then((response) {
                           completed = true;
+                          scaleSubscription.cancel();
+                          itemSubscription.cancel();
                           return json.decode(response!);
                         });
-                        // Wait for the scale completer to complete
-
-                        // Handle the message as desired
-                        scaleSubscription.cancel();
-                        itemSubscription.cancel();
                         context.pop();
-                        devtools.log("scale completed done");
-                        // devtools.log("RESPONSE: $mqttResponse");
-                        if (mqttResponseScale['status'] == 'item_not_found') {
-                          // context.pop();
+                        // Handle the message as desired
+                        if (mqttResponseScale['status'] == 'pass') {
+                          showSuccessDialog(context, "Move Success");
+                          await Future.delayed(
+                              const Duration(milliseconds: 1500));
+                          context.pop();
+                          // Wait for the penet completer to complete
+                          showCustomLoadingDialog(
+                            context,
+                            "Scale Success!",
+                            "Move the item with one hand to storage",
+                          );
+                          StreamSubscription subscription =
+                              mqtt.onItemMessage.listen((message) {
+                            item_completer.complete(message);
+                            devtools.log("item waiting done");
+                          });
+                          bool completed = false;
+                          final mqttResponsePenet = await Future.any([
+                            item_completer.future,
+                            Future.delayed(
+                              const Duration(seconds: 12),
+                            ).then((_) {
+                              if (!completed) {
+                                throw TimeoutException(
+                                    'The process took too long.');
+                              }
+                            }),
+                          ]).then((response) {
+                            completed = true;
+                            subscription.cancel();
+                            context.pop();
+                            return json.decode(response!);
+                          });
+                          // Handle the message as desired
+                          if (mqttResponsePenet['status'] == 'success') {
+                            // on penetration success
+                            showLoadingDialog(context);
+                            http.Response httpRes = await auth.postAuthReq(
+                              '/api/v1/item/$action',
+                              body: <String, String>{
+                                // 'barcode': barCode.toString(),
+                                'barcode': '123',
+                                'process_id': timestamp.toString(),
+                              },
+                            );
+                            devtools.log("code: ${httpRes.statusCode}");
+                            context.pop();
+                            // if success, add item to cart and exit refresh page
+                            if (httpRes.statusCode == 200) {
+                              if (action == 'add') {
+                                var product = json.decode(httpRes.body);
+                                devtools.log("$product");
+                                Item item = Item(
+                                    barcode: barCode.toString(),
+                                    name: product['en_name'],
+                                    unit: 'Kg',
+                                    price: product['price'],
+                                    count: 1,
+                                    image:
+                                        "http://${env.baseURL}${product['img_path']}");
+                                showSuccessDialog(context, "Add item Success");
+                                await Future.delayed(
+                                    const Duration(milliseconds: 1500));
+                                context.pop();
+                                cart.addItem(item);
+                              } else {
+                                // if case is remove
+                                cart.removeItem(
+                                    cart.getItems()[int.parse(index)]);
+                              }
+                              cart.setCartState("active");
+                              context.goNamed(cartRoute);
+                            }
+                          } else {
+                            final isRetry = await customDialog(
+                              context: context,
+                              title: "Failed to $action item",
+                              message: "Make sure item is not leaving the cart",
+                              buttons: const [
+                                ButtonArgs(
+                                  text: 'Retry',
+                                  value: true,
+                                ),
+                                ButtonArgs(
+                                  text: 'Cancel',
+                                  value: false,
+                                ),
+                              ],
+                            );
+                            if (isRetry) {
+                              // _canScan = true;
+                            } else {}
+                            cart.setCartState("active");
+                            context.pop();
+                          }
+                        } else if (mqttResponseScale['status'] ==
+                            'scale_fail') {
+                          final isRetry = await customDialog(
+                            context: context,
+                            title: "Failed to $action item",
+                            message:
+                                "Make sure item is placed correctly on scale",
+                            buttons: const [
+                              ButtonArgs(
+                                text: 'Retry',
+                                value: true,
+                              ),
+                              ButtonArgs(
+                                text: 'Cancel',
+                                value: false,
+                              ),
+                            ],
+                          );
+                          if (isRetry) {
+                            // _canScan = true;
+                          } else {}
+                          cart.setCartState("active");
+                          context.pop();
+                        } else if (mqttResponseScale['status'] == 'acce_fail') {
+                          final isRetry = await customDialog(
+                            context: context,
+                            title: "Failed to $action item",
+                            message: "Make sure cart is not moving",
+                            buttons: const [
+                              ButtonArgs(
+                                text: 'Retry',
+                                value: true,
+                              ),
+                              ButtonArgs(
+                                text: 'Cancel',
+                                value: false,
+                              ),
+                            ],
+                          );
+                          if (isRetry) {
+                            // _canScan = true;
+                          } else {}
+                          cart.setCartState("active");
+                          context.pop();
+                        } else if (mqttResponseScale['status'] ==
+                            'item_not_found') {
                           final isRetry = await customDialog(
                             context: context,
                             title: 'Item not Found!',
@@ -162,177 +298,93 @@ class BarcodeScannerPage extends ConsumerWidget {
                           );
                           if (isRetry) {
                             _canScan = true;
+                          } else {
+                            cart.setCartState("active");
+                            context.goNamed(cartRoute);
                           }
+                        } else {
+                          final isRetry = await customDialog(
+                            context: context,
+                            title: 'ERROR!',
+                            message: "Unexpexted error has occured",
+                            buttons: const [
+                              ButtonArgs(
+                                text: 'Retry',
+                                value: true,
+                              ),
+                              ButtonArgs(
+                                text: 'Cancel',
+                                value: false,
+                              ),
+                            ],
+                          );
+                          if (isRetry) {
+                            // _canScan = true;
+                          } else {}
                           cart.setCartState("active");
                           context.goNamed(cartRoute);
                         }
-                        if (mqttResponseScale['status'] == 'pass') {
-                          // Wait for the penet completer to complete
-                          showCustomLoadingDialog(
-                            context,
-                            "Scale Success!",
-                            "Move the item with one hand to storage",
-                          );
-                          StreamSubscription subscription =
-                              mqtt.onItemMessage.listen((message) {
-                            item_completer.complete(message);
-                            devtools.log("item waiting done");
-                          });
-                          bool completed = false;
-                          final mqttResponsePenet = await Future.any([
-                            item_completer.future,
-                            Future.delayed(
-                              const Duration(seconds: 15),
-                            ).then((_) {
-                              if (!completed) {
-                                throw TimeoutException(
-                                    'The process took too long.');
-                              }
-                            }),
-                          ]).then((response) {
-                            completed = true;
-                            return json.decode(response!);
-                          });
-                          // Handle the message as desired
-                          subscription.cancel();
-                          context.pop();
-                          devtools.log("item completed done");
-                          // on penetration success
-                          if (mqttResponsePenet['status'] == 'success') {
-                            // devtools.log("HERE_11");
-                            http.Response httpRes = await auth.postAuthReq(
-                              '/api/v1/item/$action',
-                              body: <String, String>{
-                                'barcode': barCode.toString(),
-                                // 'barcode': '123',
-                                'process_id': timestamp.toString(),
-                              },
-                            );
-
-                            devtools.log("code: ${httpRes.statusCode}");
-                            // if success, add item to cart and exit refresh page
-                            if (httpRes.statusCode == 200) {
-                              if (action == 'add') {
-                                var product = json.decode(httpRes.body);
-                                devtools.log("$product");
-                                Item item = Item(
-                                    barcode: barCode.toString(),
-                                    name: product['en_name'],
-                                    unit: 'Kg',
-                                    price: product['price'],
-                                    count: 1,
-                                    image:
-                                        "http://${env.baseURL}${product['img_path']}");
-                                cart.addItem(item);
-                              } else {
-                                // if case is remove
-                                cart.removeItem(
-                                    cart.getItems()[int.parse(index)]);
-                              }
-                              cart.setCartState("active");
-                              context.goNamed(cartRoute);
-                            }
-                          } else {
-                            bool isRetry = await showCustomBoolDialog(
-                                context,
-                                "Failed to $action item",
-                                "Make sure item is not leaving the cart",
-                                "Retry");
-                            if (isRetry) {
-                              _canScan = true;
-                            } else {
-                              cart.setCartState("active");
-                              GoRouter.of(context).pop();
-                            }
-                          }
-                        } else if (mqttResponseScale['status'] ==
-                            'scale_fail') {
-                          bool isRetry = await showCustomBoolDialog(
-                              context,
-                              "Failed to $action item",
-                              "Make sure item is placed correctly on scale",
-                              "Retry");
-                          if (isRetry) {
-                            _canScan = true;
-                          } else {
-                            cart.setCartState("active");
-                            GoRouter.of(context).pop();
-                          }
-                        } else if (mqttResponseScale['status'] == 'acce_fail') {
-                          bool isRetry = await showCustomBoolDialog(
-                              context,
-                              "Failed to $action item",
-                              "Make sure cart is not moving",
-                              "Retry");
-                          if (isRetry) {
-                            _canScan = true;
-                          } else {
-                            cart.setCartState("active");
-                            GoRouter.of(context).pop();
-                          }
-                        } else if (mqttResponseScale['status'] ==
-                            'item_not_found') {
-                          // devtools.log("HERE_4");
-                          bool isRetry = await showCustomBoolDialog(
-                            context,
-                            "Item Not Found",
-                            "This item is not in our database try your luck with another item",
-                            "Ok",
-                          );
-                          if (isRetry) {
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
-                          } else {
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
-                          }
-                        } else {
-                          bool isRetry = await showCustomBoolDialog(
-                            context,
-                            "ERROR",
-                            "Unexpexted error has occured",
-                            "Ok",
-                          );
-                          if (isRetry) {
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
-                          } else {
-                            cart.setCartState("active");
-                            context.goNamed(cartRoute);
-                          }
-                        }
                       } on TimeoutException catch (e) {
-                        bool isRetry = await showCustomBoolDialog(
-                          context,
-                          "Time out",
-                          "$e",
-                          "Retry",
+                        context.pop();
+                        final isRetry = await customDialog(
+                          context: context,
+                          title: 'Timeout!',
+                          message: e.toString(),
+                          buttons: const [
+                            ButtonArgs(
+                              text: 'Retry',
+                              value: true,
+                            ),
+                            ButtonArgs(
+                              text: 'Cancel',
+                              value: false,
+                            ),
+                          ],
                         );
                         if (isRetry) {
-                          cart.setCartState("active");
-                          GoRouter.of(context).pop();
-                        } else {
-                          cart.setCartState("active");
-                          GoRouter.of(context).pop();
-                        }
+                          // _canScan = true;
+                        } else {}
+                        cart.setCartState("active");
+                        context.pop();
                       } on Exception catch (e) {
                         devtools.log("$e");
-                        bool isRetry = await showCustomBoolDialog(
-                          context,
-                          "Server error",
-                          "$e",
-                          "Retry",
-                        );
-                        if (isRetry) {
-                          _canScan = true;
-                        } else {
+                        try {
+                          String error = json
+                              .decode(
+                                e.toString().substring('Exception:'.length),
+                              )['detail']
+                              .toString();
+                          devtools.log(error);
+                          showAlertMassage(context, error);
+                        } on Exception catch (e2) {
+                          devtools.log(e2.toString());
+                          showAlertMassage(context, e2.toString());
+                        } finally {
+                          // final isRetry = await customDialog(
+                          //   context: context,
+                          //   title: 'Server Error!',
+                          //   message: e.toString(),
+                          //   buttons: const [
+                          //     ButtonArgs(
+                          //       text: 'Retry',
+                          //       value: true,
+                          //     ),
+                          //     ButtonArgs(
+                          //       text: 'Cancel',
+                          //       value: false,
+                          //     ),
+                          //   ],
+                          // );
+                          // if (isRetry) {
+                          // _canScan = true;
+                          // } else {}
                           cart.setCartState("active");
-                          GoRouter.of(context).pop();
+                          context.pop();
                         }
                       }
                     } else {
-                      cart.setCartState("active");
-                      GoRouter.of(context).pop();
+                      // canceled add item
+                      _canScan = true;
                     }
                   } else {
                     bool isRetry = await showCustomBoolDialog(
@@ -344,7 +396,7 @@ class BarcodeScannerPage extends ConsumerWidget {
                       _canScan = true;
                     } else {
                       cart.setCartState("active");
-                      GoRouter.of(context).pop();
+                      context.pop();
                     }
                   }
                 }
